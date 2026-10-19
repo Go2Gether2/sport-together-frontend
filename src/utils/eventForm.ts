@@ -108,7 +108,7 @@ export function toEventInput(form: EventFormState): EventInput {
     organization_id: form.organizationId ?? undefined,
   }
   if (sport.startsWith(NEW_SPORT_PREFIX)) input.sport_name = sport.slice(NEW_SPORT_PREFIX.length)
-  else input.sport_id = sport
+  else input.sport_id = Number(sport)
   return input
 }
 
