@@ -34,6 +34,8 @@ export interface EventRow {
   starts_at: string
   ends_at: string | null
   address: string
+  lat: number | null
+  lng: number | null
   location_note: string | null
   level: Level | null
   requirements: string | null
