@@ -1,9 +1,44 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-sans: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+  --font-hand: 'Caveat', 'Onest', cursive;
+
+  --color-ink: #0e0e10;
+  --color-ink-2: #4a4b55;
+  --color-paper: #fbfaf4;
+  --color-card: #ffffff;
+  --color-cobalt: #1a2a8c;
+  --color-cobalt-tint: #e4e7f6;
+  --color-mute: #d9d8d0;
+
+  --radius-card: 20px;
+  --radius-field: 14px;
+  --radius-screen: 28px;
 }
 
 html {
   font-size: 18px;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
