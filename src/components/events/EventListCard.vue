@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { EventSummary } from '@/api'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
+import { sportIconName } from '@/components/illustrations/sportIcon'
 import { UiBadge, UiSeats } from '@/components/ui'
 import { formatEventWhen } from '@/utils/datetime'
 import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
@@ -28,7 +29,7 @@ const level = computed(() =>
     </div>
 
     <div class="flex items-start gap-3">
-      <SportIcon :name="event.sport.icon" :size="44" class="shrink-0" />
+      <SportIcon :name="sportIconName(event.sport)" :size="44" class="shrink-0" />
       <div class="min-w-0 flex-1">
         <h3 class="text-lg leading-snug font-bold">
           <RouterLink
@@ -43,7 +44,7 @@ const level = computed(() =>
       </div>
     </div>
 
-    <UiSeats :taken="event.participants_count" :capacity="event.capacity">
+    <UiSeats :taken="event.confirmed_count" :capacity="event.capacity">
       <span class="truncate">{{ organizerName(event.organizer) }}</span>
     </UiSeats>
   </article>

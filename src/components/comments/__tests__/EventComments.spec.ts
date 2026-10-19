@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node'
 import { eventsApi, setToken } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
+import { E, U } from '@/mocks/seed'
 import { useSessionStore } from '@/stores/session'
 import EventComments from '../EventComments.vue'
 
@@ -19,7 +20,7 @@ beforeEach(() => {
 })
 afterAll(() => server.close())
 
-async function open(eventId: string, as?: string) {
+async function open(eventId: number, as?: number) {
   if (as) await useSessionStore().loginDemo(as)
   const event = await eventsApi.get(eventId)
   const router = createRouter({
@@ -40,14 +41,14 @@ const button = (w: Awaited<ReturnType<typeof open>>, text: string) =>
 
 describe('EventComments', () => {
   it('С5: вопрос участника и ответ организатора различимы по авторству', async () => {
-    const asker = await open('e-yoga', 'user2')
+    const asker = await open(E.yoga, U.petr)
     await asker.get('textarea').setValue('Коврик обязателен?')
     await asker.get('form').trigger('submit')
     await flushPromises()
     expect(asker.text()).toContain('Коврик обязателен?')
     asker.unmount()
 
-    const organizer = await open('e-yoga', 'user')
+    const organizer = await open(E.yoga, U.anna)
     await button(organizer, 'Ответить').trigger('click')
     await organizer.get('textarea').setValue('Можно плед')
     await organizer.get('form').trigger('submit')
@@ -60,7 +61,7 @@ describe('EventComments', () => {
   })
 
   it('владелец организации отвечает от её имени', async () => {
-    const w = await open('e-run-morning', 'org_approved')
+    const w = await open(E.runMorning, U.igor)
     expect(w.text()).toContain('Сообщение будет от имени организации')
     await w.get('textarea').setValue('Сбор у часов')
     await w.get('form').trigger('submit')
@@ -71,7 +72,7 @@ describe('EventComments', () => {
   })
 
   it('скрытое сообщение показывает заглушку, гостю предлагает войти', async () => {
-    const w = await open('e-chess-park')
+    const w = await open(E.chessPark)
     expect(w.text()).toContain('Сообщение скрыто модератором')
     expect(w.text()).not.toContain('абонементы')
     expect(w.find('textarea').exists()).toBe(false)
@@ -79,7 +80,7 @@ describe('EventComments', () => {
   })
 
   it('не отправляет пустое сообщение', async () => {
-    const w = await open('e-yoga', 'user2')
+    const w = await open(E.yoga, U.petr)
     await w.get('form').trigger('submit')
     await flushPromises()
     expect(w.get('[role="alert"]').text()).toContain('Напишите сообщение')

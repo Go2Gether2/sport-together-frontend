@@ -30,11 +30,11 @@ const filters = [
   { id: 'beginners', label: 'Для новичков', count: 11 },
 ]
 const users = [
-  { id: '1', name: 'Ольга Котова', avatar_url: null },
-  { id: '2', name: 'Ирина Петрова', avatar_url: null },
-  { id: '3', name: 'Анна Носова', avatar_url: null },
-  { id: '4', name: 'Дмитрий Сидоров', avatar_url: null },
-  { id: '5', name: 'Пётр Ли', avatar_url: null },
+  { id: 1, name: 'Ольга Котова', avatar_url: null },
+  { id: 2, name: 'Ирина Петрова', avatar_url: null },
+  { id: 3, name: 'Анна Носова', avatar_url: null },
+  { id: 4, name: 'Дмитрий Сидоров', avatar_url: null },
+  { id: 5, name: 'Пётр Ли', avatar_url: null },
 ]
 const sportOptions = ref<UiOption[]>([
   { value: 'football', label: 'Футбол' },

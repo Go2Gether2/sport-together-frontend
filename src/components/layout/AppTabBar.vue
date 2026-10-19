@@ -9,7 +9,7 @@ const [left, right] = tabBarItems()
 <template>
   <nav
     aria-label="Основные разделы"
-    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-3xl border-2 border-ink bg-card px-1 py-1.5 md:hidden"
+    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-3xl border-2 border-ink bg-card px-1 py-1.5 lg:hidden"
   >
     <RouterLink
       v-for="item in left"

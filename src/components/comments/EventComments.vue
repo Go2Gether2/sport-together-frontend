@@ -5,7 +5,6 @@ import { ApiError, commentsApi, type Comment, type EventDetails } from '@/api'
 import { useSessionStore } from '@/stores/session'
 import { UiButton, plural } from '@/components/ui'
 import { buildThread } from '@/features/comments/thread'
-import { isEventOrganizer } from '@/features/events/participation'
 import CommentItem from './CommentItem.vue'
 
 const props = defineProps<{ event: EventDetails }>()
@@ -27,13 +26,11 @@ const countText = computed(
   () =>
     `${comments.value.length} ${plural(comments.value.length, ['сообщение', 'сообщения', 'сообщений'])}`,
 )
-const isOrganizer = computed(() =>
-  isEventOrganizer(props.event, { user: session.user, organization: session.organization }),
-)
+const isOrganizer = computed(() => props.event.is_organizer)
 // Владелец допущенной организации отвечает в обсуждении её события от её имени.
 const asOrganizationId = computed(() =>
   isOrganizer.value && props.event.organizer.type === 'organization'
-    ? props.event.organizer.organization.id
+    ? props.event.organizer.id
     : undefined,
 )
 const placeholder = computed(() =>
@@ -84,11 +81,11 @@ async function send() {
   }
 }
 
-function saveComment(id: string, body: string) {
+function saveComment(id: number, body: string) {
   return act(() => commentsApi.update(id, body))
 }
 
-function removeComment(id: string) {
+function removeComment(id: number) {
   return act(() => commentsApi.remove(id))
 }
 
@@ -123,7 +120,7 @@ watch(() => props.event.id, load, { immediate: true })
           <CommentItem
             :comment="item.comment"
             :mine="item.comment.author.id === session.user?.id"
-            :can-reply="!!session.user"
+            :can-reply="!!session.user && event.status === 'published'"
             :busy="busy"
             @reply="reply(item.comment)"
             @save="(t: string) => saveComment(item.comment.id, t)"
@@ -137,7 +134,7 @@ watch(() => props.event.id, load, { immediate: true })
               <CommentItem
                 :comment="r"
                 :mine="r.author.id === session.user?.id"
-                :can-reply="!!session.user"
+                :can-reply="!!session.user && event.status === 'published'"
                 :busy="busy"
                 @reply="reply(item.comment)"
                 @save="(t: string) => saveComment(r.id, t)"
@@ -148,7 +145,10 @@ watch(() => props.event.id, load, { immediate: true })
         </li>
       </ul>
 
-      <form v-if="session.user" class="flex flex-col gap-2" @submit.prevent="send">
+      <p v-if="event.status !== 'published'" class="text-ink-2">
+        Обсуждение закрыто: мероприятие снято с публикации.
+      </p>
+      <form v-else-if="session.user" class="flex flex-col gap-2" @submit.prevent="send">
         <p v-if="replyTo" class="flex items-center gap-3 text-sm">
           <span class="text-ink-2">
             Ответ для {{ replyTo.as_organization?.name ?? replyTo.author.name }}

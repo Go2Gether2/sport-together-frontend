@@ -51,8 +51,8 @@ watch(
 )
 
 const sport = computed({
-  get: () => filters.value.sport ?? '',
-  set: (value: string) => update({ sport: value || undefined }),
+  get: () => (filters.value.sport ? String(filters.value.sport) : ''),
+  set: (value: string) => update({ sport: value ? Number(value) : undefined }),
 })
 const level = computed({
   get: () => filters.value.level ?? '',
@@ -88,7 +88,7 @@ watch(() => route.query, load, { immediate: true, deep: true })
 onMounted(async () => {
   try {
     const sports = await sportsApi.list()
-    sportOptions.value = sports.map((s) => ({ value: s.id, label: s.name }))
+    sportOptions.value = sports.map((s) => ({ value: String(s.id), label: s.name }))
   } catch {
     sportOptions.value = []
   }

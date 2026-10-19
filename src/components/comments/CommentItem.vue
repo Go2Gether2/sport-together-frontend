@@ -18,10 +18,10 @@ const time = computed(() =>
     minute: '2-digit',
   }).format(new Date(props.comment.created_at)),
 )
-const edited = computed(() => props.comment.updated_at !== props.comment.created_at)
+const edited = computed(() => props.comment.is_edited)
 
 function startEdit() {
-  draft.value = props.comment.text
+  draft.value = props.comment.text ?? ''
   editing.value = true
 }
 

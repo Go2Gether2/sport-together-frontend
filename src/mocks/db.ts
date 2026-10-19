@@ -3,7 +3,8 @@ import type {
   Id,
   JoinMode,
   Level,
-  Organization,
+  OrganizationStatus,
+  OrganizationType,
   ParticipationStatus,
   Sport,
   User,
@@ -13,10 +14,27 @@ import { createSeed } from './seed'
 export interface UserRow extends User {
   password: string
   contacts: string | null
-  demo_key: string | null
+  /** Описание демо-аккаунта для экрана входа; null — обычный пользователь. */
+  demo_description: string | null
 }
 
-export type OrganizationRow = Organization
+export interface OrganizationRow {
+  id: Id
+  owner_id: Id
+  name: string
+  description: string | null
+  type: OrganizationType
+  sports_description: string | null
+  city: string | null
+  website_url: string | null
+  avatar_url: string | null
+  contacts: string | null
+  status: OrganizationStatus
+  reject_reason: string | null
+  decided_at: string | null
+  created_at: string
+  updated_at: string
+}
 
 export interface SportRow extends Sport {
   normalized_name: string
@@ -26,13 +44,14 @@ export interface SportRow extends Sport {
 export interface EventRow {
   id: Id
   title: string
-  description: string
+  description: string | null
   sport_id: Id
   organizer_type: 'user' | 'organization'
   organizer_user_id: Id
   organizer_org_id: Id | null
   starts_at: string
   ends_at: string | null
+  city: string | null
   address: string
   lat: number | null
   lng: number | null
@@ -72,6 +91,22 @@ export interface CommentRow {
   updated_at: string
 }
 
+export interface ModerationRow {
+  id: Id
+  admin_id: Id
+  action:
+    | 'org_approved'
+    | 'org_rejected'
+    | 'event_unpublished'
+    | 'event_deleted'
+    | 'event_restored'
+    | 'comment_hidden'
+  target_type: 'organization' | 'event' | 'comment'
+  target_id: Id
+  reason: string | null
+  created_at: string
+}
+
 export interface Db {
   users: UserRow[]
   organizations: OrganizationRow[]
@@ -79,6 +114,7 @@ export interface Db {
   events: EventRow[]
   participations: ParticipationRow[]
   comments: CommentRow[]
+  moderation: ModerationRow[]
   sessions: Map<string, Id>
 }
 
@@ -89,8 +125,11 @@ export const db: Db = {
   events: [],
   participations: [],
   comments: [],
+  moderation: [],
   sessions: new Map(),
 }
+
+let lastId = 1000
 
 /** Возвращает моки к исходным демо-данным (для тестов и кнопки сброса). */
 export function resetDb(now = new Date()) {
@@ -101,10 +140,16 @@ export function resetDb(now = new Date()) {
   db.events = seed.events
   db.participations = seed.participations
   db.comments = seed.comments
+  db.moderation = []
   db.sessions = new Map()
+  lastId = 1000
 }
 
-export function newId() {
+export function newId(): Id {
+  return ++lastId
+}
+
+export function newToken() {
   return crypto.randomUUID()
 }
 

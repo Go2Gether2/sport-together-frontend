@@ -1,124 +1,162 @@
-// Типы по схеме REST API бэкенда. Заменятся сгенерированными из OpenAPI, когда он появится.
+import type { components } from './schema'
 
-export type Id = string
+// В OpenAPI бэка все поля необязательные, но на деле приходят всегда — пустые как null.
+// Здесь — типы «как приходит»: поля обязательны, null допускается только там, где бэк его шлёт.
+type S = components['schemas']
+
+type Present<T> = { [K in keyof T]-?: Exclude<T[K], undefined> }
+type WithNull<T, K extends keyof T> = Omit<T, K> & { [P in K]: T[P] | null }
+type Model<T, N extends keyof T = never> = WithNull<Present<T>, N>
+
+export type Id = number
 /** ISO 8601 */
 export type DateTime = string
 
-export type UserRole = 'user' | 'admin'
-export type Level = 'beginner' | 'amateur' | 'pro'
+export type UserRole = NonNullable<S['UserResponse']['role']>
+export type Level = NonNullable<S['UserResponse']['level']>
+export type SportCategory = NonNullable<S['SportResponse']['category']>
+export type OrganizationType = NonNullable<S['OrganizationResponse']['type']>
+export type OrganizationStatus = NonNullable<S['OrganizationResponse']['status']>
+export type JoinMode = NonNullable<S['EventShortResponse']['join_mode']>
+export type EventStatus = NonNullable<S['EventShortResponse']['status']>
+export type ParticipationStatus = NonNullable<S['ParticipationResponse']['status']>
 
-export interface UserShort {
-  id: Id
-  name: string
-  avatar_url: string | null
+export type UserShort = Model<S['UserShortResponse'], 'avatar_url'>
+
+export type User = Model<
+  Omit<S['UserResponse'], 'sport_ids'> & { sport_ids: Id[] },
+  'avatar_url' | 'city' | 'bio' | 'level'
+>
+
+export type Sport = Model<S['SportResponse'], 'icon'>
+
+export type Organizer = Model<S['OrganizerResponse'], 'avatar_url'>
+
+type EventShared = 'ends_at' | 'city' | 'level' | 'capacity'
+
+export type EventSummary = Model<
+  Omit<S['EventShortResponse'], 'sport' | 'organizer'> & { sport: Sport; organizer: Organizer },
+  EventShared
+>
+
+export type PublicUser = Model<
+  Omit<S['PublicUserResponse'], 'sports' | 'created_events'> & {
+    sports: Sport[]
+    created_events: EventSummary[]
+  },
+  'avatar_url' | 'city' | 'bio' | 'level'
+>
+
+export type OrganizationShort = Model<S['OrganizationShortResponse'], 'city'>
+
+export type Organization = Model<
+  Omit<S['OrganizationResponse'], 'owner'> & { owner: UserShort },
+  | 'description'
+  | 'sports_description'
+  | 'city'
+  | 'website_url'
+  | 'avatar_url'
+  | 'contacts'
+  | 'reject_reason'
+  | 'decided_at'
+>
+
+export type Participation = Model<
+  S['ParticipationResponse'],
+  'message' | 'decision_reason' | 'decided_at'
+>
+
+export type Participant = Model<
+  Omit<S['ParticipantResponse'], 'user'> & { user: UserShort },
+  'email' | 'message' | 'decision_reason'
+>
+
+export type ParticipantsList = Model<
+  Omit<S['ParticipantsResponse'], 'participants'> & { participants: Participant[] },
+  'capacity'
+>
+
+export type EventDetails = Model<
+  Omit<S['EventDetailsResponse'], 'sport' | 'organizer' | 'participants' | 'my_participation'> & {
+    sport: Sport
+    organizer: Organizer
+    participants: UserShort[]
+    my_participation: Participation | null
+  },
+  | EventShared
+  | 'description'
+  | 'organizer_contacts'
+  | 'location_note'
+  | 'lat'
+  | 'lng'
+  | 'requirements'
+  | 'equipment'
+  | 'unavailable_reason'
+>
+
+export type Comment = Model<
+  Omit<S['CommentResponse'], 'author' | 'as_organization'> & {
+    author: UserShort
+    as_organization: OrganizationShort | null
+  },
+  'parent_id' | 'hidden_reason' | 'text' | 'updated_at'
+>
+
+export type DemoAccount = Model<S['DemoAccountResponse']>
+
+export type Me = { user: User; organizations: OrganizationShort[] }
+
+export type LoginResult = Present<Omit<S['AuthResponse'], 'user'>> & { user: User }
+
+export type JoinResult = { message: string; participation: Participation; event: EventDetails }
+
+export type MyParticipation = { participation: Participation; event: EventSummary }
+
+export type OrganizerEvent = {
+  event: EventSummary
+  pending_count: number
+  waitlisted_count: number
 }
 
-export interface User extends UserShort {
-  role: UserRole
-  email: string
-  city: string | null
-  bio: string | null
-  level: Level | null
-  sport_ids: Id[]
-  is_demo: boolean
-  created_at: DateTime
+export type SportDetails = Sport & { active_events_count: number }
+
+export type AdminDashboard = Present<S['DashboardResponse']>
+
+export type AdminOrganizationDetails = {
+  organization: Organization
+  owner: User
+  events: EventSummary[]
 }
 
-export type SportCategory = 'team' | 'individual' | 'mind' | 'fitness' | 'other'
-
-export interface Sport {
-  id: Id
-  name: string
-  category: SportCategory
-  icon: string | null
-  is_custom: boolean
+export type AdminEventDetails = {
+  event: EventDetails
+  moderated_by: UserShort | null
+  moderated_at: DateTime | null
+  participations: Participant[]
+  comments: Comment[]
 }
 
-export type OrganizationType = 'club' | 'community' | 'federation' | 'company'
-export type OrganizationStatus = 'pending' | 'approved' | 'rejected' | 'blocked'
+export type ModerationLog = Model<
+  Omit<S['ModerationLogResponse'], 'admin'> & { admin: UserShort },
+  'reason'
+>
 
-export interface OrganizationShort {
-  id: Id
-  name: string
+export type Notification = Model<S['NotificationResponse'], 'event_id' | 'body'>
+
+export interface Page<T> {
+  items: T[]
+  total: number
+  page: number
+  size: number
+  total_pages: number
 }
 
-export interface Organization extends OrganizationShort {
-  owner_id: Id
-  description: string
-  type: OrganizationType
-  sport_ids: Id[]
-  city: string | null
-  contacts: string | null
-  status: OrganizationStatus
-  reject_reason: string | null
-  created_at: DateTime
-}
-
-export type JoinMode = 'open' | 'approval'
-export type EventStatus = 'published' | 'unpublished' | 'deleted' | 'cancelled'
-
-export type Organizer =
-  { type: 'user'; user: UserShort } | { type: 'organization'; organization: OrganizationShort }
-
-export type ParticipationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'waitlisted'
-
-export interface Participation {
-  id: Id
-  event_id: Id
-  user: UserShort
-  status: ParticipationStatus
-  message: string | null
-  decision_reason: string | null
-  decided_at: DateTime | null
-  created_at: DateTime
-}
-
-export interface EventSummary {
-  id: Id
-  title: string
-  sport: Sport
-  organizer: Organizer
-  starts_at: DateTime
-  ends_at: DateTime | null
-  address: string
-  lat: number | null
-  lng: number | null
-  level: Level | null
-  join_mode: JoinMode
-  capacity: number | null
-  participants_count: number
-  status: EventStatus
-}
-
-export interface EventDetails extends EventSummary {
-  description: string
-  location_note: string | null
-  requirements: string | null
-  equipment: string | null
-  moderation_reason: string | null
-  my_participation: Participation | null
-  created_at: DateTime
-  updated_at: DateTime
-}
-
-export interface EventInput {
-  title: string
-  description: string
-  sport_id?: Id
-  sport_name?: string
-  starts_at: DateTime
-  ends_at?: DateTime
-  address: string
-  lat?: number
-  lng?: number
-  location_note?: string
-  requirements?: string
-  equipment?: string
-  level?: Level
-  join_mode: JoinMode
-  capacity?: number
-  organization_id?: Id
-}
+export type EventInput = S['CreateEventRequest']
+export type EventUpdate = S['UpdateEventRequest']
+export type CommentInput = S['CreateCommentRequest']
+export type OrganizationInput = S['CreateOrganizationRequest']
+export type OrganizationUpdate = S['UpdateOrganizationRequest']
+export type ProfileInput = S['UpdateProfileRequest']
 
 export interface EventFilters {
   q?: string
@@ -129,72 +167,15 @@ export interface EventFilters {
   level?: Level
   join_mode?: JoinMode
   organizer?: Id
+  organization?: Id
   page?: number
-}
-
-export interface Comment {
-  id: Id
-  event_id: Id
-  author: UserShort
-  as_organization: OrganizationShort | null
-  is_organizer: boolean
-  parent_id: Id | null
-  text: string
-  is_hidden: boolean
-  hidden_reason: string | null
-  created_at: DateTime
-  updated_at: DateTime
-}
-
-export interface CommentInput {
-  text: string
-  parent_id?: Id
-  as_organization_id?: Id
-}
-
-export interface OrganizationInput {
-  name: string
-  description: string
-  type: OrganizationType
-  sport_ids: Id[]
-  city?: string
-  contacts?: string
-}
-
-export interface DemoAccount {
-  id: Id
-  title: string
-  description: string
-}
-
-export interface Me {
-  user: User
-  organization: Organization | null
-}
-
-export interface LoginResult {
-  token: string
-  user: User
-}
-
-export interface AdminDashboard {
-  organizations_pending: number
-  events_published: number
-  events_moderated: number
-}
-
-/** Форма пагинации — наше допущение, ждём Swagger. */
-export interface Page<T> {
-  items: T[]
-  total: number
-  page: number
-  size: number
+  size?: number
 }
 
 export interface ApiErrorBody {
   error: {
     code: string
     message: string
-    fields?: Record<string, string>
+    fields?: Record<string, string> | null
   }
 }

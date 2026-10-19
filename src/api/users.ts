@@ -1,26 +1,18 @@
 import { http } from './http'
-import type { EventSummary, Id, Level, Participation, ParticipationStatus, User } from './types'
-
-export interface ProfileInput {
-  name?: string
-  city?: string
-  bio?: string
-  sport_ids?: Id[]
-  level?: Level
-}
-
-export interface MyEvent extends EventSummary {
-  pending_requests_count: number
-}
-
-export interface MyParticipation extends Participation {
-  event: EventSummary
-}
+import type {
+  Id,
+  MyParticipation,
+  OrganizerEvent,
+  ParticipationStatus,
+  ProfileInput,
+  PublicUser,
+  User,
+} from './types'
 
 export const usersApi = {
-  get: (id: Id) => http.get<User & { events: EventSummary[] }>(`/users/${id}`),
+  get: (id: Id) => http.get<PublicUser>(`/users/${id}`),
   updateMe: (body: ProfileInput) => http.patch<User>('/users/me', body),
-  myEvents: () => http.get<MyEvent[]>('/users/me/events'),
+  myEvents: () => http.get<OrganizerEvent[]>('/users/me/events'),
   myParticipations: (status?: ParticipationStatus) =>
     http.get<MyParticipation[]>('/users/me/participations', { query: { status } }),
 }
