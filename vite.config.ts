@@ -22,6 +22,15 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: env.API_PROXY_TARGET || 'http://localhost:8080',
           changeOrigin: true,
+          // Бэк ставит cookie входа с Secure, а локально мы на http — Safari и заход по IP её отбрасывают.
+          // Только в dev-прокси снимаем Secure; на стенде с HTTPS cookie остаётся как у бэка.
+          configure: (proxy) => {
+            proxy.on('proxyRes', (res) => {
+              const cookies = res.headers['set-cookie']
+              if (cookies)
+                res.headers['set-cookie'] = cookies.map((c) => c.replace(/;\s*Secure/gi, ''))
+            })
+          },
         },
       },
     },
