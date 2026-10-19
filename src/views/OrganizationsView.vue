@@ -10,6 +10,8 @@ import { filterByType, type TypeFilter } from '@/features/organizations/catalog'
 const PAGE = 20
 
 const query = ref('')
+const sport = ref('')
+const city = ref('')
 const type = ref<TypeFilter>('all')
 const items = ref<Organization[]>([])
 const total = ref(0)
@@ -28,6 +30,8 @@ async function load(more = false) {
     const next = more ? page.value + 1 : 0
     const res = await organizationsApi.list({
       q: query.value.trim() || undefined,
+      sport: sport.value.trim() || undefined,
+      city: city.value.trim() || undefined,
       page: next,
       size: PAGE,
     })
@@ -46,7 +50,7 @@ async function load(more = false) {
 onMounted(() => load())
 
 let timer: ReturnType<typeof setTimeout> | undefined
-watch(query, () => {
+watch([query, sport, city], () => {
   clearTimeout(timer)
   timer = setTimeout(() => load(), 300)
 })
@@ -72,6 +76,15 @@ watch(query, () => {
         type="search"
         placeholder="Название или направление"
       />
+      <div class="grid gap-3 sm:grid-cols-2">
+        <UiTextField v-model="sport" label="Направление" placeholder="Например, футбол" />
+        <UiTextField
+          v-model="city"
+          label="Город"
+          placeholder="Красноярск"
+          hint="Полное название города"
+        />
+      </div>
       <div class="flex gap-2 overflow-x-auto" role="group" aria-label="Тип">
         <UiChip
           v-for="[value, label] in types"

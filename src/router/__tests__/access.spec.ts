@@ -15,6 +15,12 @@ const router = createRouter({
       children: [{ path: 'events', name: 'admin-events', component: Stub }],
     },
     { path: '/login', name: 'login', component: Stub },
+    {
+      path: '/events/new',
+      name: 'event-create',
+      component: Stub,
+      meta: { requiresAuth: true, noAdmin: true },
+    },
     { path: '/register', name: 'register', component: Stub, meta: { guestOnly: true } },
   ],
 })
@@ -49,5 +55,10 @@ describe('resolveAccess', () => {
   it('пускает вошедшего на вход (смена роли), но уводит с регистрации', () => {
     expect(check('/login', user)).toBe(true)
     expect(check('/register', user)).toEqual({ name: 'home' })
+  })
+
+  it('администратора не пускает создавать мероприятия — уводит в админку', () => {
+    expect(check('/events/new', admin)).toEqual({ name: 'admin' })
+    expect(check('/events/new', user)).toBe(true)
   })
 })

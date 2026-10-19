@@ -20,7 +20,8 @@ const router = useRouter()
 const route = useRoute()
 const session = useSessionStore()
 
-const form = reactive(emptyEventForm())
+// Город по умолчанию — из профиля: по нему мероприятие находят в фильтре каталога.
+const form = reactive({ ...emptyEventForm(), city: session.user?.city ?? '' })
 const errors = ref<EventFormErrors>({})
 const formError = ref('')
 const submitting = ref(false)
@@ -188,6 +189,12 @@ async function submit() {
 
       <div class="flex flex-col gap-4 rounded-card bg-card p-5">
         <h2 class="text-xl font-bold">Где</h2>
+        <UiTextField
+          v-model="form.city"
+          label="Город"
+          placeholder="Красноярск"
+          :error="errors.city"
+        />
         <UiTextField
           v-model="form.address"
           label="Адрес"
