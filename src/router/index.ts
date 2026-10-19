@@ -19,7 +19,12 @@ const routes: RouteRecordRaw[] = [
     component: Placeholder,
     meta: { title: 'Новое мероприятие', requiresAuth: true },
   },
-  { path: '/events/:id', name: 'event', component: Placeholder, meta: { title: 'Мероприятие' } },
+  {
+    path: '/events/:id',
+    name: 'event',
+    component: () => import('@/views/EventView.vue'),
+    meta: { title: 'Мероприятие' },
+  },
   {
     path: '/me',
     name: 'my-participations',
