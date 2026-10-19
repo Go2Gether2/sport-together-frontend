@@ -68,6 +68,19 @@ describe('EventsView', () => {
     expect(titles(wrapper).length).toBe(9)
   })
 
+  it('переключается на карту, сохраняя фильтры в адресе', async () => {
+    const { wrapper, router } = await setup('/events?join_mode=open')
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === 'Картой')!
+      .trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query).toEqual({ join_mode: 'open', view: 'map' })
+    // В тестах ключа 2ГИС нет — карта честно говорит, что не подключена, список остаётся.
+    expect(wrapper.text()).toContain('Карта не подключена')
+    expect(wrapper.findAll('article h3').length).toBeGreaterThan(0)
+  })
+
   it('при ошибке сервера даёт повторить', async () => {
     server.use(http.get('*/api/v1/events', () => HttpResponse.json({}, { status: 500 })))
     const { wrapper } = await setup()

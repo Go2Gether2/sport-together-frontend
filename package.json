@@ -21,6 +21,7 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@2gis/mapgl": "^1.78.1",
     "@fontsource/caveat": "^5.3.0",
     "@fontsource/onest": "^5.3.1",
     "pinia": "^4.0.3",

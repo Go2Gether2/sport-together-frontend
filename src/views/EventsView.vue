@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { sportsApi, type EventFilters, type JoinMode, type Level } from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
+import EventsMap from '@/components/map/EventsMap.vue'
 import { UiButton, UiChip, UiSelect, UiTextField, plural, type UiOption } from '@/components/ui'
 import {
   JOIN_MODE_LABELS,
@@ -13,6 +14,8 @@ import {
   filtersToQuery,
 } from '@/features/events/filters'
 import { useEventList } from '@/features/events/useEventList'
+import type { MapPoint } from '@/features/map/geo'
+import { useEventCoords } from '@/features/map/useEventCoords'
 import { quickDateRange, type QuickDate } from '@/utils/datetime'
 
 const route = useRoute()
@@ -32,9 +35,34 @@ const QUICK: { kind: QuickDate; label: string }[] = [
   { kind: 'weekend', label: 'На выходных' },
 ]
 
+// Вид «Картой» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
+const view = computed<'list' | 'map'>(() => (route.query.view === 'map' ? 'map' : 'list'))
+const viewQuery = () => (view.value === 'map' ? { view: 'map' } : {})
+
 function update(patch: Partial<EventFilters>) {
   const next = { ...filters.value, ...patch, page: undefined }
-  router.replace({ query: filtersToQuery(next) })
+  router.replace({ query: { ...filtersToQuery(next), ...viewQuery() } })
+}
+
+function setView(v: 'list' | 'map') {
+  router.replace({
+    query: { ...filtersToQuery(filters.value), ...(v === 'map' ? { view: 'map' } : {}) },
+  })
+}
+
+const isMap = computed(() => view.value === 'map')
+const { coords } = useEventCoords(items, isMap)
+const points = computed<MapPoint[]>(() =>
+  items.value.flatMap((e) => {
+    const c = coords.value.get(e.id)
+    return c ? [{ id: e.id, title: e.title, coordinates: c }] : []
+  }),
+)
+const withoutCoords = computed(() => items.value.filter((e) => coords.value.get(e.id) === null))
+const selectedId = ref<number | null>(null)
+async function selectOnMap(id: number) {
+  selectedId.value = id
+  document.getElementById(`event-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 }
 
 const search = ref(filters.value.q ?? '')
@@ -75,7 +103,7 @@ function setJoinMode(mode: JoinMode | undefined) {
 const hasFilters = computed(() => countFilters(filters.value) > 0 || !!filters.value.q)
 function reset() {
   search.value = ''
-  router.replace({ query: {} })
+  router.replace({ query: viewQuery() })
 }
 
 const foundText = computed(
@@ -102,12 +130,18 @@ onMounted(async () => {
         <h1 class="font-display text-2xl font-bold">Мероприятия</h1>
         <p v-if="state === 'ready'" class="text-ink-2" role="status">{{ foundText }}</p>
       </div>
-      <RouterLink
-        :to="{ name: 'event-create' }"
-        class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
-      >
-        + Создать своё
-      </RouterLink>
+      <div class="flex items-center gap-2">
+        <div class="flex gap-1.5" role="group" aria-label="Как показать">
+          <UiChip :pressed="view === 'list'" @click="setView('list')">Списком</UiChip>
+          <UiChip :pressed="view === 'map'" @click="setView('map')">Картой</UiChip>
+        </div>
+        <RouterLink
+          :to="{ name: 'event-create' }"
+          class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
+        >
+          + Создать своё
+        </RouterLink>
+      </div>
     </header>
 
     <div
@@ -224,9 +258,26 @@ onMounted(async () => {
       </div>
 
       <template v-else>
+        <EventsMap
+          v-if="isMap"
+          class="mb-5 h-[min(60vh,520px)]"
+          :points="points"
+          :selected-id="selectedId"
+          label="Карта мероприятий"
+          @select="selectOnMap"
+        />
+        <p v-if="isMap && withoutCoords.length" class="mb-3 text-ink-2">
+          Без отметки на карте: {{ withoutCoords.map((e) => e.title).join(', ') }}.
+        </p>
         <h2 class="sr-only">Найденные мероприятия</h2>
         <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <li v-for="event in items" :key="event.id">
+          <li
+            v-for="event in items"
+            :id="`event-${event.id}`"
+            :key="event.id"
+            class="scroll-mt-24 rounded-card"
+            :class="selectedId === event.id && isMap ? 'outline-3 outline-accent-strong' : ''"
+          >
             <EventListCard :event="event" />
           </li>
         </ul>
