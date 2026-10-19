@@ -6,7 +6,7 @@
   --font-hand: 'Caveat', 'Onest', cursive;
 
   --color-ink: #0e0e10;
-  --color-ink-2: #5b5d68;
+  --color-ink-2: #4f515b;
   --color-page: #eef0f5;
   --color-card: #ffffff;
   --color-field: #e6e8ef;
@@ -49,6 +49,12 @@ body {
     outline-offset: 0;
     background-color: var(--color-card);
   }
+}
+
+/* Серый вторичный текст на насыщенной сирени и оранжевом не дотягивает до 4,5:1 (ГОСТ Р 52872) — там он тёмно-синий. */
+.bg-accent .text-ink-2,
+.bg-orange .text-ink-2 {
+  color: var(--color-accent-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -64,10 +64,18 @@ function save() {
         class="rounded-field bg-card p-2.5"
       />
       <div class="flex gap-4 text-sm font-bold">
-        <button type="submit" class="underline underline-offset-4" :disabled="busy">
+        <button
+          type="submit"
+          class="inline-flex min-h-8 items-center underline underline-offset-4"
+          :disabled="busy"
+        >
           Сохранить
         </button>
-        <button type="button" class="underline underline-offset-4" @click="editing = false">
+        <button
+          type="button"
+          class="inline-flex min-h-8 items-center underline underline-offset-4"
+          @click="editing = false"
+        >
           Отмена
         </button>
       </div>
@@ -78,18 +86,22 @@ function save() {
       <button
         v-if="canReply"
         type="button"
-        class="underline underline-offset-4"
+        class="inline-flex min-h-8 items-center underline underline-offset-4"
         @click="emit('reply')"
       >
         Ответить
       </button>
       <template v-if="mine">
-        <button type="button" class="underline underline-offset-4" @click="startEdit">
+        <button
+          type="button"
+          class="inline-flex min-h-8 items-center underline underline-offset-4"
+          @click="startEdit"
+        >
           Изменить
         </button>
         <button
           type="button"
-          class="underline underline-offset-4"
+          class="inline-flex min-h-8 items-center underline underline-offset-4"
           :disabled="busy"
           @click="emit('remove')"
         >

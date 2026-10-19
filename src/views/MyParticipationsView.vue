@@ -167,7 +167,7 @@ const EMPTY: Record<MyTab, string> = {
             <button
               v-if="canCancel(item)"
               type="button"
-              class="mt-1 w-fit text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
+              class="inline-flex min-h-8 items-center mt-1 w-fit text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
               @click="cancelling = item"
             >
               {{
