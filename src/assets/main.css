@@ -29,9 +29,11 @@ body {
   line-height: 1.5;
 }
 
-:focus-visible {
-  outline: 3px solid var(--color-cobalt);
-  outline-offset: 2px;
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
