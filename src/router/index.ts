@@ -46,10 +46,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/profile',
     name: 'profile',
-    component: Placeholder,
+    component: () => import('@/views/ProfileView.vue'),
     meta: { title: 'Профиль', requiresAuth: true },
   },
-  { path: '/users/:id', name: 'user', component: Placeholder, meta: { title: 'Профиль' } },
+  {
+    path: '/users/:id',
+    name: 'user',
+    component: () => import('@/views/UserView.vue'),
+    meta: { title: 'Профиль' },
+  },
   {
     path: '/organizations',
     name: 'organizations',

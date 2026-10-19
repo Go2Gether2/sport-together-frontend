@@ -10,6 +10,7 @@ import {
   participationsApi,
   setToken,
   sportsApi,
+  usersApi,
 } from '@/api'
 import type { EventInput } from '@/api'
 import { handlers } from '../handlers'
@@ -266,5 +267,30 @@ describe('пагинация как у бэка', () => {
     const second = await eventsApi.list({ size: 4, page: 1 })
     expect(first).toMatchObject({ page: 0, size: 4, total: 9, total_pages: 3 })
     expect(ids(first.items)).not.toEqual(expect.arrayContaining(ids(second.items)))
+  })
+})
+
+describe('152-ФЗ: удаление аккаунта (мок по предложению бэку)', () => {
+  it('обезличивает профиль, отменяет записи и закрывает вход', async () => {
+    await loginAs(U.petr)
+    await eventsApi.join(E.yoga)
+    await usersApi.deleteMe()
+
+    expect((await fail(authApi.me()))?.status).toBe(401)
+    expect((await fail(usersApi.get(U.petr)))?.status).toBe(404)
+    const accounts = await authApi.demoAccounts()
+    expect(accounts.map((a) => a.id)).not.toContain(U.petr)
+
+    await loginAs(U.anna)
+    const list = await eventsApi.participants(E.yoga)
+    expect(names(list)).not.toContain('Пётр Иванов')
+  })
+
+  it('владельца организации не удаляет', async () => {
+    await loginAs(U.igor)
+    expect(await fail(usersApi.deleteMe())).toMatchObject({
+      status: 409,
+      code: 'HAS_ORGANIZATIONS',
+    })
   })
 })

@@ -328,11 +328,55 @@ export const handlers = [
     }),
   ),
 
+  // Эндпоинта пока нет у бэка — мок по нашему предложению (тема back/delete-account, 152-ФЗ).
+  http.delete(
+    url('/users/me'),
+    route(({ request }) => {
+      const user = requireUser(request)
+      if (ownedOrgs(user.id).length)
+        fail(409, 'HAS_ORGANIZATIONS', 'Сначала передайте или удалите свою организацию')
+      for (const p of db.participations)
+        if (
+          p.user_id === user.id &&
+          (p.status === 'confirmed' || p.status === 'pending' || p.status === 'waitlist')
+        )
+          Object.assign(p, { status: 'cancelled', updated_at: nowIso() })
+      for (const e of db.events)
+        if (
+          e.organizer_type === 'user' &&
+          e.organizer_user_id === user.id &&
+          e.status === 'published'
+        )
+          Object.assign(e, {
+            status: 'cancelled',
+            moderation_reason: 'Организатор удалил аккаунт',
+            updated_at: nowIso(),
+          })
+      Object.assign(user, {
+        name: 'Удалённый пользователь',
+        email: `deleted-${user.id}@deleted.local`,
+        password: crypto.randomUUID(),
+        city: null,
+        bio: null,
+        avatar_url: null,
+        contacts: null,
+        sport_ids: [],
+        level: null,
+        is_demo: false,
+        demo_description: null,
+        deleted: true,
+      })
+      for (const [token, id] of db.sessions) if (id === user.id) db.sessions.delete(token)
+      return noContent()
+    }),
+  ),
+
   http.get(
     url('/users/:id'),
     route(({ params }) => {
+      const found = findUser(idParam(params, 'id'))
       const user =
-        findUser(idParam(params, 'id')) ?? fail(404, 'NOT_FOUND', 'Пользователь не найден')
+        found && !found.deleted ? found : fail(404, 'NOT_FOUND', 'Пользователь не найден')
       return {
         id: user.id,
         name: user.name,

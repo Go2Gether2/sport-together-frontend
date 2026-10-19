@@ -12,6 +12,7 @@ import type {
 export const usersApi = {
   get: (id: Id) => http.get<PublicUser>(`/users/${id}`),
   updateMe: (body: ProfileInput) => http.patch<User>('/users/me', body),
+  deleteMe: () => http.delete<void>('/users/me'),
   myEvents: () => http.get<OrganizerEvent[]>('/users/me/events'),
   myParticipations: (status?: ParticipationStatus) =>
     http.get<MyParticipation[]>('/users/me/participations', { query: { status } }),

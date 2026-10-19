@@ -16,6 +16,8 @@ export interface UserRow extends User {
   contacts: string | null
   /** Описание демо-аккаунта для экрана входа; null — обычный пользователь. */
   demo_description: string | null
+  /** Аккаунт удалён: строка остаётся, чтобы старые сообщения и записи не ломались. */
+  deleted?: boolean
 }
 
 export interface OrganizationRow {
