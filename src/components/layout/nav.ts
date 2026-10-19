@@ -14,6 +14,7 @@ const HOME: NavItem = { label: 'Главная', to: { name: 'home' }, icon: 'ho
 const EVENTS: NavItem = { label: 'Мероприятия', to: { name: 'events' }, icon: 'list' }
 const MINE: NavItem = { label: 'Мои записи', to: { name: 'my-participations' }, icon: 'calendar' }
 const PROFILE: NavItem = { label: 'Профиль', to: { name: 'profile' }, icon: 'user' }
+const MY_EVENTS: NavItem = { label: 'Мои мероприятия', to: { name: 'my-events' }, icon: 'calendar' }
 const ORGS: NavItem = { label: 'Организации', to: { name: 'organizations' }, icon: 'building' }
 const ADMIN: NavItem = { label: 'Админка', to: { name: 'admin' }, icon: 'shield' }
 const PRIVACY: NavItem = { label: 'Политика данных', to: { name: 'privacy' }, icon: 'doc' }
@@ -28,7 +29,7 @@ export function tabBarItems(): [NavItem[], NavItem[]] {
 
 /** Разделы, не вошедшие в нижнюю панель. */
 export function menuItems(isAdmin: boolean): NavItem[] {
-  return isAdmin ? [ORGS, ADMIN, PRIVACY] : [ORGS, PRIVACY]
+  return isAdmin ? [ORGS, ADMIN, PRIVACY] : [MY_EVENTS, ORGS, PRIVACY]
 }
 
 /** Верхняя навигация на компьютере. */

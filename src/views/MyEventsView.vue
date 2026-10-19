@@ -1,0 +1,104 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import { ApiError, usersApi, type OrganizerEvent } from '@/api'
+import SportIcon from '@/components/illustrations/SportIcon.vue'
+import { sportIconName } from '@/components/illustrations/sportIcon'
+import { StatusBadge, UiBadge, UiButton, plural, seatsShort } from '@/components/ui'
+import { formatEventWhen } from '@/utils/datetime'
+
+const items = ref<OrganizerEvent[]>([])
+const state = ref<'loading' | 'ready' | 'error'>('loading')
+const message = ref('')
+
+async function load() {
+  state.value = 'loading'
+  try {
+    const list = await usersApi.myEvents()
+    // Сначала те, где ждут ответа, потом по дате.
+    items.value = [...list].sort(
+      (a, b) =>
+        Number(b.pending_count > 0) - Number(a.pending_count > 0) ||
+        a.event.starts_at.localeCompare(b.event.starts_at),
+    )
+    state.value = 'ready'
+  } catch (e) {
+    message.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятия.'
+    state.value = 'error'
+  }
+}
+
+onMounted(load)
+</script>
+
+<template>
+  <section class="mx-auto flex max-w-2xl flex-col gap-4" aria-live="polite">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-3xl font-bold">Мои мероприятия</h1>
+      <RouterLink
+        :to="{ name: 'event-create' }"
+        class="rounded-full bg-ink px-5 py-2.5 font-bold whitespace-nowrap text-white no-underline hover:bg-ink/85"
+      >
+        + Создать
+      </RouterLink>
+    </div>
+
+    <div v-if="state === 'loading'" class="flex flex-col gap-3" aria-label="Загрузка">
+      <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-card bg-card" />
+    </div>
+
+    <div
+      v-else-if="state === 'error'"
+      class="flex flex-col items-center gap-3 rounded-card bg-card p-6"
+      role="alert"
+    >
+      <p class="font-bold">{{ message }}</p>
+      <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
+    </div>
+
+    <div
+      v-else-if="!items.length"
+      class="flex flex-col items-center gap-3 rounded-card bg-accent p-8 text-center"
+    >
+      <p class="text-xl font-bold">Вы ещё ничего не создали</p>
+      <RouterLink
+        :to="{ name: 'event-create' }"
+        class="rounded-full bg-ink px-6 py-3 font-bold text-white no-underline"
+      >
+        Создать мероприятие
+      </RouterLink>
+    </div>
+
+    <ul v-else class="flex flex-col gap-3">
+      <li
+        v-for="{ event, pending_count } in items"
+        :key="event.id"
+        class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
+      >
+        <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
+          <SportIcon :name="sportIconName(event.sport)" :size="40" />
+        </span>
+        <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p class="font-semibold text-accent-ink">{{ formatEventWhen(event.starts_at) }}</p>
+          <h2 class="line-clamp-2 text-lg leading-snug font-bold">
+            <RouterLink
+              :to="{ name: 'event-manage', params: { id: event.id } }"
+              class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"
+            >
+              {{ event.title }}
+            </RouterLink>
+          </h2>
+          <p class="truncate text-ink-2">{{ seatsShort(event.confirmed_count, event.capacity) }}</p>
+        </div>
+        <StatusBadge
+          v-if="event.status !== 'published'"
+          :of="{ kind: 'event', status: event.status }"
+          class="self-start"
+        />
+        <UiBadge v-else-if="pending_count" tone="wait" class="self-start">
+          {{ pending_count }} {{ plural(pending_count, ['заявка', 'заявки', 'заявок']) }}
+        </UiBadge>
+      </li>
+    </ul>
+  </section>
+</template>
