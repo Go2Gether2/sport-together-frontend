@@ -3,8 +3,6 @@ import { useSessionStore } from '@/stores/session'
 import HomeView from '@/views/HomeView.vue'
 import { documentTitle, resolveAccess } from './access'
 
-const Placeholder = () => import('@/views/PlaceholderView.vue')
-
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: HomeView },
   {
@@ -106,7 +104,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/register',
     name: 'register',
-    component: Placeholder,
+    component: () => import('@/views/RegisterView.vue'),
     meta: { title: 'Регистрация', guestOnly: true },
   },
   {
