@@ -236,3 +236,21 @@ export function toEventUpdate(form: EventFormState, original: EventFormState): E
   if (capacity && capacity !== original.capacity) update.capacity = Number(capacity)
   return update
 }
+
+/**
+ * Форма «Повторить» из прошлого мероприятия: всё, кроме даты и времени.
+ * От имени организации — только если она по-прежнему допущена.
+ */
+export function repeatFormFrom(event: EventDetails, approvedOrganizationIds: Id[]): EventFormState {
+  const form = eventFormFrom(event)
+  return {
+    ...form,
+    date: '',
+    startTime: '',
+    endTime: '',
+    organizationId:
+      form.organizationId !== null && approvedOrganizationIds.includes(form.organizationId)
+        ? form.organizationId
+        : null,
+  }
+}

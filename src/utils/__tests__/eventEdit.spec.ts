@@ -3,6 +3,7 @@ import type { EventDetails } from '@/api/types'
 import {
   eventFormFrom,
   newSportValue,
+  repeatFormFrom,
   toEventUpdate,
   validateEventEdit,
   type EventFormState,
@@ -82,5 +83,24 @@ describe('validateEventEdit', () => {
     expect(validateEventEdit(...edited({ title: 'Новое' }), late)).toEqual({})
     expect(validateEventEdit(...edited({ startTime: '07:00' }), now)).toEqual({})
     expect(validateEventEdit(...edited({ date: '2026-10-18' }), now).startTime).toBeDefined()
+  })
+})
+
+describe('repeatFormFrom', () => {
+  it('копирует мероприятие без даты и времени', () => {
+    expect(repeatFormFrom(event, [4])).toMatchObject({
+      title: 'Йога на траве',
+      sport: '3',
+      address: 'Остров Татышев',
+      capacity: '12',
+      date: '',
+      startTime: '',
+      endTime: '',
+      organizationId: 4,
+    })
+  })
+
+  it('организация больше не допущена — от себя', () => {
+    expect(repeatFormFrom(event, []).organizationId).toBeNull()
   })
 })
