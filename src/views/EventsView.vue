@@ -110,7 +110,11 @@ onMounted(async () => {
       </RouterLink>
     </header>
 
-    <div class="flex flex-col gap-4" role="search" aria-label="Поиск мероприятий">
+    <div
+      class="flex flex-col gap-4 lg:rounded-card lg:bg-card lg:p-5"
+      role="search"
+      aria-label="Поиск мероприятий"
+    >
       <UiTextField
         v-model="search"
         label="Поиск"

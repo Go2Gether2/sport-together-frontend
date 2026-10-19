@@ -32,16 +32,8 @@ onMounted(load)
 </script>
 
 <template>
-  <section class="mx-auto flex max-w-2xl flex-col gap-4" aria-live="polite">
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-3xl font-bold">Мои мероприятия</h1>
-      <RouterLink
-        :to="{ name: 'event-create' }"
-        class="rounded-full bg-ink px-5 py-2.5 font-bold whitespace-nowrap text-white no-underline hover:bg-ink/85"
-      >
-        + Создать
-      </RouterLink>
-    </div>
+  <section class="flex flex-col gap-4" aria-live="polite">
+    <h1 class="text-3xl font-bold">Мои мероприятия</h1>
 
     <div v-if="state === 'loading'" class="flex flex-col gap-3" aria-label="Загрузка">
       <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-card bg-card" />
@@ -69,7 +61,7 @@ onMounted(load)
       </RouterLink>
     </div>
 
-    <ul v-else class="flex flex-col gap-3">
+    <ul v-else class="grid grid-cols-1 gap-3 lg:grid-cols-2">
       <li
         v-for="{ event, pending_count } in items"
         :key="event.id"
@@ -89,15 +81,15 @@ onMounted(load)
             </RouterLink>
           </h2>
           <p class="truncate text-ink-2">{{ seatsShort(event.confirmed_count, event.capacity) }}</p>
+          <StatusBadge
+            v-if="event.status !== 'published'"
+            :of="{ kind: 'event', status: event.status }"
+            class="mt-1"
+          />
+          <UiBadge v-else-if="pending_count" tone="wait" class="mt-1">
+            {{ pending_count }} {{ plural(pending_count, ['заявка', 'заявки', 'заявок']) }}
+          </UiBadge>
         </div>
-        <StatusBadge
-          v-if="event.status !== 'published'"
-          :of="{ kind: 'event', status: event.status }"
-          class="self-start"
-        />
-        <UiBadge v-else-if="pending_count" tone="wait" class="self-start">
-          {{ pending_count }} {{ plural(pending_count, ['заявка', 'заявки', 'заявок']) }}
-        </UiBadge>
       </li>
     </ul>
   </section>
