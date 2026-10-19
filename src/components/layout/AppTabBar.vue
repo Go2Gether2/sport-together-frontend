@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { useSessionStore } from '@/stores/session'
 import NavIcon from './NavIcon.vue'
 import { CREATE_ITEM, tabBarItems } from './nav'
+
+const session = useSessionStore()
 
 const [left, right] = tabBarItems()
 </script>
@@ -22,7 +25,21 @@ const [left, right] = tabBarItems()
       {{ item.label }}
     </RouterLink>
 
+    <!-- Администратор не создаёт мероприятия — на его месте в центре админка. -->
     <RouterLink
+      v-if="session.isAdmin"
+      :to="{ name: 'admin' }"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline"
+    >
+      <span
+        aria-hidden="true"
+        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-white"
+        ><NavIcon name="shield"
+      /></span>
+      Админка
+    </RouterLink>
+    <RouterLink
+      v-else
       :to="CREATE_ITEM.to"
       class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline"
     >

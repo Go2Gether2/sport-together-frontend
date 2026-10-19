@@ -8,8 +8,10 @@ import { StatusBadge, UiButton } from '@/components/ui'
 import { ORG_TYPE_LABELS } from '@/features/admin/organizations'
 import { safeHref, shortHost } from '@/features/organizations/catalog'
 import { APP_NAME } from '@/router/access'
+import { useSessionStore } from '@/stores/session'
 
 const route = useRoute()
+const session = useSessionStore()
 const id = computed(() => Number(route.params.id))
 
 const org = ref<Organization | null>(null)
@@ -102,7 +104,13 @@ const website = computed(() => safeHref(org.value?.website_url))
           class="rounded-card bg-orange p-4 font-medium text-orange-ink"
           role="status"
         >
-          Эту страницу видите только вы. Она откроется для всех после допуска.
+          <template v-if="session.isAdmin">
+            Эту страницу видят только владелец и администраторы. Для всех она откроется после
+            допуска.
+          </template>
+          <template v-else
+            >Эту страницу видите только вы. Она откроется для всех после допуска.</template
+          >
         </p>
 
         <p v-if="org.description" class="text-lg whitespace-pre-line">{{ org.description }}</p>

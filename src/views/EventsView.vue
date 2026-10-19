@@ -14,11 +14,13 @@ import {
   filtersToQuery,
 } from '@/features/events/filters'
 import { useEventList } from '@/features/events/useEventList'
+import { useSessionStore } from '@/stores/session'
 import type { MapPoint } from '@/features/map/geo'
 import { useEventCoords } from '@/features/map/useEventCoords'
 import { quickDateRange, type QuickDate } from '@/utils/datetime'
 
 const route = useRoute()
+const session = useSessionStore()
 const router = useRouter()
 
 const filters = computed(() => filtersFromQuery(route.query))
@@ -78,6 +80,19 @@ watch(
   },
 )
 
+const city = ref(filters.value.city ?? '')
+let cityTimer: ReturnType<typeof setTimeout> | undefined
+watch(city, (value) => {
+  clearTimeout(cityTimer)
+  cityTimer = setTimeout(() => update({ city: value.trim() || undefined }), 350)
+})
+watch(
+  () => filters.value.city,
+  (c) => {
+    if ((c ?? '') !== city.value.trim()) city.value = c ?? ''
+  },
+)
+
 const sport = computed({
   get: () => (filters.value.sport ? String(filters.value.sport) : ''),
   set: (value: string) => update({ sport: value ? Number(value) : undefined }),
@@ -103,6 +118,7 @@ function setJoinMode(mode: JoinMode | undefined) {
 const hasFilters = computed(() => countFilters(filters.value) > 0 || !!filters.value.q)
 function reset() {
   search.value = ''
+  city.value = ''
   router.replace({ query: viewQuery() })
 }
 
@@ -136,6 +152,7 @@ onMounted(async () => {
           <UiChip :pressed="view === 'map'" @click="setView('map')">Картой</UiChip>
         </div>
         <RouterLink
+          v-if="!session.isAdmin"
           :to="{ name: 'event-create' }"
           class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
         >
@@ -171,7 +188,8 @@ onMounted(async () => {
         </div>
       </fieldset>
 
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <UiTextField v-model="city" label="Город" placeholder="Любой" />
         <UiSelect
           v-model="sport"
           label="Направление"
@@ -237,10 +255,13 @@ onMounted(async () => {
         <p class="font-hand text-2xl text-accent-ink">пока пусто</p>
         <p class="text-lg font-bold">Пока никто не собирается</p>
         <p class="max-w-md text-ink-2">
-          По этим условиям мероприятий нет. Создайте своё — к нему смогут присоединиться другие.
+          По этим условиям мероприятий нет.<template v-if="!session.isAdmin">
+            Создайте своё — к нему смогут присоединиться другие.</template
+          >
         </p>
         <div class="flex flex-wrap justify-center gap-3">
           <RouterLink
+            v-if="!session.isAdmin"
             :to="{ name: 'event-create' }"
             class="rounded-full bg-ink px-5 py-2.5 font-bold text-white no-underline"
           >

@@ -6,6 +6,8 @@ declare module 'vue-router' {
     requiresAuth?: boolean
     adminOnly?: boolean
     guestOnly?: boolean
+    /** Действие не для администратора (по матрице доступа: создавать мероприятия он не может). */
+    noAdmin?: boolean
   }
 }
 
@@ -25,6 +27,9 @@ export function resolveAccess(
   }
   if (to.matched.some((r) => r.meta.adminOnly) && !state.isAdmin) {
     return { name: 'forbidden' }
+  }
+  if (to.matched.some((r) => r.meta.noAdmin) && state.isAdmin) {
+    return { name: 'admin' }
   }
   if (to.matched.some((r) => r.meta.guestOnly) && state.isAuthenticated) {
     return { name: 'home' }

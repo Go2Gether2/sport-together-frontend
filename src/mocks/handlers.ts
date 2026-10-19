@@ -824,7 +824,8 @@ export const handlers = [
         .filter((o) => o.status === 'approved')
         .filter((o) => !q || normalizeName(`${o.name} ${o.description ?? ''}`).includes(q))
         .filter((o) => !sport || normalizeName(o.sports_description ?? '').includes(sport))
-        .filter((o) => !city || normalizeName(o.city ?? '').includes(city))
+        // Как у бэка: город организации — точное совпадение, направление — по части текста.
+        .filter((o) => !city || normalizeName(o.city ?? '') === city)
         .map(toOrganization)
       return pageOf(items, sp)
     }),

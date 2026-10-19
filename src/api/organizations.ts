@@ -14,7 +14,7 @@ export const organizationsApi = {
   update: (id: Id, body: OrganizationUpdate) =>
     http.patch<Organization>(`/organizations/${id}`, body),
   resubmit: (id: Id) => http.post<Organization>(`/organizations/${id}/resubmit`),
-  list: (query: { q?: string; sport?: Id; city?: string; page?: number; size?: number } = {}) =>
+  list: (query: { q?: string; sport?: string; city?: string; page?: number; size?: number } = {}) =>
     http.get<Page<Organization>>('/organizations', { query }),
   get: (id: Id) => http.get<Organization>(`/organizations/${id}`),
   events: (id: Id) => http.get<EventSummary[]>(`/organizations/${id}/events`),

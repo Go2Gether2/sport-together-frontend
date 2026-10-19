@@ -10,6 +10,7 @@ export interface EventFormState {
   date: string
   startTime: string
   endTime: string
+  city: string
   address: string
   locationNote: string
   level: Level | ''
@@ -30,6 +31,7 @@ export function emptyEventForm(): EventFormState {
     date: '',
     startTime: '',
     endTime: '',
+    city: '',
     address: '',
     locationNote: '',
     level: '',
@@ -98,6 +100,7 @@ export function toEventInput(form: EventFormState): EventInput {
     description: form.description.trim(),
     starts_at: startsAt,
     ends_at: endsAt,
+    city: optional(form.city),
     address: form.address.trim(),
     location_note: optional(form.locationNote),
     requirements: optional(form.requirements),
@@ -119,6 +122,7 @@ const SERVER_FIELDS: Record<string, keyof EventFormState> = {
   sport_name: 'sport',
   starts_at: 'startTime',
   ends_at: 'endTime',
+  city: 'city',
   address: 'address',
   location_note: 'locationNote',
   level: 'level',

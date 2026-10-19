@@ -126,3 +126,19 @@ describe('authorOptions', () => {
     expect(authorOptions([])).toHaveLength(1)
   })
 })
+
+describe('город мероприятия', () => {
+  it('уходит на сервер, пустой — не отправляем', () => {
+    const base = {
+      ...emptyEventForm(),
+      title: 'Футбол',
+      sport: '1',
+      date: '2099-01-01',
+      startTime: '10:00',
+      address: 'Стадион',
+      joinMode: 'open' as const,
+    }
+    expect(toEventInput({ ...base, city: ' Красноярск ' }).city).toBe('Красноярск')
+    expect(toEventInput({ ...base, city: '' }).city).toBeUndefined()
+  })
+})
