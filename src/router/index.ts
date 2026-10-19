@@ -68,8 +68,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'login',
-    component: Placeholder,
-    meta: { title: 'Вход', guestOnly: true },
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Вход' },
   },
   {
     path: '/register',
