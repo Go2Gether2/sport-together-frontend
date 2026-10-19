@@ -1,6 +1,17 @@
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+</script>
+
 <template>
-  <main class="mx-auto max-w-3xl px-4 py-12 text-slate-900">
-    <h1 class="text-3xl font-semibold">Найдите компанию для спорта</h1>
-    <p class="mt-4 text-lg text-slate-700">Совместные тренировки, игры и прогулки рядом с вами.</p>
-  </main>
+  <section class="flex flex-col gap-4 py-6">
+    <p class="font-hand text-2xl text-cobalt">спорт — это когда вместе</p>
+    <h1 class="font-display text-3xl font-bold">Найдите компанию для спорта</h1>
+    <p class="max-w-xl text-lg text-ink-2">Совместные тренировки, игры и прогулки рядом с вами.</p>
+    <RouterLink
+      :to="{ name: 'events' }"
+      class="inline-flex w-fit rounded-full border-2 border-ink bg-ink px-6 py-3 font-bold text-paper no-underline hover:bg-ink/85"
+    >
+      Смотреть мероприятия
+    </RouterLink>
+  </section>
 </template>
