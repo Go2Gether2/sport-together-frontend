@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ApiError, eventsApi, sportsApi } from '@/api'
 import { UiButton, UiCombobox, UiSelect, UiTextField, type UiOption } from '@/components/ui'
 import UiTextArea from '@/components/ui/UiTextArea.vue'
@@ -17,6 +17,7 @@ import {
 } from '@/utils/eventForm'
 
 const router = useRouter()
+const route = useRoute()
 const session = useSessionStore()
 
 const form = reactive(emptyEventForm())
@@ -46,6 +47,11 @@ const joinModes = [
 ]
 
 const authors = computed(() => authorOptions(session.approvedOrganizations))
+
+// «Мероприятие от организации» со страницы «Моя организация» сразу выбирает её.
+const preselected = Number(route.query.organization)
+if (session.approvedOrganizations.some((o) => o.id === preselected))
+  form.organizationId = preselected
 const isNewSport = computed(() => form.sport?.startsWith('new:') ?? false)
 const now = new Date()
 const today = [

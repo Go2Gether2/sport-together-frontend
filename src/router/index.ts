@@ -59,7 +59,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/organizations/my',
     name: 'my-organization',
-    component: Placeholder,
+    component: () => import('@/views/MyOrganizationsView.vue'),
     meta: { title: 'Моя организация', requiresAuth: true },
   },
   {
