@@ -38,6 +38,7 @@ import {
   paginate,
   requireAdmin,
   requireUser,
+  sessionToken,
   toComment,
   toEventDetails,
   toEventSummary,
@@ -57,12 +58,21 @@ type Resolver = (ctx: Ctx) => unknown | Promise<unknown>
 
 const url = (path: string) => `*${API_BASE}${path}`
 
+// В браузере сервис-воркер не видит заголовок Cookie — MSW отдаёт cookie отдельно.
+// Подкладываем jwt в Authorization, чтобы обработчики одинаково работали в браузере и в тестах.
+function withSession(request: Request, cookies: Record<string, string>) {
+  if (!cookies.jwt || request.headers.has('Authorization')) return request
+  const headers = new Headers(request.headers)
+  headers.set('Authorization', `Bearer ${cookies.jwt}`)
+  return new Request(request, { headers })
+}
+
 function route(resolver: Resolver) {
-  return async ({ request, params }: Ctx) => {
+  return async ({ request, params, cookies }: Ctx & { cookies: Record<string, string> }) => {
     // Небольшая задержка, чтобы в интерфейсе были видны состояния загрузки.
     if (import.meta.env.MODE !== 'test') await delay(250)
     try {
-      const result = await resolver({ request, params })
+      const result = await resolver({ request: withSession(request, cookies), params })
       if (result instanceof Response) return result
       return HttpResponse.json(result as DefaultBodyType)
     } catch (error) {
@@ -96,10 +106,19 @@ const numberParam = (sp: URLSearchParams, key: string) => {
 const pageOf = <T>(items: T[], sp: URLSearchParams) =>
   paginate(items, numberParam(sp, 'page') ?? 0, numberParam(sp, 'size') ?? 20)
 
-function login(user: UserRow) {
+// У бэка cookie HttpOnly. В браузере MSW ставит cookie через document.cookie, а HttpOnly так не поставить —
+// поэтому в моках без него; для фронта разницы нет, он cookie не читает.
+const SESSION_COOKIE = 'Path=/; Max-Age=86400; SameSite=Strict'
+const CLEAR_COOKIE = 'jwt=; Path=/; Max-Age=0; SameSite=Strict'
+
+/** Как у бэка: токен — только в cookie, в теле его нет. */
+function login(user: UserRow, status = 200) {
   const token = newToken()
   db.sessions.set(token, user.id)
-  return { token, token_type: 'Bearer', expires_in: 86400, user: toUser(user) }
+  return HttpResponse.json(
+    { token_type: 'Bearer', expires_in: 86400, user: toUser(user) },
+    { status, headers: { 'Set-Cookie': `jwt=${token}; ${SESSION_COOKIE}` } },
+  )
 }
 
 function me(user: UserRow): Me {
@@ -262,16 +281,15 @@ export const handlers = [
         demo_description: null,
       }
       db.users.push(user)
-      return created(login(user))
+      return login(user, 201)
     }),
   ),
 
   http.post(
     url('/auth/logout'),
     route(({ request }) => {
-      const token = request.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
-      db.sessions.delete(token)
-      return noContent()
+      db.sessions.delete(sessionToken(request))
+      return new HttpResponse(null, { status: 204, headers: { 'Set-Cookie': CLEAR_COOKIE } })
     }),
   ),
 
@@ -328,11 +346,15 @@ export const handlers = [
     }),
   ),
 
-  // Эндпоинта пока нет у бэка — мок по нашему предложению (тема back/delete-account, 152-ФЗ).
+  // Как у бэка: нужен пароль, демо-аккаунты удалить нельзя (152-ФЗ, тема back/delete-account).
   http.delete(
     url('/users/me'),
-    route(({ request }) => {
+    route(async ({ request }) => {
       const user = requireUser(request)
+      const { password } = await readJson<{ password: string }>(request)
+      if (!password) fail(400, 'BAD_REQUEST', 'Некорректный запрос')
+      if (password !== user.password) fail(403, 'FORBIDDEN', 'Неверный пароль')
+      if (user.is_demo) fail(403, 'FORBIDDEN', 'Демо-аккаунт удалить нельзя')
       if (ownedOrgs(user.id).length)
         fail(409, 'HAS_ORGANIZATIONS', 'Сначала передайте или удалите свою организацию')
       for (const p of db.participations)
@@ -367,7 +389,7 @@ export const handlers = [
         deleted: true,
       })
       for (const [token, id] of db.sessions) if (id === user.id) db.sessions.delete(token)
-      return noContent()
+      return new HttpResponse(null, { status: 204, headers: { 'Set-Cookie': CLEAR_COOKIE } })
     }),
   ),
 

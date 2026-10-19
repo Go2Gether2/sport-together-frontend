@@ -139,8 +139,9 @@ const router = createRouter({
   scrollBehavior: (_to, _from, saved) => saved ?? { top: 0 },
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const session = useSessionStore()
+  await session.restore()
   return resolveAccess(to, { isAuthenticated: session.isAuthenticated, isAdmin: session.isAdmin })
 })
 

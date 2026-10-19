@@ -87,22 +87,34 @@ async function save() {
 const deleteOpen = ref(false)
 const deleting = ref(false)
 const deleteError = ref('')
+const deletePassword = ref('')
 
 function openDelete() {
   deleteError.value = ''
+  deletePassword.value = ''
   deleteOpen.value = true
 }
 
 async function deleteAccount() {
+  if (!deletePassword.value) {
+    deleteError.value = 'Введите пароль, чтобы подтвердить удаление.'
+    return
+  }
   deleting.value = true
   deleteError.value = ''
   try {
-    await usersApi.deleteMe()
+    await usersApi.deleteMe(deletePassword.value)
     session.clear()
     deleteOpen.value = false
     await router.push({ name: 'home' })
   } catch (e) {
-    deleteError.value = e instanceof ApiError ? e.message : 'Не получилось удалить аккаунт.'
+    // Демо-аккаунты бэк защищает от удаления — объясняем это без технических слов.
+    deleteError.value =
+      e instanceof ApiError && /демо/i.test(e.message)
+        ? 'Демо-аккаунт удалить нельзя — он нужен для проверки. Зарегистрируйте свой, чтобы попробовать удаление.'
+        : e instanceof ApiError
+          ? e.message
+          : 'Не получилось удалить аккаунт.'
   } finally {
     deleting.value = false
   }
@@ -254,6 +266,12 @@ async function logout() {
       title="Удалить аккаунт?"
       description="Удалим имя, почту, город, интересы и «о себе», отменим ваши записи и мероприятия. В обсуждениях останется «Удалённый пользователь». Вернуть нельзя."
     >
+      <UiTextField
+        v-model="deletePassword"
+        label="Пароль от аккаунта"
+        type="password"
+        hint="Чтобы никто, кроме вас, не удалил аккаунт."
+      />
       <p
         v-if="deleteError"
         class="rounded-field bg-orange p-4 font-semibold text-orange-ink"

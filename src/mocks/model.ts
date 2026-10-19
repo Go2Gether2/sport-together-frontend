@@ -54,10 +54,15 @@ export const fail = (
 export const validation = (fields: Record<string, string>): never =>
   fail(422, 'VALIDATION_ERROR', 'Ошибка валидации', fields)
 
-export function currentUser(request: Request): UserRow | null {
+/** Как у бэка: токен в cookie jwt (HttpOnly), Bearer тоже принимается. */
+export function sessionToken(request: Request) {
   const header = request.headers.get('Authorization') ?? ''
-  const token = header.startsWith('Bearer ') ? header.slice(7) : ''
-  const userId = db.sessions.get(token)
+  if (header.startsWith('Bearer ')) return header.slice(7)
+  return /(?:^|;\s*)jwt=([^;]+)/.exec(request.headers.get('cookie') ?? '')?.[1] ?? ''
+}
+
+export function currentUser(request: Request): UserRow | null {
+  const userId = db.sessions.get(sessionToken(request))
   return db.users.find((u) => u.id === userId) ?? null
 }
 

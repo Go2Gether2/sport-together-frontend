@@ -1,14 +1,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { http as mswHttp, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import { ApiError, buildUrl, http, setToken } from '@/api/http'
+import { ApiError, buildUrl, http } from '@/api/http'
 
 const server = setupServer()
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
-  setToken(null)
 })
 afterAll(() => server.close())
 
@@ -21,17 +20,20 @@ describe('buildUrl', () => {
 })
 
 describe('http', () => {
-  it('передаёт токен и разбирает JSON', async () => {
-    let auth: string | null = null
+  it('держит вход в cookie от сервера и разбирает JSON', async () => {
+    let cookie: string | null = null
     server.use(
+      mswHttp.post('*/api/v1/auth/login', () =>
+        HttpResponse.json({ ok: true }, { headers: { 'Set-Cookie': 'jwt=abc; Path=/; HttpOnly' } }),
+      ),
       mswHttp.get('*/api/v1/ping', ({ request }) => {
-        auth = request.headers.get('Authorization')
+        cookie = request.headers.get('cookie')
         return HttpResponse.json({ ok: true })
       }),
     )
-    setToken('abc')
+    await http.post('/auth/login')
     await expect(http.get('/ping')).resolves.toEqual({ ok: true })
-    expect(auth).toBe('Bearer abc')
+    expect(cookie).toContain('jwt=abc')
   })
 
   it('превращает ответ с ошибкой в ApiError с полями', async () => {

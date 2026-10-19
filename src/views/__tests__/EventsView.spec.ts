@@ -4,7 +4,6 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
-import { setToken } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
 import EventsView from '../EventsView.vue'
@@ -14,7 +13,6 @@ const server = setupServer(...handlers)
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetDb()
-  setToken(null)
   setActivePinia(createPinia())
 })
 afterEach(() => server.resetHandlers())
