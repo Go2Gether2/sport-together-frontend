@@ -172,7 +172,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
         <div class="flex min-w-0 flex-1 flex-col gap-1">
           <RouterLink
             :to="{ name: 'event', params: { id: event.id } }"
-            class="w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
+            class="inline-flex min-h-8 items-center w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
           >
             ← К мероприятию
           </RouterLink>

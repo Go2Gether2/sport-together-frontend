@@ -22,6 +22,7 @@ const session = useSessionStore()
 const router = useRouter()
 
 const sports = ref<Sport[]>([])
+const sportsFailed = ref(false)
 const editing = ref(false)
 const form = ref<ProfileFormState | null>(null)
 const errors = ref<ProfileFormErrors>({})
@@ -39,13 +40,17 @@ const links: { label: string; to: { name: string }; icon: NavIconName }[] = [
   { label: 'Моя организация', to: { name: 'my-organization' }, icon: 'building' },
 ]
 
-onMounted(async () => {
+async function loadSports() {
+  sportsFailed.value = false
   try {
     sports.value = await sportsApi.list()
   } catch {
     sports.value = []
+    sportsFailed.value = true
   }
-})
+}
+
+onMounted(loadSports)
 
 function startEdit() {
   if (!user.value) return
@@ -188,11 +193,21 @@ async function logout() {
               {{ s.name }}
             </span>
           </div>
+          <p v-else-if="sportsFailed && user.sport_ids.length" class="text-ink-2" role="alert">
+            Не получилось загрузить интересы.
+            <button
+              type="button"
+              class="inline-flex min-h-8 items-center font-semibold text-ink underline underline-offset-4"
+              @click="loadSports"
+            >
+              Повторить
+            </button>
+          </p>
           <p v-else class="text-ink-2">Не выбраны</p>
         </div>
         <RouterLink
           :to="{ name: 'user', params: { id: user.id } }"
-          class="w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
+          class="inline-flex min-h-8 items-center w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
         >
           Как меня видят другие
         </RouterLink>
@@ -227,7 +242,7 @@ async function logout() {
       </div>
       <button
         type="button"
-        class="w-fit px-1 text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
+        class="inline-flex min-h-8 items-center w-fit px-1 text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
         @click="openDelete"
       >
         Удалить аккаунт и данные

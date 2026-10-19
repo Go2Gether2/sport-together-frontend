@@ -224,6 +224,7 @@ onMounted(async () => {
       </div>
 
       <template v-else>
+        <h2 class="sr-only">Найденные мероприятия</h2>
         <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <li v-for="event in items" :key="event.id">
             <EventListCard :event="event" />
