@@ -21,23 +21,38 @@ pnpm dev
 | `pnpm test` | unit-тесты (Vitest) |
 | `pnpm format` | Prettier для `src/` |
 
-## API
+## API и моки
 
-Бэкенд — REST `/api/v1`. В разработке dev-сервер проксирует `/api` на `API_PROXY_TARGET` (по умолчанию `http://localhost:8080`). Переменная `VITE_API_MOCK=true` включает моки, тогда бэк не нужен.
+Бэкенд — REST `/api/v1`. Клиент — `src/api/`, по модулю на ресурс.
+
+- `VITE_API_MOCK=true` — запросы обслуживает Mock Service Worker (`src/mocks/`). Данные живут в памяти вкладки: действия меняют их по тем же правилам, что и на сервере, а перезагрузка страницы возвращает исходные демо-данные.
+- `VITE_API_MOCK=false` — dev-сервер проксирует `/api` на `API_PROXY_TARGET` (по умолчанию `http://localhost:8080`).
+
+Демо-аккаунты (вход по `demo_account_id`):
+
+| Аккаунт | Кто |
+|---|---|
+| `user` | Анна — организует свои встречи |
+| `user2` | Пётр — записывается на чужие события |
+| `org_pending` | владелец организации на рассмотрении |
+| `org_approved` | владелец допущенного бегового клуба |
+| `admin` | администратор |
 
 ## Стек
 
-Vue 3, TypeScript, Vite, Vue Router, Pinia, Tailwind CSS 4, Vitest, ESLint, oxlint, Prettier.
+Vue 3, TypeScript, Vite, Vue Router, Pinia, Tailwind CSS 4, MSW, Vitest, ESLint, oxlint, Prettier.
 
 ## Структура
 
 | Путь | Что |
 |---|---|
+| `src/api/` | HTTP-клиент, типы и эндпоинты по ресурсам |
+| `src/mocks/` | моки API: демо-данные и обработчики |
 | `src/views/` | страницы |
 | `src/router/` | маршруты |
 | `src/assets/` | стили и тема Tailwind |
-| `src/__tests__/` | unit-тесты |
-| `public/` | статика как есть |
+| `src/**/__tests__/` | unit-тесты |
+| `public/` | статика как есть, в том числе `mockServiceWorker.js` |
 
 ## Команда
 

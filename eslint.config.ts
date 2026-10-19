@@ -11,7 +11,7 @@ export default defineConfigWithVueTs(
     files: ['**/*.{vue,ts,mts,tsx}'],
   },
 
-  globalIgnores(['**/dist/**', '**/coverage/**']),
+  globalIgnores(['**/dist/**', '**/coverage/**', 'public/mockServiceWorker.js']),
 
   ...pluginVue.configs['flat/recommended'],
   vueTsConfigs.recommended,
