@@ -166,6 +166,9 @@ importers:
 
   .:
     dependencies:
+      '@2gis/mapgl':
+        specifier: ^1.78.1
+        version: 1.78.1
       '@fontsource/caveat':
         specifier: ^5.3.0
         version: 5.3.0
@@ -262,6 +265,10 @@ importers:
         version: 3.3.13(typescript@6.0.3)
 
 packages:
+
+  '@2gis/mapgl@1.78.1':
+    resolution: {integrity: sha512-SkbrqwBMPTLV4hihV+BgAtftIfyMeSru6yqlVF0IJEE6jaGQ8LFq0NJb1TTaXt3I1t3q8sjvU7X/hhHpxo5JXQ==}
+    engines: {node: '>=16.0.0'}
 
   '@asamuzakjp/css-color@7.1.7':
     resolution: {integrity: sha512-Q7ioeear07HwixdIitIn9KS1LZi97CEDFCSjPNm9v+y8KNbsu9q4Lrd4zUQW4faED+E7qxvfeVnbNRW46wFKuw==}
@@ -861,6 +868,9 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/geojson@7946.0.16':
+    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
   '@types/jsdom@30.0.0':
     resolution: {integrity: sha512-uAHGxujGE0cDaKGdK28zgDotFtNA7MKq5DXl8LrfdxdCI8VHcg15oJz+amHTChPNI5JpgEPQWc2xFdrw3em/nQ==}
@@ -2366,6 +2376,10 @@ packages:
 
 snapshots:
 
+  '@2gis/mapgl@1.78.1':
+    dependencies:
+      '@types/geojson': 7946.0.16
+
   '@asamuzakjp/css-color@7.1.7':
     dependencies:
       '@csstools/css-calc': 3.4.3(@csstools/css-parser-algorithms@4.0.2(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
@@ -2808,6 +2822,8 @@ snapshots:
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
+
+  '@types/geojson@7946.0.16': {}
 
   '@types/jsdom@30.0.0':
     dependencies:

@@ -4,12 +4,14 @@ import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, eventsApi, type EventDetails } from '@/api'
 import EventComments from '@/components/comments/EventComments.vue'
 import EventJoinPanel from '@/components/events/EventJoinPanel.vue'
+import EventsMap from '@/components/map/EventsMap.vue'
 import { organizerLink, organizerName } from '@/components/events/organizer'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { sportIconName } from '@/components/illustrations/sportIcon'
 import { StatusBadge, UiAvatarStack, UiBadge, UiButton, UiSeats } from '@/components/ui'
 import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
 import { formatEventWhen } from '@/utils/datetime'
+import { toPoints, twoGisLink } from '@/features/map/geo'
 import { APP_NAME } from '@/router/access'
 
 const route = useRoute()
@@ -44,6 +46,7 @@ const when = computed(() =>
   event.value ? formatEventWhen(event.value.starts_at, event.value.ends_at) : '',
 )
 const participants = computed(() => event.value?.participants ?? [])
+const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
 </script>
 
 <template>
@@ -171,6 +174,24 @@ const participants = computed(() => event.value?.participants ?? [])
             <dd>{{ event.equipment }}</dd>
           </template>
         </dl>
+
+        <section v-if="mapPoints[0]" aria-labelledby="map-title" class="flex flex-col gap-2">
+          <h2 id="map-title" class="text-lg font-bold">Место на карте</h2>
+          <EventsMap
+            class="h-64"
+            :points="mapPoints"
+            :zoom="15"
+            :label="`Место проведения: ${event.address}`"
+          />
+          <a
+            :href="twoGisLink(mapPoints[0].coordinates)"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex min-h-8 w-fit items-center font-semibold text-accent-ink underline underline-offset-4"
+          >
+            Открыть в 2ГИС и построить маршрут
+          </a>
+        </section>
 
         <section aria-labelledby="people-title" class="flex flex-col gap-2">
           <h2 id="people-title" class="text-lg font-bold">Участники</h2>
