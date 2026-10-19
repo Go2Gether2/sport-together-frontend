@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { sportsApi, type EventFilters, type JoinMode, type Level } from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
+import EventsCalendar from '@/components/events/EventsCalendar.vue'
 import EventsMap from '@/components/map/EventsMap.vue'
 import { UiButton, UiChip, UiSelect, UiTextField, plural, type UiOption } from '@/components/ui'
 import {
@@ -37,19 +38,38 @@ const QUICK: { kind: QuickDate; label: string }[] = [
   { kind: 'weekend', label: 'На выходных' },
 ]
 
-// Вид «Картой» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
-const view = computed<'list' | 'map'>(() => (route.query.view === 'map' ? 'map' : 'list'))
-const viewQuery = () => (view.value === 'map' ? { view: 'map' } : {})
+// Вид «Картой» или «Календарём» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
+type View = 'list' | 'map' | 'calendar'
+const view = computed<View>(() =>
+  route.query.view === 'map' || route.query.view === 'calendar' ? route.query.view : 'list',
+)
+const viewQuery = () => (view.value === 'list' ? {} : { view: view.value })
 
 function update(patch: Partial<EventFilters>) {
   const next = { ...filters.value, ...patch, page: undefined }
   router.replace({ query: { ...filtersToQuery(next), ...viewQuery() } })
 }
 
-function setView(v: 'list' | 'map') {
+function setView(v: View) {
+  // Диапазон из быстрых дат («На выходных») календарь показать не может — снимаем его.
+  const f = filters.value
+  const next =
+    v === 'calendar' && f.date_from !== f.date_to
+      ? { ...f, date_from: undefined, date_to: undefined }
+      : f
   router.replace({
-    query: { ...filtersToQuery(filters.value), ...(v === 'map' ? { view: 'map' } : {}) },
+    query: { ...filtersToQuery(next), ...(v === 'list' ? {} : { view: v }) },
   })
+}
+
+// В календаре выбранный день — это фильтр «с этой даты по эту же».
+const calendarDay = computed(() =>
+  filters.value.date_from && filters.value.date_from === filters.value.date_to
+    ? filters.value.date_from
+    : null,
+)
+function selectDay(date: string | null) {
+  update({ date_from: date ?? undefined, date_to: date ?? undefined })
 }
 
 const isMap = computed(() => view.value === 'map')
@@ -146,10 +166,11 @@ onMounted(async () => {
         <h1 class="font-display text-2xl font-bold">Мероприятия</h1>
         <p v-if="state === 'ready'" class="text-ink-2" role="status">{{ foundText }}</p>
       </div>
-      <div class="flex items-center gap-2">
-        <div class="flex gap-1.5" role="group" aria-label="Как показать">
+      <div class="flex min-w-0 max-w-full items-center gap-2">
+        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Как показать">
           <UiChip :pressed="view === 'list'" @click="setView('list')">Списком</UiChip>
           <UiChip :pressed="view === 'map'" @click="setView('map')">Картой</UiChip>
+          <UiChip :pressed="view === 'calendar'" @click="setView('calendar')">Календарём</UiChip>
         </div>
         <RouterLink
           v-if="!session.isAdmin"
@@ -174,7 +195,8 @@ onMounted(async () => {
         placeholder="Футбол, йога, шахматы…"
       />
 
-      <fieldset class="flex flex-col gap-2">
+      <!-- В календаре дату выбирают в сетке — быстрые даты там дублировали бы её. -->
+      <fieldset v-if="view !== 'calendar'" class="flex flex-col gap-2">
         <legend class="mb-2 font-medium">Когда</legend>
         <div class="flex flex-wrap gap-2">
           <UiChip
@@ -228,6 +250,13 @@ onMounted(async () => {
         Сбросить фильтры
       </button>
     </div>
+
+    <EventsCalendar
+      v-if="view === 'calendar'"
+      :filters="filters"
+      :selected="calendarDay"
+      @select="selectDay"
+    />
 
     <div aria-live="polite" :aria-busy="state === 'loading'">
       <ul
