@@ -1,20 +1,121 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useSessionStore } from '@/stores/session'
 import HomeView from '@/views/HomeView.vue'
+import { documentTitle, resolveAccess } from './access'
+
+const Placeholder = () => import('@/views/PlaceholderView.vue')
+
+const routes: RouteRecordRaw[] = [
+  { path: '/', name: 'home', component: HomeView },
+  { path: '/events', name: 'events', component: Placeholder, meta: { title: 'Мероприятия' } },
+  {
+    path: '/events/new',
+    name: 'event-create',
+    component: Placeholder,
+    meta: { title: 'Новое мероприятие', requiresAuth: true },
+  },
+  { path: '/events/:id', name: 'event', component: Placeholder, meta: { title: 'Мероприятие' } },
+  {
+    path: '/me',
+    name: 'my-participations',
+    component: Placeholder,
+    meta: { title: 'Мои записи', requiresAuth: true },
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Placeholder,
+    meta: { title: 'Профиль', requiresAuth: true },
+  },
+  { path: '/users/:id', name: 'user', component: Placeholder, meta: { title: 'Профиль' } },
+  {
+    path: '/organizations',
+    name: 'organizations',
+    component: Placeholder,
+    meta: { title: 'Организации' },
+  },
+  {
+    path: '/organizations/my',
+    name: 'my-organization',
+    component: Placeholder,
+    meta: { title: 'Моя организация', requiresAuth: true },
+  },
+  {
+    path: '/organizations/:id',
+    name: 'organization',
+    component: Placeholder,
+    meta: { title: 'Организация' },
+  },
+  {
+    path: '/admin',
+    meta: { adminOnly: true },
+    children: [
+      { path: '', name: 'admin', component: Placeholder, meta: { title: 'Админка' } },
+      {
+        path: 'organizations',
+        name: 'admin-organizations',
+        component: Placeholder,
+        meta: { title: 'Админка: организации' },
+      },
+      {
+        path: 'events',
+        name: 'admin-events',
+        component: Placeholder,
+        meta: { title: 'Админка: мероприятия' },
+      },
+    ],
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Placeholder,
+    meta: { title: 'Вход', guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Placeholder,
+    meta: { title: 'Регистрация', guestOnly: true },
+  },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: () => import('@/views/PrivacyView.vue'),
+    meta: { title: 'Политика обработки персональных данных' },
+  },
+  {
+    path: '/forbidden',
+    name: 'forbidden',
+    component: () => import('@/views/ForbiddenView.vue'),
+    meta: { title: 'Нет доступа' },
+  },
+  {
+    path: '/ui-kit',
+    name: 'ui-kit',
+    component: () => import('@/views/UiKitView.vue'),
+    meta: { title: 'UI-кит' },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { title: 'Страница не найдена' },
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/ui-kit',
-      name: 'ui-kit',
-      component: () => import('@/views/UiKitView.vue'),
-    },
-  ],
+  routes,
+  scrollBehavior: (_to, _from, saved) => saved ?? { top: 0 },
+})
+
+router.beforeEach((to) => {
+  const session = useSessionStore()
+  return resolveAccess(to, { isAuthenticated: session.isAuthenticated, isAdmin: session.isAdmin })
+})
+
+router.afterEach((to) => {
+  document.title = documentTitle(to.meta.title)
 })
 
 export default router

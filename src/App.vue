@@ -1,7 +1,28 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterView } from 'vue-router'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
+import AppMenu from '@/components/layout/AppMenu.vue'
+import AppTabBar from '@/components/layout/AppTabBar.vue'
+
+const menuOpen = ref(false)
 </script>
 
 <template>
-  <RouterView />
+  <a
+    href="#main"
+    class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+  >
+    Перейти к содержимому
+  </a>
+  <div class="flex min-h-dvh flex-col">
+    <AppHeader @open-menu="menuOpen = true" />
+    <main id="main" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none">
+      <RouterView />
+    </main>
+    <AppFooter class="pb-24 md:pb-0" />
+  </div>
+  <AppTabBar />
+  <AppMenu v-model:open="menuOpen" />
 </template>
