@@ -1,4 +1,9 @@
-import '@fontsource-variable/inter'
+import '@fontsource/onest/400.css'
+import '@fontsource/onest/500.css'
+import '@fontsource/onest/700.css'
+import '@fontsource/unbounded/500.css'
+import '@fontsource/unbounded/700.css'
+import '@fontsource/caveat/600.css'
 import './assets/main.css'
 
 import { createApp } from 'vue'
