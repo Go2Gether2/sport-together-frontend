@@ -66,9 +66,17 @@ async function logout() {
     <div class="mt-4 border-t-2 border-mute pt-4">
       <p v-if="session.user" class="flex items-center justify-between gap-3">
         <span class="truncate text-ink-2">{{ session.user.name }}</span>
-        <button type="button" class="font-bold underline underline-offset-4" @click="logout">
-          Выйти
-        </button>
+        <span class="flex shrink-0 gap-4">
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="font-bold text-ink underline underline-offset-4"
+          >
+            Сменить роль
+          </RouterLink>
+          <button type="button" class="font-bold underline underline-offset-4" @click="logout">
+            Выйти
+          </button>
+        </span>
       </p>
       <RouterLink
         v-else

@@ -14,7 +14,8 @@ const router = createRouter({
       meta: { adminOnly: true },
       children: [{ path: 'events', name: 'admin-events', component: Stub }],
     },
-    { path: '/login', name: 'login', component: Stub, meta: { guestOnly: true } },
+    { path: '/login', name: 'login', component: Stub },
+    { path: '/register', name: 'register', component: Stub, meta: { guestOnly: true } },
   ],
 })
 
@@ -45,7 +46,8 @@ describe('resolveAccess', () => {
     expect(check('/admin/events', guest)).toMatchObject({ name: 'login' })
   })
 
-  it('уводит вошедшего со страницы входа', () => {
-    expect(check('/login', user)).toEqual({ name: 'home' })
+  it('пускает вошедшего на вход (смена роли), но уводит с регистрации', () => {
+    expect(check('/login', user)).toBe(true)
+    expect(check('/register', user)).toEqual({ name: 'home' })
   })
 })

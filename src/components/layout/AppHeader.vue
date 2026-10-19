@@ -45,6 +45,12 @@ async function logout() {
 
         <template v-if="session.user">
           <span class="hidden max-w-40 truncate text-ink-2 lg:inline">{{ session.user.name }}</span>
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="hidden font-medium text-ink underline underline-offset-4 hover:text-cobalt md:inline"
+          >
+            Сменить роль
+          </RouterLink>
           <button
             type="button"
             class="hidden font-medium text-ink underline underline-offset-4 hover:text-cobalt md:inline"
