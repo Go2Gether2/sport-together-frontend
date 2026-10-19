@@ -1,0 +1,341 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { ApiError, adminApi, type AdminOrganizationDetails, type Organization } from '@/api'
+import AdminNav from '@/components/admin/AdminNav.vue'
+import {
+  StatusBadge,
+  UiButton,
+  UiChip,
+  UiModal,
+  UiTable,
+  UiTextArea,
+  UiTextField,
+} from '@/components/ui'
+import {
+  ORG_TYPE_LABELS,
+  REJECT_REASON_MAX,
+  STATUS_FILTERS,
+  parseStatusFilter,
+  rejectReasonError,
+  replaceOrganization,
+  type StatusFilter,
+} from '@/features/admin/organizations'
+import { formatEventWhen } from '@/utils/datetime'
+
+const route = useRoute()
+const router = useRouter()
+
+const status = computed<StatusFilter>(() => parseStatusFilter(route.query.status))
+const selectedId = computed(() => (route.query.id ? Number(route.query.id) : null))
+const query = ref(typeof route.query.q === 'string' ? route.query.q : '')
+
+const rows = ref<Organization[]>([])
+const total = ref(0)
+const listState = ref<'loading' | 'ready' | 'error'>('loading')
+const listError = ref('')
+
+const details = ref<AdminOrganizationDetails | null>(null)
+const detailsState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
+
+const busy = ref(false)
+const actionError = ref('')
+const rejectOpen = ref(false)
+const reason = ref('')
+const reasonError = ref<string | null>(null)
+
+const columns = [
+  { key: 'name', label: 'Организация' },
+  { key: 'type', label: 'Тип' },
+  { key: 'owner', label: 'Владелец' },
+  { key: 'status', label: 'Статус' },
+]
+
+function setQuery(patch: Record<string, string | undefined>) {
+  router.replace({ query: { ...route.query, ...patch } })
+}
+
+async function loadList() {
+  listState.value = 'loading'
+  try {
+    const page = await adminApi.organizations({
+      status: status.value === 'all' ? undefined : status.value,
+      q: query.value.trim() || undefined,
+      size: 50,
+    })
+    rows.value = page.items
+    total.value = page.total
+    listState.value = 'ready'
+  } catch (e) {
+    listError.value = e instanceof ApiError ? e.message : 'Не получилось загрузить организации.'
+    listState.value = 'error'
+  }
+}
+
+async function loadDetails(id: number) {
+  detailsState.value = 'loading'
+  actionError.value = ''
+  try {
+    details.value = await adminApi.organization(id)
+    detailsState.value = 'ready'
+  } catch {
+    detailsState.value = 'error'
+  }
+}
+
+watch(status, loadList, { immediate: true })
+
+let timer: ReturnType<typeof setTimeout> | undefined
+watch(query, (q) => {
+  clearTimeout(timer)
+  timer = setTimeout(() => {
+    setQuery({ q: q.trim() || undefined })
+    loadList()
+  }, 300)
+})
+
+watch(
+  selectedId,
+  (id) => {
+    if (id) loadDetails(id)
+    else {
+      details.value = null
+      detailsState.value = 'idle'
+    }
+  },
+  { immediate: true },
+)
+
+function select(org: Organization) {
+  setQuery({ id: String(org.id) })
+}
+
+function applyResult(updated: Organization) {
+  rows.value = replaceOrganization(rows.value, updated)
+  if (details.value) details.value = { ...details.value, organization: updated }
+}
+
+async function approve() {
+  const org = details.value?.organization
+  if (!org) return
+  busy.value = true
+  actionError.value = ''
+  try {
+    applyResult(await adminApi.approveOrganization(org.id))
+  } catch (e) {
+    actionError.value = e instanceof ApiError ? e.message : 'Не получилось допустить.'
+  } finally {
+    busy.value = false
+  }
+}
+
+function openReject() {
+  reason.value = ''
+  reasonError.value = null
+  rejectOpen.value = true
+}
+
+async function reject() {
+  const org = details.value?.organization
+  reasonError.value = rejectReasonError(reason.value)
+  if (!org || reasonError.value) return
+  busy.value = true
+  try {
+    applyResult(await adminApi.rejectOrganization(org.id, reason.value.trim()))
+    rejectOpen.value = false
+  } catch (e) {
+    if (e instanceof ApiError && e.fields.reason) reasonError.value = e.fields.reason
+    else {
+      rejectOpen.value = false
+      actionError.value = e instanceof ApiError ? e.message : 'Не получилось отклонить.'
+    }
+  } finally {
+    busy.value = false
+  }
+}
+
+const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+</script>
+
+<template>
+  <section class="flex flex-col gap-5">
+    <h1 class="text-3xl font-bold">Организации</h1>
+    <AdminNav />
+
+    <div class="flex flex-col gap-3 rounded-card bg-card p-4 lg:flex-row lg:items-end">
+      <UiTextField
+        v-model="query"
+        label="Поиск"
+        hide-label
+        type="search"
+        placeholder="Название организации"
+        class="lg:w-80"
+      />
+      <div class="flex gap-2 overflow-x-auto" role="group" aria-label="Статус">
+        <UiChip
+          v-for="f in STATUS_FILTERS"
+          :key="f.value"
+          :pressed="status === f.value"
+          @click="setQuery({ status: f.value, id: undefined })"
+        >
+          {{ f.label }}
+        </UiChip>
+      </div>
+    </div>
+
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
+      <div class="flex min-w-0 flex-col gap-2" aria-live="polite">
+        <div
+          v-if="listState === 'error'"
+          class="flex flex-col items-center gap-3 rounded-card bg-card p-6"
+          role="alert"
+        >
+          <p class="font-bold">{{ listError }}</p>
+          <UiButton variant="ghost" class="!w-auto" @click="loadList">Повторить</UiButton>
+        </div>
+        <template v-else>
+          <UiTable
+            caption="Организации"
+            :columns="columns"
+            :rows="rows"
+            :row-key="(o) => String(o.id)"
+            :selected-key="selectedId ? String(selectedId) : null"
+            :loading="listState === 'loading'"
+            clickable
+            empty-text="Здесь пусто"
+            @select="select"
+          >
+            <template #cell-name="{ row }">
+              <b>{{ row.name }}</b>
+              <span v-if="row.city" class="block text-sm text-ink-2">{{ row.city }}</span>
+            </template>
+            <template #cell-type="{ row }">{{ ORG_TYPE_LABELS[row.type] }}</template>
+            <template #cell-owner="{ row }">{{ row.owner.name }}</template>
+            <template #cell-status="{ row }">
+              <StatusBadge :of="{ kind: 'organization', status: row.status }" />
+            </template>
+          </UiTable>
+          <p v-if="listState === 'ready' && total > rows.length" class="px-2 text-sm text-ink-2">
+            Показаны первые {{ rows.length }} из {{ total }} — уточните поиск.
+          </p>
+        </template>
+      </div>
+
+      <aside class="xl:sticky xl:top-6 xl:self-start" aria-live="polite">
+        <p v-if="detailsState === 'idle'" class="rounded-card bg-card p-6 text-center text-ink-2">
+          Выберите организацию в таблице
+        </p>
+        <div
+          v-else-if="detailsState === 'loading'"
+          class="h-64 animate-pulse rounded-card bg-card"
+        />
+        <p v-else-if="detailsState === 'error'" class="rounded-card bg-card p-6" role="alert">
+          Не получилось открыть организацию.
+        </p>
+
+        <article
+          v-else-if="details"
+          class="flex flex-col gap-4 rounded-card bg-accent p-5"
+          :aria-label="details.organization.name"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-xl leading-tight font-bold">{{ details.organization.name }}</h2>
+              <p class="text-accent-ink">
+                {{ ORG_TYPE_LABELS[details.organization.type] }}
+                <template v-if="details.organization.city">
+                  · {{ details.organization.city }}
+                </template>
+              </p>
+            </div>
+            <StatusBadge
+              :of="{ kind: 'organization', status: details.organization.status }"
+              class="!bg-card !text-ink"
+            />
+          </div>
+
+          <p v-if="details.organization.description" class="whitespace-pre-line">
+            {{ details.organization.description }}
+          </p>
+
+          <dl
+            class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-[22px] bg-card p-4 text-[15px]"
+          >
+            <dt class="text-ink-2">Владелец</dt>
+            <dd class="min-w-0">
+              <RouterLink
+                :to="{ name: 'user', params: { id: details.owner.id } }"
+                class="font-semibold underline underline-offset-4"
+              >
+                {{ details.owner.name }}
+              </RouterLink>
+              <span class="block truncate text-ink-2">{{ details.owner.email }}</span>
+            </dd>
+            <template v-if="details.organization.sports_description">
+              <dt class="text-ink-2">Направления</dt>
+              <dd>{{ details.organization.sports_description }}</dd>
+            </template>
+            <template v-if="details.organization.contacts">
+              <dt class="text-ink-2">Контакты</dt>
+              <dd class="break-words">{{ details.organization.contacts }}</dd>
+            </template>
+            <dt class="text-ink-2">Подана</dt>
+            <dd>{{ shortDate.format(new Date(details.organization.created_at)) }}</dd>
+          </dl>
+
+          <p
+            v-if="details.organization.status === 'rejected' && details.organization.reject_reason"
+            class="rounded-[22px] bg-card p-4"
+          >
+            <b>Причина отказа:</b> {{ details.organization.reject_reason }}
+          </p>
+
+          <div v-if="details.organization.status === 'pending'" class="flex gap-2">
+            <UiButton :loading="busy" @click="approve">Допустить</UiButton>
+            <UiButton variant="ghost" class="!bg-card" :disabled="busy" @click="openReject">
+              Отклонить
+            </UiButton>
+          </div>
+          <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
+            ✕ {{ actionError }}
+          </p>
+
+          <div class="flex flex-col gap-2">
+            <h3 class="font-bold">Мероприятия · {{ details.events.length }}</h3>
+            <p v-if="!details.events.length" class="text-accent-ink">Пока нет</p>
+            <ul v-else class="flex flex-col gap-1.5">
+              <li v-for="e in details.events" :key="e.id">
+                <RouterLink
+                  :to="{ name: 'event', params: { id: e.id } }"
+                  class="flex flex-col rounded-[18px] bg-card px-4 py-2.5 text-ink no-underline hover:bg-accent-soft"
+                >
+                  <span class="font-semibold">{{ e.title }}</span>
+                  <span class="text-sm text-ink-2">{{ formatEventWhen(e.starts_at) }}</span>
+                </RouterLink>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </aside>
+    </div>
+
+    <UiModal
+      v-model:open="rejectOpen"
+      :title="`Отклонить «${details?.organization.name ?? ''}»?`"
+      description="Организация увидит причину и сможет исправить заявку."
+    >
+      <UiTextArea
+        v-model="reason"
+        label="Причина"
+        :rows="3"
+        :maxlength="REJECT_REASON_MAX"
+        placeholder="Добавьте адрес занятий и контакты"
+        :error="reasonError ?? undefined"
+      />
+      <template #actions>
+        <UiButton variant="ghost" @click="rejectOpen = false">Отмена</UiButton>
+        <UiButton :loading="busy" @click="reject">Отклонить</UiButton>
+      </template>
+    </UiModal>
+  </section>
+</template>
