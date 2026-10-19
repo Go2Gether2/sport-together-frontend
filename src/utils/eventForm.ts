@@ -1,3 +1,4 @@
+import { localDate } from '@/utils/datetime'
 import type { EventDetails, EventInput, EventUpdate, Id, JoinMode, Level } from '@/api/types'
 
 export const NEW_SPORT_PREFIX = 'new:'
@@ -159,14 +160,6 @@ export function authorOptions(organizations: { id: Id; name: string }[]): Author
     { value: null, label: 'От себя' },
     ...organizations.map((o) => ({ value: o.id, label: o.name })),
   ]
-}
-
-function localDate(d: Date): string {
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
-  ].join('-')
 }
 
 function localTime(d: Date): string {
