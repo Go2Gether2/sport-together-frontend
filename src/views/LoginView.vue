@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ApiError, authApi, type DemoAccount } from '@/api'
+import { groupDemoAccounts } from '@/features/auth/demoRoles'
 import { useSessionStore } from '@/stores/session'
 import { safeRedirect } from '@/router/redirect'
 import { UiButton, UiCard, UiTextField } from '@/components/ui'
@@ -11,6 +12,7 @@ const route = useRoute()
 const router = useRouter()
 
 const accounts = ref<DemoAccount[]>([])
+const groups = computed(() => groupDemoAccounts(accounts.value))
 const accountsState = ref<'loading' | 'ready' | 'error'>('loading')
 const pendingDemo = ref<number | null>(null)
 const demoError = ref('')
@@ -92,25 +94,43 @@ onMounted(loadAccounts)
         <p class="text-ink-2">Не получилось загрузить демо-аккаунты.</p>
         <UiButton variant="ghost" @click="loadAccounts">Повторить</UiButton>
       </div>
-      <ul v-else class="flex flex-col gap-2.5">
-        <li v-for="account in accounts" :key="account.id">
-          <UiCard class="!flex-row items-center gap-3 !py-3 !pr-3 !pl-5">
-            <div class="min-w-0 flex-1">
-              <p class="font-bold">{{ account.name }}</p>
-              <p class="text-sm text-ink-2">{{ account.description }}</p>
-            </div>
-            <UiButton
-              class="!w-auto !min-h-11 shrink-0"
-              :loading="pendingDemo === account.id"
-              :disabled="pendingDemo !== null"
-              :aria-label="`Войти: ${account.name}`"
-              @click="enterDemo(account.id)"
-            >
-              Войти
-            </UiButton>
-          </UiCard>
-        </li>
-      </ul>
+      <div v-else class="flex flex-col gap-5">
+        <section
+          v-for="group in groups"
+          :key="group.key"
+          class="flex flex-col gap-2.5"
+          :aria-labelledby="`demo-${group.key}`"
+        >
+          <h3
+            :id="`demo-${group.key}`"
+            class="px-1 text-xs font-bold tracking-wider text-ink-2 uppercase"
+          >
+            {{ group.title }}
+          </h3>
+          <ul class="flex flex-col gap-2.5">
+            <li v-for="account in group.accounts" :key="account.id">
+              <UiCard class="!flex-row items-center gap-3 !py-3 !pr-3 !pl-5">
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold">{{ account.name }}</p>
+                  <p class="text-sm text-ink-2">{{ account.description }}</p>
+                  <p v-if="account.scenarios" class="mt-1 text-sm">
+                    <span class="font-semibold">Проверить:</span> {{ account.scenarios }}
+                  </p>
+                </div>
+                <UiButton
+                  class="!w-auto !min-h-11 shrink-0"
+                  :loading="pendingDemo === account.id"
+                  :disabled="pendingDemo !== null"
+                  :aria-label="`Войти: ${account.name}`"
+                  @click="enterDemo(account.id)"
+                >
+                  Войти
+                </UiButton>
+              </UiCard>
+            </li>
+          </ul>
+        </section>
+      </div>
       <p v-if="demoError" class="font-semibold text-orange-ink" role="alert">✕ {{ demoError }}</p>
     </section>
 
