@@ -33,6 +33,7 @@
 !/src/**
 !/public/**
 !/e2e/**
+!/openapi/**
 
 # Артефакты
 **/node_modules/
