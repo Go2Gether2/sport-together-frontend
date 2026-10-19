@@ -10,6 +10,7 @@ import {
   authorOptions,
   emptyEventForm,
   eventFormFrom,
+  repeatFormFrom,
   mapServerErrors,
   newSportValue,
   toEventInput,
@@ -33,10 +34,34 @@ const submitting = ref(false)
 // /events/:id/edit — та же форма, но заполнена мероприятием и сохраняет только изменения.
 const editId = route.name === 'event-edit' ? Number(route.params.id) : null
 const original = ref<EventFormState | null>(null)
-const loadState = ref<'loading' | 'ready' | 'error' | 'locked'>(editId ? 'loading' : 'ready')
+// /events/new?repeat=<id> — «Повторить» из архива: поля прошлого мероприятия, дата и время заново.
+const repeatId = !editId && route.query.repeat ? Number(route.query.repeat) : null
+const repeatNotice = ref('')
+const loadState = ref<'loading' | 'ready' | 'error' | 'locked'>(
+  editId || repeatId ? 'loading' : 'ready',
+)
 const loadMessage = ref('')
 
+async function loadRepeat(id: number) {
+  try {
+    const event = await eventsApi.get(id)
+    Object.assign(
+      form,
+      repeatFormFrom(
+        event,
+        session.approvedOrganizations.map((o) => o.id),
+      ),
+    )
+    repeatNotice.value = `Скопировано из «${event.title}». Укажите новые дату и время.`
+  } catch {
+    repeatNotice.value = 'Не получилось скопировать прошлое мероприятие — заполните поля вручную.'
+  } finally {
+    loadState.value = 'ready'
+  }
+}
+
 async function loadEvent() {
+  if (repeatId) return loadRepeat(repeatId)
   if (!editId) return
   loadState.value = 'loading'
   try {
@@ -176,6 +201,9 @@ async function submit() {
     </section>
 
     <form v-else class="flex flex-col gap-4" novalidate @submit.prevent="submit">
+      <p v-if="repeatNotice" class="rounded-card bg-accent-soft p-4 text-accent-ink" role="status">
+        {{ repeatNotice }}
+      </p>
       <p v-if="editId" class="rounded-card bg-accent-soft p-4 text-accent-ink">
         Участники увидят отметку «изменено». От чьего имени мероприятие, поменять нельзя.
       </p>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ApiError, usersApi, type OrganizerEvent } from '@/api'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
@@ -29,6 +29,20 @@ async function load() {
 }
 
 onMounted(load)
+
+// Архив — прошедшие, снятые и отменённые: их можно повторить, заполнив форму заново.
+const upcoming = computed(() =>
+  items.value.filter((i) => i.event.status === 'published' && !i.event.is_past),
+)
+const archive = computed(() =>
+  items.value.filter((i) => !(i.event.status === 'published' && !i.event.is_past)),
+)
+const sections = computed(() =>
+  [
+    { key: 'upcoming', title: 'Предстоящие', list: upcoming.value, repeat: false },
+    { key: 'archive', title: 'Архив', list: archive.value, repeat: true },
+  ].filter((s) => s.list.length),
+)
 </script>
 
 <template>
@@ -61,36 +75,56 @@ onMounted(load)
       </RouterLink>
     </div>
 
-    <ul v-else class="grid grid-cols-1 gap-3 lg:grid-cols-2">
-      <li
-        v-for="{ event, pending_count } in items"
-        :key="event.id"
-        class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
+    <template v-else>
+      <section
+        v-for="section in sections"
+        :key="section.key"
+        class="flex flex-col gap-3"
+        :aria-labelledby="`my-${section.key}`"
       >
-        <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
-          <SportIcon :name="sportIconName(event.sport)" :size="40" />
-        </span>
-        <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p class="font-semibold text-accent-ink">{{ formatEventWhen(event.starts_at) }}</p>
-          <h2 class="line-clamp-2 text-lg leading-snug font-bold">
+        <h2 :id="`my-${section.key}`" class="text-xl font-bold">{{ section.title }}</h2>
+        <ul class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <li
+            v-for="{ event, pending_count } in section.list"
+            :key="event.id"
+            class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
+          >
+            <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
+              <SportIcon :name="sportIconName(event.sport)" :size="40" />
+            </span>
+            <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p class="font-semibold text-accent-ink">{{ formatEventWhen(event.starts_at) }}</p>
+              <h3 class="line-clamp-2 text-lg leading-snug font-bold">
+                <RouterLink
+                  :to="{ name: 'event-manage', params: { id: event.id } }"
+                  class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"
+                >
+                  {{ event.title }}
+                </RouterLink>
+              </h3>
+              <p class="truncate text-ink-2">
+                {{ seatsShort(event.confirmed_count, event.capacity) }}
+              </p>
+              <StatusBadge
+                v-if="event.status !== 'published'"
+                :of="{ kind: 'event', status: event.status }"
+                class="mt-1"
+              />
+              <UiBadge v-else-if="pending_count" tone="wait" class="mt-1">
+                {{ pending_count }} {{ plural(pending_count, ['заявка', 'заявки', 'заявок']) }}
+              </UiBadge>
+            </div>
             <RouterLink
-              :to="{ name: 'event-manage', params: { id: event.id } }"
-              class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"
+              v-if="section.repeat"
+              :to="{ name: 'event-create', query: { repeat: event.id } }"
+              class="relative z-10 inline-flex min-h-11 shrink-0 items-center rounded-full bg-field px-4 font-bold text-ink no-underline hover:bg-mute"
+              :aria-label="`Повторить: ${event.title}`"
             >
-              {{ event.title }}
+              Повторить
             </RouterLink>
-          </h2>
-          <p class="truncate text-ink-2">{{ seatsShort(event.confirmed_count, event.capacity) }}</p>
-          <StatusBadge
-            v-if="event.status !== 'published'"
-            :of="{ kind: 'event', status: event.status }"
-            class="mt-1"
-          />
-          <UiBadge v-else-if="pending_count" tone="wait" class="mt-1">
-            {{ pending_count }} {{ plural(pending_count, ['заявка', 'заявки', 'заявок']) }}
-          </UiBadge>
-        </div>
-      </li>
-    </ul>
+          </li>
+        </ul>
+      </section>
+    </template>
   </section>
 </template>
