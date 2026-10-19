@@ -7,6 +7,7 @@ import UiTextArea from '@/components/ui/UiTextArea.vue'
 import { LEVEL_LABELS } from '@/features/events/filters'
 import { useSessionStore } from '@/stores/session'
 import {
+  authorOptions,
   emptyEventForm,
   mapServerErrors,
   newSportValue,
@@ -44,7 +45,7 @@ const joinModes = [
   },
 ]
 
-const organization = computed(() => session.approvedOrganizations[0] ?? null)
+const authors = computed(() => authorOptions(session.approvedOrganizations))
 const isNewSport = computed(() => form.sport?.startsWith('new:') ?? false)
 const now = new Date()
 const today = [
@@ -106,25 +107,22 @@ async function submit() {
     <h1 class="text-3xl font-bold">Новое мероприятие</h1>
 
     <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <fieldset v-if="organization">
-        <legend class="sr-only">От чьего имени</legend>
-        <div class="grid grid-cols-2 gap-1 rounded-full bg-card p-1.5">
+      <fieldset v-if="authors.length > 1">
+        <legend class="mb-2 ml-1 text-[15px] font-semibold">От чьего имени</legend>
+        <div class="flex flex-wrap gap-1.5 rounded-[28px] bg-card p-1.5">
           <label
-            class="cursor-pointer truncate rounded-full px-3 py-3 text-center font-semibold has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-accent-ink"
-          >
-            <input v-model="form.organizationId" type="radio" :value="null" class="sr-only" />
-            От себя
-          </label>
-          <label
-            class="cursor-pointer px-3 py-2.5 text-center font-medium has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-accent-ink"
+            v-for="a in authors"
+            :key="a.value ?? 'me'"
+            class="min-w-0 flex-1 cursor-pointer truncate rounded-full px-4 py-3 text-center font-semibold whitespace-nowrap has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-accent-ink"
           >
             <input
               v-model="form.organizationId"
               type="radio"
-              :value="organization.id"
+              name="author"
+              :value="a.value"
               class="sr-only"
             />
-            {{ organization.name }}
+            {{ a.label }}
           </label>
         </div>
       </fieldset>
