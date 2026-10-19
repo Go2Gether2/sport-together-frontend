@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ApiError, eventsApi, sportsApi } from '@/api'
 import { UiButton, UiCombobox, UiSelect, UiTextField, type UiOption } from '@/components/ui'
 import UiTextArea from '@/components/ui/UiTextArea.vue'
+import { LEVEL_LABELS } from '@/features/events/filters'
 import { useSessionStore } from '@/stores/session'
 import {
   emptyEventForm,
@@ -25,11 +26,10 @@ const submitting = ref(false)
 const sportOptions = ref<UiOption[]>([])
 const sportsFailed = ref(false)
 
-const levels: UiOption[] = [
-  { value: 'beginner', label: 'Новичок' },
-  { value: 'amateur', label: 'Любитель' },
-  { value: 'pro', label: 'Опытный' },
-]
+const levels: UiOption[] = Object.entries(LEVEL_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}))
 
 const joinModes = [
   {
