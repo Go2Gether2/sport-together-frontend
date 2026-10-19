@@ -87,7 +87,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'events',
         name: 'admin-events',
-        component: Placeholder,
+        component: () => import('@/views/admin/AdminEventsView.vue'),
         meta: { title: 'Админка: мероприятия' },
       },
     ],
