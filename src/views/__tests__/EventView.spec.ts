@@ -35,6 +35,7 @@ async function open(id: number, as?: number) {
     routes: [
       { path: '/events/:id', name: 'event', component: EventView },
       { path: '/events/:id/manage', name: 'event-manage', component: Stub },
+      { path: '/events/:id/edit', name: 'event-edit', component: Stub },
       { path: '/events', name: 'events', component: Stub },
       { path: '/login', name: 'login', component: Stub },
       { path: '/users/:id', name: 'user', component: Stub },

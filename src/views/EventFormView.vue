@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ApiError, eventsApi, sportsApi } from '@/api'
 import { UiButton, UiCombobox, UiSelect, UiTextField, type UiOption } from '@/components/ui'
 import UiTextArea from '@/components/ui/UiTextArea.vue'
@@ -9,11 +9,15 @@ import { useSessionStore } from '@/stores/session'
 import {
   authorOptions,
   emptyEventForm,
+  eventFormFrom,
   mapServerErrors,
   newSportValue,
   toEventInput,
+  toEventUpdate,
+  validateEventEdit,
   validateEventForm,
   type EventFormErrors,
+  type EventFormState,
 } from '@/utils/eventForm'
 
 const router = useRouter()
@@ -25,6 +29,34 @@ const form = reactive({ ...emptyEventForm(), city: session.user?.city ?? '' })
 const errors = ref<EventFormErrors>({})
 const formError = ref('')
 const submitting = ref(false)
+
+// /events/:id/edit — та же форма, но заполнена мероприятием и сохраняет только изменения.
+const editId = route.name === 'event-edit' ? Number(route.params.id) : null
+const original = ref<EventFormState | null>(null)
+const loadState = ref<'loading' | 'ready' | 'error' | 'locked'>(editId ? 'loading' : 'ready')
+const loadMessage = ref('')
+
+async function loadEvent() {
+  if (!editId) return
+  loadState.value = 'loading'
+  try {
+    const event = await eventsApi.get(editId)
+    if (!event.is_organizer) {
+      loadMessage.value = 'Изменять мероприятие может только его организатор.'
+      loadState.value = 'locked'
+    } else if (event.status !== 'published' || event.is_past) {
+      loadMessage.value = 'Прошедшее или снятое мероприятие изменить нельзя.'
+      loadState.value = 'locked'
+    } else {
+      original.value = eventFormFrom(event)
+      Object.assign(form, original.value)
+      loadState.value = 'ready'
+    }
+  } catch (e) {
+    loadMessage.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятие.'
+    loadState.value = 'error'
+  }
+}
 
 const sportOptions = ref<UiOption[]>([])
 const sportsFailed = ref(false)
@@ -62,6 +94,7 @@ const today = [
 ].join('-')
 
 onMounted(async () => {
+  loadEvent()
   try {
     const sports = await sportsApi.list()
     sportOptions.value = sports.map((s) => ({ value: String(s.id), label: s.name }))
@@ -86,11 +119,17 @@ async function focusFirstError() {
 
 async function submit() {
   formError.value = ''
-  errors.value = validateEventForm(form)
+  errors.value = original.value ? validateEventEdit(form, original.value) : validateEventForm(form)
   if (Object.keys(errors.value).length) return focusFirstError()
 
   submitting.value = true
   try {
+    if (editId && original.value) {
+      const update = toEventUpdate(form, original.value)
+      if (Object.keys(update).length) await eventsApi.update(editId, update)
+      await router.push({ name: 'event', params: { id: editId } })
+      return
+    }
     const { id } = await eventsApi.create(toEventInput(form))
     await router.push({ name: 'event', params: { id } })
   } catch (e) {
@@ -101,7 +140,11 @@ async function submit() {
       focusFirstError()
     } else {
       formError.value =
-        e instanceof ApiError ? e.message : 'Не получилось опубликовать. Попробуйте ещё раз.'
+        e instanceof ApiError
+          ? e.message
+          : editId
+            ? 'Не получилось сохранить. Попробуйте ещё раз.'
+            : 'Не получилось опубликовать. Попробуйте ещё раз.'
     }
   } finally {
     submitting.value = false
@@ -111,10 +154,32 @@ async function submit() {
 
 <template>
   <section class="mx-auto flex w-full max-w-2xl flex-col gap-6">
-    <h1 class="text-3xl font-bold">Новое мероприятие</h1>
+    <h1 class="text-3xl font-bold">{{ editId ? 'Изменить мероприятие' : 'Новое мероприятие' }}</h1>
 
-    <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <fieldset v-if="authors.length > 1">
+    <div v-if="loadState === 'loading'" class="h-96 animate-pulse rounded-card bg-card" />
+    <section
+      v-else-if="loadState !== 'ready'"
+      class="flex flex-col items-start gap-3 rounded-card bg-card p-6"
+      role="alert"
+    >
+      <p class="font-bold">{{ loadMessage }}</p>
+      <UiButton v-if="loadState === 'error'" variant="ghost" class="!w-auto" @click="loadEvent">
+        Повторить
+      </UiButton>
+      <RouterLink
+        v-else
+        :to="{ name: 'event', params: { id: editId } }"
+        class="inline-flex min-h-8 items-center font-semibold underline underline-offset-4"
+      >
+        ← К мероприятию
+      </RouterLink>
+    </section>
+
+    <form v-else class="flex flex-col gap-4" novalidate @submit.prevent="submit">
+      <p v-if="editId" class="rounded-card bg-accent-soft p-4 text-accent-ink">
+        Участники увидят отметку «изменено». От чьего имени мероприятие, поменять нельзя.
+      </p>
+      <fieldset v-if="!editId && authors.length > 1">
         <legend class="mb-2 ml-1 text-[15px] font-semibold">От чьего имени</legend>
         <div class="flex flex-wrap gap-1.5 rounded-[28px] bg-card p-1.5">
           <label
@@ -248,7 +313,12 @@ async function submit() {
           </p>
         </fieldset>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <UiSelect v-model="form.level" label="Уровень" :options="levels" placeholder="Любой" />
+          <UiSelect
+            v-model="form.level"
+            label="Уровень"
+            :options="levels"
+            :placeholder="original?.level ? undefined : 'Любой'"
+          />
           <UiTextField
             v-model="form.capacity"
             type="number"
@@ -279,8 +349,17 @@ async function submit() {
         ✕ {{ formError }}
       </p>
 
-      <div class="flex flex-col gap-2">
-        <UiButton type="submit" :loading="submitting">Опубликовать</UiButton>
+      <div class="flex flex-col gap-2 sm:flex-row-reverse">
+        <UiButton type="submit" :loading="submitting">
+          {{ editId ? 'Сохранить' : 'Опубликовать' }}
+        </UiButton>
+        <RouterLink
+          v-if="editId"
+          :to="{ name: 'event', params: { id: editId } }"
+          class="inline-flex min-h-13 w-full items-center justify-center rounded-full bg-field px-5 font-bold text-ink no-underline"
+        >
+          Отмена
+        </RouterLink>
       </div>
     </form>
   </section>
