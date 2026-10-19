@@ -137,7 +137,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
   <div
     aria-live="polite"
     :aria-busy="state === 'loading'"
-    class="mx-auto flex max-w-2xl flex-col gap-4"
+    class="mx-auto flex max-w-3xl flex-col gap-4"
   >
     <div v-if="state === 'loading'" class="flex flex-col gap-4" aria-label="Загрузка">
       <div class="h-40 animate-pulse rounded-card bg-mute" />

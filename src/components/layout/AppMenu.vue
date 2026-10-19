@@ -34,7 +34,7 @@ async function logout() {
   <dialog
     ref="dialog"
     aria-labelledby="app-menu-title"
-    class="m-0 mt-auto max-h-[85vh] w-full max-w-none rounded-t-[32px] bg-card p-5 text-ink backdrop:bg-ink/40 xl:hidden"
+    class="m-0 mt-auto max-h-[85vh] w-full max-w-none rounded-t-[32px] bg-card p-5 text-ink backdrop:bg-ink/40 lg:hidden"
     @close="open = false"
   >
     <div class="mb-3 flex items-center justify-between">

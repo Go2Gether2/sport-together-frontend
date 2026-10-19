@@ -11,6 +11,14 @@ describe('навигация', () => {
     expect(labels(menuItems(true))).toContain('Админка')
   })
 
+  it('на компьютере видны все разделы телефона', () => {
+    const phone = [...tabBarItems().flat(), ...menuItems(false)].map((i) => i.label)
+    const desktop = labels(desktopItems(false))
+    for (const label of phone.filter((l) => l !== 'Политика данных')) {
+      expect(desktop).toContain(label)
+    }
+  })
+
   it('нижняя панель — по два раздела слева и справа от «Создать»', () => {
     const [left, right] = tabBarItems()
     expect(labels(left)).toEqual(['Главная', 'Мероприятия'])
