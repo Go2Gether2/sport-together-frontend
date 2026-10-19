@@ -87,6 +87,12 @@ function setQuery(patch: Record<string, string | undefined>) {
   router.replace({ query: { ...route.query, ...patch } })
 }
 
+function select(event: EventSummary) {
+  setQuery({ id: String(event.id) })
+  // На узком экране карточка открывается вместо списка — показываем её с начала.
+  window.scrollTo({ top: 0 })
+}
+
 async function loadList() {
   listState.value = 'loading'
   try {
@@ -214,7 +220,10 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
     <h1 class="text-3xl font-bold">Мероприятия</h1>
     <AdminNav />
 
-    <div class="flex flex-col gap-3 rounded-card bg-card p-4 lg:flex-row lg:items-end">
+    <div
+      class="flex-col gap-3 rounded-card bg-card p-4 lg:flex-row lg:items-end"
+      :class="selectedId ? 'hidden xl:flex' : 'flex'"
+    >
       <UiTextField
         v-model="query"
         label="Поиск"
@@ -236,7 +245,11 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
     </div>
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-      <div class="flex min-w-0 flex-col gap-2" aria-live="polite">
+      <div
+        class="min-w-0 flex-col gap-2"
+        :class="selectedId ? 'hidden xl:flex' : 'flex'"
+        aria-live="polite"
+      >
         <div
           v-if="listState === 'error'"
           class="flex flex-col items-center gap-3 rounded-card bg-card p-6"
@@ -255,7 +268,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
             :loading="listState === 'loading'"
             clickable
             empty-text="Здесь пусто"
-            @select="(e) => setQuery({ id: String(e.id) })"
+            @select="select"
           >
             <template #cell-title="{ row }">
               <b>{{ row.title }}</b>
@@ -273,8 +286,19 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
         </template>
       </div>
 
-      <aside class="xl:sticky xl:top-6 xl:self-start" aria-live="polite">
-        <p v-if="detailsState === 'idle'" class="rounded-card bg-card p-6 text-center text-ink-2">
+      <aside class="flex flex-col gap-3 xl:sticky xl:top-6 xl:self-start" aria-live="polite">
+        <button
+          v-if="selectedId"
+          type="button"
+          class="inline-flex min-h-8 w-fit items-center font-semibold underline underline-offset-4 xl:hidden"
+          @click="setQuery({ id: undefined })"
+        >
+          ← Все мероприятия
+        </button>
+        <p
+          v-if="detailsState === 'idle'"
+          class="hidden rounded-card bg-card p-6 text-center text-ink-2 xl:block"
+        >
           Выберите мероприятие в таблице
         </p>
         <div
