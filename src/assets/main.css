@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+}
+
+html {
+  font-size: 18px;
+}

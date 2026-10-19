@@ -15,41 +15,29 @@
 !/scripts/**
 !/.github/**
 
-# Node и конфиги сборки (лишнее после выбора стека удалить)
+# Node и конфиги сборки
 !/package.json
 !/pnpm-lock.yaml
 !/pnpm-workspace.yaml
-!/package-lock.json
-!/yarn.lock
 !/.npmrc
 !/.nvmrc
 !/*.config.ts
-!/*.config.js
-!/*.config.mjs
-!/*.config.cjs
 !/tsconfig*.json
+!/env.d.ts
 !/index.html
-!/.prettierrc
+!/.prettierrc.json
 !/.prettierignore
+!/.oxlintrc.json
 
-# Исходники (оставить то, что использует выбранный фреймворк)
+# Исходники
 !/src/**
-!/app/**
-!/pages/**
-!/components/**
 !/public/**
-!/shared/**
-!/tests/**
 !/e2e/**
 
 # Артефакты
 **/node_modules/
 **/dist/
 **/build/
-**/.output/
-**/.nuxt/
-**/.next/
-**/.svelte-kit/
 **/.vite/
 **/coverage/
 **/test-results/
