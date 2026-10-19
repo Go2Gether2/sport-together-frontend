@@ -7,7 +7,12 @@ const Placeholder = () => import('@/views/PlaceholderView.vue')
 
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: HomeView },
-  { path: '/events', name: 'events', component: Placeholder, meta: { title: 'Мероприятия' } },
+  {
+    path: '/events',
+    name: 'events',
+    component: () => import('@/views/EventsView.vue'),
+    meta: { title: 'Мероприятия' },
+  },
   {
     path: '/events/new',
     name: 'event-create',
