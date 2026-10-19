@@ -53,7 +53,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/organizations',
     name: 'organizations',
-    component: Placeholder,
+    component: () => import('@/views/OrganizationsView.vue'),
     meta: { title: 'Организации' },
   },
   {
@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/organizations/:id',
     name: 'organization',
-    component: Placeholder,
+    component: () => import('@/views/OrganizationView.vue'),
     meta: { title: 'Организация' },
   },
   {
