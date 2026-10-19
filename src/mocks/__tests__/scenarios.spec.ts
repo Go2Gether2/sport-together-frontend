@@ -14,6 +14,7 @@ import {
 import type { EventInput } from '@/api'
 import { handlers } from '../handlers'
 import { resetDb } from '../db'
+import { E, O, SP, U } from '../seed'
 
 const server = setupServer(...handlers)
 
@@ -24,8 +25,8 @@ beforeEach(() => {
 })
 afterAll(() => server.close())
 
-async function loginAs(demo: string) {
-  const { token } = await authApi.login({ demo_account_id: demo })
+async function loginAs(userId: number) {
+  const { token } = await authApi.login({ demo_account_id: userId })
   setToken(token)
 }
 
@@ -47,33 +48,51 @@ const eventInput = (extra: Partial<EventInput> = {}): EventInput => ({
   ...extra,
 })
 
+const ids = (items: { id: number }[]) => items.map((i) => i.id)
+const names = (list: { participants: { user: { name: string } }[] }) =>
+  list.participants.map((p) => p.user.name)
+
+describe('демо-аккаунты как у бэка', () => {
+  it('пять аккаунтов с числовыми id, вход по id', async () => {
+    const accounts = await authApi.demoAccounts()
+    expect(accounts.map((a) => a.id)).toEqual([U.anna, U.petr, U.igor, U.olga, U.admin])
+    expect(accounts[4]).toMatchObject({ role: 'admin', email: 'admin@demo.local' })
+    await loginAs(U.igor)
+    const me = await authApi.me()
+    expect(me.organizations).toEqual([
+      expect.objectContaining({ id: O.enisey, status: 'approved' }),
+    ])
+  })
+})
+
 describe('С1: создание мероприятия пользователем', () => {
   it('создаёт событие с новым направлением, другой пользователь его находит', async () => {
-    await loginAs('user')
-    const { id } = await eventsApi.create(eventInput())
+    await loginAs(U.anna)
+    const created = await eventsApi.create(eventInput())
+    expect(created).toMatchObject({ status: 'published', is_organizer: true })
 
-    await loginAs('user2')
+    await loginAs(U.petr)
     const feed = await eventsApi.list({ q: 'скандинавская' })
-    expect(feed.items.map((e) => e.id)).toContain(id)
-    const event = await eventsApi.get(id)
+    expect(ids(feed.items)).toContain(created.id)
+    const event = await eventsApi.get(created.id)
     expect(event.sport).toMatchObject({ name: 'Скандинавская ходьба', is_custom: true })
-    expect(event.organizer).toMatchObject({ type: 'user', user: { name: 'Анна Смирнова' } })
+    expect(event.organizer).toMatchObject({ type: 'user', id: U.anna, name: 'Анна Смирнова' })
+    expect(event.is_organizer).toBe(false)
   })
 
   it('не плодит дубли направления при другом написании', async () => {
-    await loginAs('user')
+    await loginAs(U.anna)
     await eventsApi.create(eventInput())
     await eventsApi.create(eventInput({ sport_name: '  скандинавская  ХОДЬБА ' }))
-    const sports = await sportsApi.list('скандинав')
-    expect(sports).toHaveLength(1)
+    expect(await sportsApi.list('скандинав')).toHaveLength(1)
   })
 
   it('возвращает ошибки по полям', async () => {
-    await loginAs('user')
+    await loginAs(U.anna)
     const error = await fail(
       eventsApi.create(eventInput({ title: '', starts_at: '2000-01-01T00:00:00Z' })),
     )
-    expect(error?.status).toBe(422)
+    expect(error).toMatchObject({ status: 422, code: 'VALIDATION_ERROR' })
     expect(error?.fields).toMatchObject({
       title: expect.any(String),
       starts_at: expect.any(String),
@@ -83,114 +102,127 @@ describe('С1: создание мероприятия пользователе�
 
 describe('С2: допуск организации', () => {
   it('до допуска публиковать нельзя, после одобрения событие видно на странице организации', async () => {
-    await loginAs('org_pending')
-    const org = (await organizationsApi.my())!
-    expect(org.status).toBe('pending')
-    const denied = await fail(eventsApi.create(eventInput({ organization_id: org.id })))
+    await loginAs(U.olga)
+    const pending = (await organizationsApi.my()).find((o) => o.id === O.ladya)!
+    expect(pending.status).toBe('pending')
+    const denied = await fail(eventsApi.create(eventInput({ organization_id: O.ladya })))
     expect(denied?.status).toBe(403)
 
-    await loginAs('user')
-    expect((await fail(organizationsApi.get(org.id)))?.status).toBe(404)
+    await loginAs(U.anna)
+    expect((await fail(organizationsApi.get(O.ladya)))?.status).toBe(404)
 
-    await loginAs('admin')
-    await adminApi.approveOrganization(org.id)
+    await loginAs(U.admin)
+    await adminApi.approveOrganization(O.ladya)
 
-    await loginAs('org_pending')
-    const { id } = await eventsApi.create(
-      eventInput({ organization_id: org.id, sport_id: 's-chess', sport_name: undefined }),
+    await loginAs(U.olga)
+    const created = await eventsApi.create(
+      eventInput({ organization_id: O.ladya, sport_id: SP.chess, sport_name: undefined }),
     )
+    expect(created.organizer).toMatchObject({ type: 'organization', id: O.ladya })
 
-    await loginAs('user')
-    expect((await organizationsApi.get(org.id)).status).toBe('approved')
-    const events = await organizationsApi.events(org.id)
-    expect(events.map((e) => e.id)).toContain(id)
+    await loginAs(U.anna)
+    expect((await organizationsApi.get(O.ladya)).status).toBe('approved')
+    expect(ids(await organizationsApi.events(O.ladya))).toContain(created.id)
   })
 
   it('отклонение требует причину, организация её видит и может подать снова', async () => {
-    await loginAs('org_pending')
-    const org = (await organizationsApi.my())!
+    await loginAs(U.admin)
+    expect((await fail(adminApi.rejectOrganization(O.ladya, ' ')))?.status).toBe(422)
+    await adminApi.rejectOrganization(O.ladya, 'Добавьте контакты')
 
-    await loginAs('admin')
-    expect((await fail(adminApi.rejectOrganization(org.id, ' ')))?.status).toBe(422)
-    await adminApi.rejectOrganization(org.id, 'Добавьте контакты')
+    await loginAs(U.olga)
+    const mine = (await organizationsApi.my()).find((o) => o.id === O.ladya)
+    expect(mine).toMatchObject({ status: 'rejected', reject_reason: 'Добавьте контакты' })
+    expect((await organizationsApi.resubmit(O.ladya)).status).toBe('pending')
+  })
 
-    await loginAs('org_pending')
-    expect(await organizationsApi.my()).toMatchObject({
-      status: 'rejected',
-      reject_reason: 'Добавьте контакты',
-    })
-    expect((await organizationsApi.resubmit(org.id)).status).toBe('pending')
+  it('решения админа попадают в журнал', async () => {
+    await loginAs(U.admin)
+    await adminApi.approveOrganization(O.ladya)
+    const log = await adminApi.auditLog()
+    expect(log.items[0]).toMatchObject({ action: 'org_approved', target_id: O.ladya })
   })
 })
 
 describe('С3: свободная запись', () => {
   it('пользователь сразу участник, организатор видит его в составе', async () => {
-    await loginAs('user2')
-    const p = await eventsApi.join('e-yoga')
-    expect(p.status).toBe('confirmed')
-    expect((await eventsApi.get('e-yoga')).my_participation?.status).toBe('confirmed')
+    await loginAs(U.petr)
+    const result = await eventsApi.join(E.yoga)
+    expect(result.participation.status).toBe('confirmed')
+    expect(result.event.confirmed_count).toBe(1)
+    expect((await eventsApi.get(E.yoga)).my_participation?.status).toBe('confirmed')
 
-    await loginAs('user')
-    const participants = await eventsApi.participants('e-yoga')
-    expect(participants.map((u) => u.name)).toContain('Пётр Иванов')
+    await loginAs(U.anna)
+    const list = await eventsApi.participants(E.yoga)
+    expect(names(list)).toContain('Пётр Иванов')
+    expect(list.participants[0]!.email).toBe('user2@demo.local')
   })
 
   it('не даёт записаться дважды и на своё событие', async () => {
-    await loginAs('user2')
-    await eventsApi.join('e-yoga')
-    expect((await fail(eventsApi.join('e-yoga')))?.status).toBe(409)
+    await loginAs(U.petr)
+    await eventsApi.join(E.yoga)
+    expect(await fail(eventsApi.join(E.yoga))).toMatchObject({
+      status: 409,
+      code: 'ALREADY_JOINED',
+    })
 
-    await loginAs('user')
-    expect((await fail(eventsApi.join('e-yoga')))?.code).toBe('own_event')
+    await loginAs(U.anna)
+    expect((await fail(eventsApi.join(E.yoga)))?.code).toBe('OWN_EVENT')
   })
 })
 
 describe('С4: запись по заявке', () => {
   it('заявка ждёт, организатор принимает — статус обновляется у обеих сторон', async () => {
-    await loginAs('user')
-    const pending = await eventsApi.requests('e-football')
-    const petr = pending.find((p) => p.user.name === 'Пётр Иванов')!
-    await participationsApi.approve(petr.id)
-    expect((await eventsApi.participants('e-football')).map((u) => u.name)).toContain('Пётр Иванов')
+    await loginAs(U.anna)
+    const petr = (await eventsApi.requests(E.football)).find((p) => p.user.name === 'Пётр Иванов')!
+    await participationsApi.approve(petr.participation_id)
+    expect(names(await eventsApi.participants(E.football))).toContain('Пётр Иванов')
 
-    await loginAs('user2')
-    expect((await eventsApi.get('e-football')).my_participation?.status).toBe('confirmed')
+    await loginAs(U.petr)
+    expect((await eventsApi.get(E.football)).my_participation?.status).toBe('confirmed')
   })
 
   it('отклонение с причиной видно пользователю, повторная заявка возможна', async () => {
-    await loginAs('user2')
-    await eventsApi.join('e-run-interval', 'Хочу попробовать')
+    await loginAs(U.petr)
+    expect((await eventsApi.join(E.runInterval, 'Хочу попробовать')).participation.status).toBe(
+      'pending',
+    )
 
-    await loginAs('org_approved')
-    const req = (await eventsApi.requests('e-run-interval')).find(
+    await loginAs(U.igor)
+    const req = (await eventsApi.requests(E.runInterval)).find(
       (p) => p.user.name === 'Пётр Иванов',
     )!
-    await participationsApi.reject(req.id, 'Пока рано, приходите на утреннюю пробежку')
-    expect((await fail(participationsApi.approve(req.id)))?.code).toBe('already_decided')
+    await participationsApi.reject(
+      req.participation_id,
+      'Пока рано, приходите на утреннюю пробежку',
+    )
+    expect((await fail(participationsApi.approve(req.participation_id)))?.code).toBe(
+      'ALREADY_DECIDED',
+    )
 
-    await loginAs('user2')
-    const mine = (await eventsApi.get('e-run-interval')).my_participation
+    await loginAs(U.petr)
+    const mine = (await eventsApi.get(E.runInterval)).my_participation
     expect(mine).toMatchObject({
       status: 'rejected',
       decision_reason: 'Пока рано, приходите на утреннюю пробежку',
     })
-    expect((await eventsApi.join('e-run-interval')).status).toBe('pending')
+    expect((await eventsApi.join(E.runInterval)).participation.status).toBe('pending')
   })
 
   it('принять заявку может только организатор, не админ', async () => {
-    await loginAs('admin')
-    expect((await fail(participationsApi.approve('p-4')))?.status).toBe(403)
+    await loginAs(U.admin)
+    expect((await fail(participationsApi.approve(4)))?.status).toBe(403)
   })
 })
 
 describe('С5: обсуждение', () => {
   it('вопрос и ответ организатора различимы по авторству', async () => {
-    await loginAs('user2')
-    await commentsApi.create('e-yoga', { text: 'Коврик обязателен?' })
-    await loginAs('user')
-    await commentsApi.create('e-yoga', { text: 'Можно плед' })
+    await loginAs(U.petr)
+    await commentsApi.create(E.yoga, { text: 'Коврик обязателен?' })
+    await loginAs(U.anna)
+    await commentsApi.create(E.yoga, { text: 'Можно плед' })
 
-    const { items } = await commentsApi.list('e-yoga')
+    const { items } = await commentsApi.list(E.yoga)
     expect(items.map((c) => [c.author.name, c.is_organizer])).toEqual([
       ['Пётр Иванов', false],
       ['Анна Смирнова', true],
@@ -198,33 +230,41 @@ describe('С5: обсуждение', () => {
   })
 
   it('скрытое сообщение приходит без текста, остальное обсуждение на месте', async () => {
-    await loginAs('admin')
-    await adminApi.hideComment('c-1', 'Не по теме')
+    await loginAs(U.admin)
+    await adminApi.hideComment(1, 'Не по теме')
     setToken(null)
-    const { items } = await commentsApi.list('e-football')
-    expect(items.find((c) => c.id === 'c-1')).toMatchObject({ is_hidden: true, text: '' })
-    expect(items.find((c) => c.id === 'c-2')?.text).not.toBe('')
+    const { items } = await commentsApi.list(E.football)
+    expect(items.find((c) => c.id === 1)).toMatchObject({ is_hidden: true, text: null })
+    expect(items.find((c) => c.id === 2)?.text).toBeTruthy()
   })
 })
 
 describe('С6: снятие с публикации', () => {
   it('событие пропадает из ленты, по прямой ссылке — 410 с причиной, записаться нельзя', async () => {
-    await loginAs('admin')
-    await adminApi.unpublishEvent('e-yoga', 'Неверное место')
+    await loginAs(U.admin)
+    await adminApi.unpublishEvent(E.yoga, 'Неверное место')
 
-    await loginAs('user2')
-    const feed = await eventsApi.list()
-    expect(feed.items.map((e) => e.id)).not.toContain('e-yoga')
-    const gone = await fail(eventsApi.get('e-yoga'))
+    await loginAs(U.petr)
+    expect(ids((await eventsApi.list()).items)).not.toContain(E.yoga)
+    const gone = await fail(eventsApi.get(E.yoga))
     expect(gone?.isGone).toBe(true)
     expect(gone?.message).toContain('Неверное место')
-    expect((await fail(eventsApi.join('e-yoga')))?.status).toBe(410)
+    expect((await fail(eventsApi.join(E.yoga)))?.status).toBe(410)
   })
 
-  it('админ видит снятое событие в своём разделе и не может его удалить без причины', async () => {
-    await loginAs('admin')
+  it('админ видит снятое событие в своём разделе и не может удалить без причины', async () => {
+    await loginAs(U.admin)
     const unpublished = await adminApi.events({ status: 'unpublished' })
-    expect(unpublished.map((e) => e.id)).toContain('e-cycling')
-    expect((await fail(adminApi.deleteEvent('e-yoga', '')))?.status).toBe(422)
+    expect(ids(unpublished.items)).toContain(E.cycling)
+    expect((await fail(adminApi.deleteEvent(E.yoga, '')))?.status).toBe(422)
+  })
+})
+
+describe('пагинация как у бэка', () => {
+  it('страницы с нуля', async () => {
+    const first = await eventsApi.list({ size: 4 })
+    const second = await eventsApi.list({ size: 4, page: 1 })
+    expect(first).toMatchObject({ page: 0, size: 4, total: 9, total_pages: 3 })
+    expect(ids(first.items)).not.toEqual(expect.arrayContaining(ids(second.items)))
   })
 })

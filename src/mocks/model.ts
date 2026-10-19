@@ -4,32 +4,39 @@ import type {
   Comment,
   EventDetails,
   EventSummary,
+  Id,
   Organization,
   OrganizationShort,
+  Organizer,
+  Participant,
   Participation,
   Sport,
   User,
   UserShort,
 } from '@/api/types'
-import { db, type CommentRow, type EventRow, type ParticipationRow, type UserRow } from './db'
+import {
+  db,
+  type CommentRow,
+  type EventRow,
+  type OrganizationRow,
+  type ParticipationRow,
+  type SportRow,
+  type UserRow,
+} from './db'
 
 export class MockError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
     message: string,
-    readonly fields?: Record<string, string>,
+    readonly fields: Record<string, string> | null = null,
   ) {
     super(message)
   }
 
   toResponse() {
     const body: ApiErrorBody = {
-      error: {
-        code: this.code,
-        message: this.message,
-        ...(this.fields ? { fields: this.fields } : {}),
-      },
+      error: { code: this.code, message: this.message, fields: this.fields },
     }
     return HttpResponse.json(body, { status: this.status })
   }
@@ -39,10 +46,13 @@ export const fail = (
   status: number,
   code: string,
   message: string,
-  fields?: Record<string, string>,
+  fields: Record<string, string> | null = null,
 ): never => {
   throw new MockError(status, code, message, fields)
 }
+
+export const validation = (fields: Record<string, string>): never =>
+  fail(422, 'VALIDATION_ERROR', 'Ошибка валидации', fields)
 
 export function currentUser(request: Request): UserRow | null {
   const header = request.headers.get('Authorization') ?? ''
@@ -52,22 +62,25 @@ export function currentUser(request: Request): UserRow | null {
 }
 
 export function requireUser(request: Request): UserRow {
-  return currentUser(request) ?? fail(401, 'unauthorized', 'Войдите, чтобы продолжить.')
+  return (
+    currentUser(request) ??
+    fail(401, 'UNAUTHORIZED', 'Требуется авторизация или токен недействителен')
+  )
 }
 
 export function requireAdmin(request: Request): UserRow {
   const user = requireUser(request)
-  if (user.role !== 'admin') fail(403, 'forbidden', 'Раздел только для администратора.')
+  if (user.role !== 'admin') fail(403, 'FORBIDDEN', 'Раздел только для администратора')
   return user
 }
 
-export const findUser = (id: string) => db.users.find((u) => u.id === id)
-export const findOrg = (id: string) => db.organizations.find((o) => o.id === id)
-export const findSport = (id: string) => db.sports.find((s) => s.id === id)
-export const findEvent = (id: string) =>
-  db.events.find((e) => e.id === id) ?? fail(404, 'not_found', 'Мероприятие не найдено.')
+export const findUser = (id: Id) => db.users.find((u) => u.id === id)
+export const findOrg = (id: Id) => db.organizations.find((o) => o.id === id)
+export const findSport = (id: Id) => db.sports.find((s) => s.id === id)
+export const findEvent = (id: Id) =>
+  db.events.find((e) => e.id === id) ?? fail(404, 'NOT_FOUND', 'Мероприятие не найдено')
 
-export const ownedOrg = (userId: string) => db.organizations.find((o) => o.owner_id === userId)
+export const ownedOrgs = (userId: Id) => db.organizations.filter((o) => o.owner_id === userId)
 
 export function isOrganizer(event: EventRow, user: UserRow | null) {
   if (!user) return false
@@ -80,26 +93,23 @@ export const isPast = (event: EventRow, now = new Date()) => new Date(event.star
 
 export const isActive = (p: ParticipationRow) => p.status === 'pending' || p.status === 'confirmed'
 
-export function confirmedCount(eventId: string) {
+export function confirmedCount(eventId: Id) {
   return db.participations.filter((p) => p.event_id === eventId && p.status === 'confirmed').length
 }
 
-export function myParticipation(eventId: string, userId: string) {
+export function myParticipation(eventId: Id, userId: Id) {
   const mine = db.participations
     .filter((p) => p.event_id === eventId && p.user_id === userId)
-    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id - a.id)
   return mine.find(isActive) ?? mine[0] ?? null
 }
 
 export function unavailable(event: EventRow): never {
-  const reason = event.moderation_reason ? `: ${event.moderation_reason}` : ''
-  const what =
-    event.status === 'deleted'
-      ? 'удалено'
-      : event.status === 'cancelled'
-        ? 'отменено организатором'
-        : 'снято с публикации'
-  return fail(410, 'event_unavailable', `Мероприятие ${what}${reason}`)
+  const reason = event.moderation_reason ?? 'мероприятие снято с публикации'
+  return fail(410, 'EVENT_UNAVAILABLE', `Мероприятие недоступно: ${reason}`, {
+    reason,
+    status: event.status,
+  })
 }
 
 export const toUserShort = (u: UserRow): UserShort => ({
@@ -124,7 +134,7 @@ export function toUser(u: UserRow): User {
   }
 }
 
-export const toSport = (s: (typeof db.sports)[number]): Sport => ({
+export const toSport = (s: SportRow): Sport => ({
   id: s.id,
   name: s.name,
   category: s.category,
@@ -132,13 +142,39 @@ export const toSport = (s: (typeof db.sports)[number]): Sport => ({
   is_custom: s.is_custom,
 })
 
-export const toOrgShort = (o: Organization): OrganizationShort => ({ id: o.id, name: o.name })
+export const toOrgShort = (o: OrganizationRow): OrganizationShort => ({
+  id: o.id,
+  name: o.name,
+  type: o.type,
+  city: o.city,
+  status: o.status,
+})
+
+export function toOrganization(o: OrganizationRow): Organization {
+  return {
+    id: o.id,
+    name: o.name,
+    description: o.description,
+    type: o.type,
+    sports_description: o.sports_description,
+    city: o.city,
+    website_url: o.website_url,
+    avatar_url: o.avatar_url,
+    contacts: o.contacts,
+    status: o.status,
+    reject_reason: o.reject_reason,
+    decided_at: o.decided_at,
+    owner: toUserShort(findUser(o.owner_id)!),
+    created_at: o.created_at,
+    updated_at: o.updated_at,
+  }
+}
 
 export function toParticipation(p: ParticipationRow): Participation {
   return {
     id: p.id,
     event_id: p.event_id,
-    user: toUserShort(findUser(p.user_id)!),
+    user_id: p.user_id,
     status: p.status,
     message: p.message,
     decision_reason: p.decision_reason,
@@ -147,43 +183,69 @@ export function toParticipation(p: ParticipationRow): Participation {
   }
 }
 
-export function toEventSummary(e: EventRow): EventSummary {
+export function toParticipant(p: ParticipationRow, withEmail: boolean): Participant {
+  const u = findUser(p.user_id)!
+  return {
+    participation_id: p.id,
+    user: toUserShort(u),
+    email: withEmail ? u.email : null,
+    status: p.status,
+    message: p.message,
+    decision_reason: p.decision_reason,
+    created_at: p.created_at,
+  }
+}
+
+function toOrganizer(e: EventRow): Organizer {
   const org =
     e.organizer_type === 'organization' && e.organizer_org_id
       ? findOrg(e.organizer_org_id)
       : undefined
+  if (org) return { type: 'organization', id: org.id, name: org.name, avatar_url: org.avatar_url }
+  const u = findUser(e.organizer_user_id)!
+  return { type: 'user', id: u.id, name: u.name, avatar_url: u.avatar_url }
+}
+
+export function toEventSummary(e: EventRow): EventSummary {
   return {
     id: e.id,
     title: e.title,
     sport: toSport(findSport(e.sport_id)!),
-    organizer: org
-      ? { type: 'organization', organization: toOrgShort(org) }
-      : { type: 'user', user: toUserShort(findUser(e.organizer_user_id)!) },
+    organizer: toOrganizer(e),
     starts_at: e.starts_at,
     ends_at: e.ends_at,
+    city: e.city,
     address: e.address,
-    lat: e.lat,
-    lng: e.lng,
     level: e.level,
     join_mode: e.join_mode,
     capacity: e.capacity,
-    participants_count: confirmedCount(e.id),
+    confirmed_count: confirmedCount(e.id),
     status: e.status,
+    is_past: isPast(e),
+    is_edited: e.updated_at !== e.created_at,
   }
 }
 
 export function toEventDetails(e: EventRow, viewer: UserRow | null): EventDetails {
   const mine = viewer ? myParticipation(e.id, viewer.id) : null
-  // Точное место и пояснения видят организатор и подтверждённые участники.
-  const fullInfo =
-    isOrganizer(e, viewer) || mine?.status === 'confirmed' || viewer?.role === 'admin'
+  const organizer = isOrganizer(e, viewer)
+  // Точное место и контакты организатора видят организатор, подтверждённые участники и админ.
+  const fullInfo = organizer || mine?.status === 'confirmed' || viewer?.role === 'admin'
+  const owner = findUser(e.organizer_user_id)
   return {
     ...toEventSummary(e),
     description: e.description,
+    organizer_contacts: fullInfo ? (owner?.contacts ?? owner?.email ?? null) : null,
     location_note: fullInfo ? e.location_note : null,
+    lat: e.lat,
+    lng: e.lng,
     requirements: e.requirements,
     equipment: e.equipment,
-    moderation_reason: e.moderation_reason,
+    participants: db.participations
+      .filter((p) => p.event_id === e.id && p.status === 'confirmed')
+      .map((p) => toUserShort(findUser(p.user_id)!)),
+    unavailable_reason: e.status === 'published' ? null : e.moderation_reason,
+    is_organizer: organizer,
     my_participation: mine ? toParticipation(mine) : null,
     created_at: e.created_at,
     updated_at: e.updated_at,
@@ -197,24 +259,28 @@ export function toComment(c: CommentRow, { reveal = false } = {}): Comment {
   return {
     id: c.id,
     event_id: c.event_id,
+    parent_id: c.parent_id,
     author: toUserShort(author),
     as_organization: asOrg ? toOrgShort(asOrg) : null,
     is_organizer: event ? isOrganizer(event, author) : false,
-    parent_id: c.parent_id,
-    text: c.is_hidden && !reveal ? '' : c.text,
+    text: c.is_hidden && !reveal ? null : c.text,
     is_hidden: c.is_hidden,
     hidden_reason: c.hidden_reason,
+    is_edited: c.updated_at !== c.created_at,
     created_at: c.created_at,
-    updated_at: c.updated_at,
+    updated_at: c.updated_at === c.created_at ? null : c.updated_at,
   }
 }
 
-export function paginate<T>(items: T[], page = 1, size = 20) {
-  const safePage = Math.max(1, page)
+/** Страницы с нуля, как у бэка (Spring). */
+export function paginate<T>(items: T[], page = 0, size = 20) {
+  const safePage = Number.isInteger(page) && page > 0 ? page : 0
+  const safeSize = Number.isInteger(size) && size > 0 ? Math.min(100, size) : 20
   return {
-    items: items.slice((safePage - 1) * size, safePage * size),
+    items: items.slice(safePage * safeSize, (safePage + 1) * safeSize),
     total: items.length,
     page: safePage,
-    size,
+    size: safeSize,
+    total_pages: Math.max(1, Math.ceil(items.length / safeSize)),
   }
 }

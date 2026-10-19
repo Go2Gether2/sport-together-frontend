@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node'
 import { setToken } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
+import { E, U } from '@/mocks/seed'
 import { useSessionStore } from '@/stores/session'
 import EventView from '../EventView.vue'
 
@@ -28,7 +29,7 @@ beforeEach(() => {
 })
 afterAll(() => server.close())
 
-async function open(id: string, as?: string) {
+async function open(id: number, as?: number) {
   if (as) await useSessionStore().loginDemo(as)
   const Stub = { template: '<div />' }
   const router = createRouter({
@@ -52,7 +53,7 @@ const button = (wrapper: Awaited<ReturnType<typeof open>>, text: string) =>
 
 describe('EventView', () => {
   it('С3: свободная запись — сразу участник, имя появляется в списке', async () => {
-    const wrapper = await open('e-yoga', 'user2')
+    const wrapper = await open(E.yoga, U.petr)
     expect(wrapper.get('h1').text()).toBe('Йога на траве')
     await button(wrapper, 'Записаться').trigger('click')
     await flushPromises()
@@ -62,7 +63,7 @@ describe('EventView', () => {
   })
 
   it('С4: заявка с сообщением — ждёт решения, её можно отозвать', async () => {
-    const wrapper = await open('e-run-interval', 'user2')
+    const wrapper = await open(E.runInterval, U.petr)
     await button(wrapper, 'Подать заявку').trigger('click')
     await flushPromises()
     await wrapper.get('textarea').setValue('Бегаю 5 км')
@@ -80,9 +81,9 @@ describe('EventView', () => {
 
   it('показывает отказ с причиной и даёт подать снова', async () => {
     const { db } = await import('@/mocks/db')
-    const p = db.participations.find((x) => x.id === 'p-5')!
+    const p = db.participations.find((x) => x.id === 5)!
     Object.assign(p, { status: 'rejected', decision_reason: 'Состав уже набран' })
-    const wrapper = await open('e-volleyball', 'user')
+    const wrapper = await open(E.volleyball, U.anna)
     expect(wrapper.text()).toContain('Заявка отклонена')
     expect(wrapper.text()).toContain('Состав уже набран')
     expect(button(wrapper, 'Подать заявку снова')).toBeTruthy()
@@ -90,24 +91,34 @@ describe('EventView', () => {
   })
 
   it('С6: снятое мероприятие по прямой ссылке — недоступно, записаться нельзя', async () => {
-    const wrapper = await open('e-cycling', 'user')
+    const wrapper = await open(E.cycling, U.igor)
     expect(wrapper.get('h1').text()).toBe('Мероприятие недоступно')
     expect(wrapper.text()).toContain('Не указано место встречи')
     expect(wrapper.findAll('button').some((b) => b.text().includes('Записаться'))).toBe(false)
     wrapper.unmount()
   })
 
+  it('участник снятого мероприятия видит страницу с причиной, но записи и вопросов нет', async () => {
+    const wrapper = await open(E.cycling, U.anna)
+    expect(wrapper.get('h1').text()).toBe('Велопрогулка вдоль Енисея')
+    expect(wrapper.get('[role="alert"]').text()).toContain('Не указано место встречи')
+    expect(wrapper.text()).toContain('Запись закрыта')
+    expect(wrapper.text()).toContain('Обсуждение закрыто')
+    expect(wrapper.find('textarea').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('гостю предлагает войти, организатору — не записываться', async () => {
-    const guest = await open('e-football')
+    const guest = await open(E.football)
     expect(guest.text()).toContain('Войти и записаться')
     guest.unmount()
-    const organizer = await open('e-football', 'user')
+    const organizer = await open(E.football, U.anna)
     expect(organizer.text()).toContain('Вы организатор этого мероприятия')
     organizer.unmount()
   })
 
   it('несуществующее мероприятие', async () => {
-    const wrapper = await open('nope')
+    const wrapper = await open(999999)
     expect(wrapper.get('h1').text()).toBe('Мероприятие не найдено')
     wrapper.unmount()
   })

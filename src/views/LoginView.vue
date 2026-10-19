@@ -12,7 +12,7 @@ const router = useRouter()
 
 const accounts = ref<DemoAccount[]>([])
 const accountsState = ref<'loading' | 'ready' | 'error'>('loading')
-const pendingDemo = ref<string | null>(null)
+const pendingDemo = ref<number | null>(null)
 const demoError = ref('')
 
 const email = ref('')
@@ -34,7 +34,7 @@ async function goNext() {
   await router.replace(safeRedirect(route.query.redirect))
 }
 
-async function enterDemo(id: string) {
+async function enterDemo(id: number) {
   pendingDemo.value = id
   demoError.value = ''
   try {
@@ -98,7 +98,7 @@ onMounted(loadAccounts)
         <li v-for="account in accounts" :key="account.id">
           <UiCard class="!flex-row items-center gap-3">
             <div class="min-w-0 flex-1">
-              <p class="font-bold">{{ account.title }}</p>
+              <p class="font-bold">{{ account.name }}</p>
               <p class="text-sm text-ink-2">{{ account.description }}</p>
             </div>
             <UiButton
@@ -106,7 +106,7 @@ onMounted(loadAccounts)
               class="!w-auto !min-h-11 shrink-0"
               :loading="pendingDemo === account.id"
               :disabled="pendingDemo !== null"
-              :aria-label="`Войти: ${account.title}`"
+              :aria-label="`Войти: ${account.name}`"
               @click="enterDemo(account.id)"
             >
               Войти

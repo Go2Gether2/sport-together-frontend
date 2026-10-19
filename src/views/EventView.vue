@@ -2,43 +2,38 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, eventsApi, type EventDetails } from '@/api'
-import type { Participant } from '@/api/events'
 import EventComments from '@/components/comments/EventComments.vue'
 import EventJoinPanel from '@/components/events/EventJoinPanel.vue'
-import { organizerName } from '@/components/events/organizer'
+import { organizerLink, organizerName } from '@/components/events/organizer'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
-import { UiAvatarStack, UiBadge, UiButton, UiSeats } from '@/components/ui'
+import { sportIconName } from '@/components/illustrations/sportIcon'
+import { StatusBadge, UiAvatarStack, UiBadge, UiButton, UiSeats } from '@/components/ui'
 import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
 import { formatEventWhen } from '@/utils/datetime'
 import { APP_NAME } from '@/router/access'
 
 const route = useRoute()
-const id = computed(() => String(route.params.id))
+const id = computed(() => Number(route.params.id))
 
 const event = ref<EventDetails | null>(null)
-const participants = ref<Participant[]>([])
 const state = ref<'loading' | 'ready' | 'gone' | 'not-found' | 'error'>('loading')
 const message = ref('')
 
 async function load({ quiet = false } = {}) {
   if (!quiet) state.value = 'loading'
   try {
-    const [details, people] = await Promise.all([
-      eventsApi.get(id.value),
-      eventsApi.participants(id.value),
-    ])
+    const details = await eventsApi.get(id.value)
     event.value = details
-    participants.value = people
     state.value = 'ready'
     document.title = `${details.title} — ${APP_NAME}`
   } catch (e) {
     event.value = null
     message.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятие.'
     state.value =
-      e instanceof ApiError && e.isGone
-        ? 'gone'
-        : e instanceof ApiError && e.status === 404
-          ? 'not-found'
+      !Number.isInteger(id.value) || (e instanceof ApiError && e.status === 404)
+        ? 'not-found'
+        : e instanceof ApiError && e.isGone
+          ? 'gone'
           : 'error'
   }
 }
@@ -48,13 +43,7 @@ watch(id, () => load(), { immediate: true })
 const when = computed(() =>
   event.value ? formatEventWhen(event.value.starts_at, event.value.ends_at) : '',
 )
-const organizerLink = computed(() => {
-  const o = event.value?.organizer
-  if (!o) return null
-  return o.type === 'user'
-    ? { name: 'user', params: { id: o.user.id } }
-    : { name: 'organization', params: { id: o.organization.id } }
-})
+const participants = computed(() => event.value?.participants ?? [])
 </script>
 
 <template>
@@ -108,9 +97,25 @@ const organizerLink = computed(() => {
 
     <article v-else-if="event" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div class="flex min-w-0 flex-col gap-5">
+        <div
+          v-if="event.status !== 'published'"
+          class="flex flex-col gap-1 rounded-card border-2 border-ink bg-mute p-4"
+          role="alert"
+        >
+          <StatusBadge :of="{ kind: 'event', status: event.status }" />
+          <p class="font-medium">
+            Мероприятие недоступно<template v-if="event.unavailable_reason"
+              >: {{ event.unavailable_reason }}</template
+            >.
+          </p>
+          <p class="text-ink-2">
+            Записаться на него нельзя. Вы видите страницу, потому что связаны с этим мероприятием.
+          </p>
+        </div>
+
         <header class="flex flex-col gap-2">
           <p class="flex items-center gap-2 font-medium">
-            <SportIcon :name="event.sport.icon" :size="32" />
+            <SportIcon :name="sportIconName(event.sport)" :size="32" />
             {{ event.sport.name }}
           </p>
           <p class="font-display text-xl font-bold text-cobalt">{{ when }}</p>
@@ -130,8 +135,7 @@ const organizerLink = computed(() => {
           <dt class="font-bold">Организатор</dt>
           <dd>
             <RouterLink
-              v-if="organizerLink"
-              :to="organizerLink"
+              :to="organizerLink(event.organizer)"
               class="text-cobalt underline underline-offset-4"
             >
               {{ organizerName(event.organizer) }}
@@ -140,6 +144,11 @@ const organizerLink = computed(() => {
               · организация</span
             >
           </dd>
+
+          <template v-if="event.organizer_contacts">
+            <dt class="font-bold">Контакты</dt>
+            <dd>{{ event.organizer_contacts }}</dd>
+          </template>
 
           <dt class="font-bold">Место</dt>
           <dd>
@@ -165,7 +174,7 @@ const organizerLink = computed(() => {
 
         <section aria-labelledby="people-title" class="flex flex-col gap-2">
           <h2 id="people-title" class="text-lg font-bold">Участники</h2>
-          <UiSeats :taken="event.participants_count" :capacity="event.capacity">
+          <UiSeats :taken="event.confirmed_count" :capacity="event.capacity">
             <UiAvatarStack v-if="participants.length" :users="participants" :max="5" />
             <span v-else class="text-ink-2">Пока никого — будьте первым</span>
           </UiSeats>

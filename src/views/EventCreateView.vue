@@ -44,7 +44,7 @@ const joinModes = [
   },
 ]
 
-const organization = computed(() => (session.hasApprovedOrganization ? session.organization : null))
+const organization = computed(() => session.approvedOrganizations[0] ?? null)
 const isNewSport = computed(() => form.sport?.startsWith('new:') ?? false)
 const now = new Date()
 const today = [
@@ -56,7 +56,7 @@ const today = [
 onMounted(async () => {
   try {
     const sports = await sportsApi.list()
-    sportOptions.value = sports.map((s) => ({ value: s.id, label: s.name }))
+    sportOptions.value = sports.map((s) => ({ value: String(s.id), label: s.name }))
   } catch {
     sportsFailed.value = true
   }

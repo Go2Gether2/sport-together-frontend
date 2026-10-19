@@ -13,9 +13,7 @@ const emit = defineEmits<{ changed: [] }>()
 const session = useSessionStore()
 const route = useRoute()
 
-const action = computed(() =>
-  joinAction(props.event, { user: session.user, organization: session.organization }),
-)
+const action = computed(() => joinAction(props.event, session.user))
 const mine = computed(() => props.event.my_participation)
 
 const busy = ref(false)
@@ -123,6 +121,7 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       Администратор не записывается на мероприятия.
     </p>
     <p v-else-if="action.kind === 'past'" class="text-ink-2">Мероприятие уже прошло.</p>
+    <p v-else-if="action.kind === 'unavailable'" class="font-medium">Запись закрыта.</p>
     <p v-else-if="action.kind === 'full'" class="font-medium">Мест больше нет.</p>
 
     <p v-if="notice" class="font-medium text-cobalt" role="status">{{ notice }}</p>

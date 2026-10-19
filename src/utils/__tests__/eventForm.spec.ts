@@ -15,7 +15,7 @@ function filled(patch: Partial<EventFormState> = {}): EventFormState {
   return {
     ...emptyEventForm(),
     title: '  Теннис после работы ',
-    sport: 'tennis',
+    sport: '5',
     date: '2026-10-24',
     startTime: '19:00',
     address: 'Стадион «Енисей»',
@@ -65,7 +65,7 @@ describe('числовое значение лимита', () => {
 describe('toEventInput', () => {
   it('направление из справочника — sport_id, пустые поля не отправляем', () => {
     const input = toEventInput(filled({ capacity: '8', equipment: '  ' }))
-    expect(input.sport_id).toBe('tennis')
+    expect(input.sport_id).toBe(5)
     expect(input.sport_name).toBeUndefined()
     expect(input.title).toBe('Теннис после работы')
     expect(input.capacity).toBe(8)
@@ -81,7 +81,7 @@ describe('toEventInput', () => {
   })
 
   it('от имени организации', () => {
-    expect(toEventInput(filled({ organizationId: 'org-1' })).organization_id).toBe('org-1')
+    expect(toEventInput(filled({ organizationId: 7 })).organization_id).toBe(7)
   })
 })
 

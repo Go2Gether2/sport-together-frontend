@@ -11,7 +11,7 @@ export interface StatusView {
 const participation: Record<ParticipationStatus, StatusView> = {
   confirmed: { tone: 'ok', label: 'Вы участник' },
   pending: { tone: 'wait', label: 'Ждёт решения' },
-  waitlisted: { tone: 'wait', label: 'В листе ожидания' },
+  waitlist: { tone: 'wait', label: 'В листе ожидания' },
   rejected: { tone: 'no', label: 'Заявка отклонена' },
   cancelled: { tone: 'off', label: 'Запись отменена' },
 }
@@ -27,7 +27,6 @@ const organization: Record<OrganizationStatus, StatusView> = {
   approved: { tone: 'ok', label: 'Допущена' },
   pending: { tone: 'wait', label: 'На рассмотрении' },
   rejected: { tone: 'no', label: 'Отклонена' },
-  blocked: { tone: 'off', label: 'Заблокирована' },
 }
 
 export type StatusOf =

@@ -27,8 +27,8 @@ export function filtersFromQuery(query: LocationQuery): EventFilters {
   const f: EventFilters = {}
   const q = str(query.q)
   if (q) f.q = q
-  const sport = str(query.sport)
-  if (sport) f.sport = sport
+  const sport = Number(str(query.sport))
+  if (Number.isInteger(sport) && sport > 0) f.sport = sport
   const city = str(query.city)
   if (city) f.city = city
   const from = str(query.date_from)
@@ -39,16 +39,14 @@ export function filtersFromQuery(query: LocationQuery): EventFilters {
   if (level && LEVELS.includes(level)) f.level = level
   const mode = str(query.join_mode) as JoinMode | undefined
   if (mode && JOIN_MODES.includes(mode)) f.join_mode = mode
-  const page = Number(str(query.page))
-  if (Number.isInteger(page) && page > 1) f.page = page
   return f
 }
 
 export function filtersToQuery(f: EventFilters): LocationQueryRaw {
   const query: LocationQueryRaw = {}
   for (const [key, value] of Object.entries(f)) {
-    if (value !== undefined && value !== '' && !(key === 'page' && value === 1))
-      query[key] = String(value)
+    if (key === 'page' || key === 'size' || value === undefined || value === '') continue
+    query[key] = String(value)
   }
   return query
 }

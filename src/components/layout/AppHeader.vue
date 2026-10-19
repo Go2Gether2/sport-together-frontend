@@ -23,12 +23,12 @@ async function logout() {
     <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-2.5">
       <AppLogo />
 
-      <nav aria-label="Разделы" class="hidden flex-1 items-center gap-5 md:flex">
+      <nav aria-label="Разделы" class="hidden flex-1 items-center gap-4 lg:flex">
         <RouterLink
           v-for="item in items"
           :key="item.label"
           :to="item.to"
-          class="border-b-[3px] border-transparent py-1 font-medium text-ink no-underline hover:text-cobalt"
+          class="border-b-[3px] border-transparent py-1 font-medium whitespace-nowrap text-ink no-underline hover:text-cobalt"
           active-class="!border-cobalt font-bold text-cobalt"
         >
           {{ item.label }}
@@ -38,22 +38,22 @@ async function logout() {
       <div class="ml-auto flex items-center gap-3">
         <RouterLink
           :to="CREATE_ITEM.to"
-          class="hidden rounded-full border-2 border-cobalt bg-cobalt px-4 py-1.5 font-bold text-white no-underline hover:bg-cobalt/90 md:inline-block"
+          class="hidden rounded-full border-2 border-cobalt bg-cobalt px-4 py-1.5 whitespace-nowrap font-bold text-white no-underline hover:bg-cobalt/90 lg:inline-block"
         >
           + {{ CREATE_ITEM.label }}
         </RouterLink>
 
         <template v-if="session.user">
-          <span class="hidden max-w-40 truncate text-ink-2 lg:inline">{{ session.user.name }}</span>
+          <span class="hidden max-w-40 truncate text-ink-2 xl:inline">{{ session.user.name }}</span>
           <RouterLink
             :to="{ name: 'login' }"
-            class="hidden font-medium text-ink underline underline-offset-4 hover:text-cobalt md:inline"
+            class="hidden font-medium whitespace-nowrap text-ink underline underline-offset-4 hover:text-cobalt xl:inline"
           >
             Сменить роль
           </RouterLink>
           <button
             type="button"
-            class="hidden font-medium text-ink underline underline-offset-4 hover:text-cobalt md:inline"
+            class="hidden font-medium whitespace-nowrap text-ink underline underline-offset-4 hover:text-cobalt xl:inline"
             @click="logout"
           >
             Выйти
@@ -67,7 +67,11 @@ async function logout() {
           Войти
         </RouterLink>
 
-        <UiIconButton label="Все разделы" class="md:hidden" @click="$emit('openMenu')">
+        <UiIconButton
+          label="Все разделы"
+          :class="session.user ? 'xl:hidden' : 'lg:hidden'"
+          @click="$emit('openMenu')"
+        >
           <svg
             viewBox="0 0 24 24"
             width="22"

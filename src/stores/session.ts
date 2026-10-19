@@ -1,19 +1,23 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { authApi, setToken, type Organization, type User } from '@/api'
+import { authApi, setToken, type Id, type OrganizationShort, type User } from '@/api'
 
 export const useSessionStore = defineStore('session', () => {
   const user = ref<User | null>(null)
-  const organization = ref<Organization | null>(null)
+  // У владельца может быть несколько организаций в разных статусах.
+  const organizations = ref<OrganizationShort[]>([])
 
   const isAuthenticated = computed(() => user.value !== null)
   const isAdmin = computed(() => user.value?.role === 'admin')
-  const hasApprovedOrganization = computed(() => organization.value?.status === 'approved')
+  const approvedOrganizations = computed(() =>
+    organizations.value.filter((o) => o.status === 'approved'),
+  )
+  const hasApprovedOrganization = computed(() => approvedOrganizations.value.length > 0)
 
   async function refresh() {
     const me = await authApi.me()
     user.value = me.user
-    organization.value = me.organization
+    organizations.value = me.organizations
   }
 
   async function start(token: string) {
@@ -26,7 +30,7 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
-  async function loginDemo(demoAccountId: string) {
+  async function loginDemo(demoAccountId: Id) {
     const { token } = await authApi.login({ demo_account_id: demoAccountId })
     await start(token)
   }
@@ -39,7 +43,7 @@ export const useSessionStore = defineStore('session', () => {
   function clear() {
     setToken(null)
     user.value = null
-    organization.value = null
+    organizations.value = []
   }
 
   async function logout() {
@@ -52,9 +56,10 @@ export const useSessionStore = defineStore('session', () => {
 
   return {
     user,
-    organization,
+    organizations,
     isAuthenticated,
     isAdmin,
+    approvedOrganizations,
     hasApprovedOrganization,
     refresh,
     loginDemo,

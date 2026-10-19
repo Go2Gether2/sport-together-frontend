@@ -39,7 +39,7 @@ async function setup(path = '/login') {
 describe('LoginView', () => {
   it('входит по демо-аккаунту и возвращает туда, куда шёл пользователь', async () => {
     const { wrapper, router } = await setup('/login?redirect=/me')
-    const button = wrapper.get('button[aria-label="Войти: Второй пользователь"]')
+    const button = wrapper.get('button[aria-label="Войти: Пётр Иванов"]')
     await button.trigger('click')
     await flushPromises()
     expect(useSessionStore().user?.name).toBe('Пётр Иванов')
@@ -48,7 +48,7 @@ describe('LoginView', () => {
 
   it('показывает ошибку при неверном пароле', async () => {
     const { wrapper } = await setup()
-    await wrapper.get('input[type="email"]').setValue('anna@example.ru')
+    await wrapper.get('input[type="email"]').setValue('user@demo.local')
     await wrapper.get('input[type="password"]').setValue('не тот')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
@@ -58,7 +58,7 @@ describe('LoginView', () => {
 
   it('входит по почте и паролю', async () => {
     const { wrapper, router } = await setup()
-    await wrapper.get('input[type="email"]').setValue('anna@example.ru')
+    await wrapper.get('input[type="email"]').setValue('user@demo.local')
     await wrapper.get('input[type="password"]').setValue('demo')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
