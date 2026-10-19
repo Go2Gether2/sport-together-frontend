@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/me',
     name: 'my-participations',
-    component: Placeholder,
+    component: () => import('@/views/MyParticipationsView.vue'),
     meta: { title: 'Мои записи', requiresAuth: true },
   },
   {
