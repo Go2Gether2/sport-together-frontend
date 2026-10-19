@@ -35,6 +35,11 @@ export const useSessionStore = defineStore('session', () => {
     await start(token)
   }
 
+  async function register(input: { name: string; email: string; password: string }) {
+    const { token } = await authApi.register(input)
+    await start(token)
+  }
+
   async function loginWithEmail(email: string, password: string) {
     const { token } = await authApi.login({ email, password })
     await start(token)
@@ -64,6 +69,7 @@ export const useSessionStore = defineStore('session', () => {
     refresh,
     loginDemo,
     loginWithEmail,
+    register,
     logout,
     clear,
   }
