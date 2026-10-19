@@ -19,7 +19,7 @@ const id = useId()
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="font-medium">{{ label }}</label>
+    <label :for="id" class="ml-1 text-[15px] font-semibold">{{ label }}</label>
     <textarea
       :id="id"
       v-model="model"
@@ -28,12 +28,17 @@ const id = useId()
       :placeholder="placeholder"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error || hint ? `${id}-desc` : undefined"
-      class="resize-y rounded-field border-2 bg-card px-3.5 py-2.5 text-ink placeholder:text-ink-2"
-      :class="error ? 'border-dashed border-cobalt' : 'border-ink'"
+      class="resize-y rounded-field bg-field px-4 py-3 text-ink placeholder:text-ink-2"
+      :class="error ? 'ring-2 ring-orange ring-inset' : ''"
     />
-    <p v-if="error" :id="`${id}-desc`" class="text-sm font-medium text-cobalt" role="alert">
+    <p
+      v-if="error"
+      :id="`${id}-desc`"
+      class="ml-1 text-sm font-semibold text-orange-ink"
+      role="alert"
+    >
       ✕ {{ error }}
     </p>
-    <p v-else-if="hint" :id="`${id}-desc`" class="text-sm text-ink-2">{{ hint }}</p>
+    <p v-else-if="hint" :id="`${id}-desc`" class="ml-1 text-sm text-ink-2">{{ hint }}</p>
   </div>
 </template>

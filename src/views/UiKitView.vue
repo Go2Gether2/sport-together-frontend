@@ -95,15 +95,15 @@ const sports = [
 <template>
   <main class="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10">
     <header>
-      <p class="font-hand text-2xl text-cobalt">витрина компонентов</p>
+      <p class="font-hand text-2xl text-accent-ink">витрина компонентов</p>
       <h1 class="font-display text-3xl font-bold">UI-кит</h1>
     </header>
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-xl font-medium">Кнопки</h2>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <UiButton sparks>Войти</UiButton>
-        <UiButton variant="accent">Записаться</UiButton>
+        <UiButton>Войти</UiButton>
+        <UiButton variant="accent">Второстепенная</UiButton>
         <UiButton variant="ghost">Отменить</UiButton>
         <UiButton loading>Записаться</UiButton>
       </div>
@@ -145,7 +145,7 @@ const sports = [
         />
         <UiCheckbox v-model="consent">
           Даю согласие на обработку персональных данных по
-          <RouterLink to="/privacy" class="text-cobalt underline">политике</RouterLink>
+          <RouterLink to="/privacy" class="text-accent-ink underline">политике</RouterLink>
         </UiCheckbox>
         <div class="flex gap-2 overflow-x-auto">
           <UiChip
@@ -162,7 +162,7 @@ const sports = [
       <div class="flex flex-col gap-3">
         <h2 class="font-display text-xl font-medium">Карточка события</h2>
         <UiCard as="article">
-          <div class="flex items-center justify-between text-sm font-bold text-cobalt">
+          <div class="flex items-center justify-between text-sm font-bold text-accent-ink">
             <span>Сегодня · 19:00</span>
             <UiBadge>По заявке</UiBadge>
           </div>
@@ -238,8 +238,8 @@ const sports = [
         <div
           v-for="s in sports"
           :key="s.name"
-          class="flex flex-col items-center gap-1 rounded-[18px] border-2 border-ink bg-card p-2.5 text-sm font-medium"
-          :class="{ 'border-dashed text-cobalt': !s.icon }"
+          class="flex flex-col items-center gap-1 rounded-[18px] bg-card p-2.5 text-sm font-medium"
+          :class="{ ' text-accent-ink': !s.icon }"
         >
           <SportIcon :name="s.icon" />
           {{ s.name }}

@@ -12,12 +12,14 @@ const id = useId()
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="font-medium" :class="{ 'sr-only': hideLabel }">{{ label }}</label>
+    <label :for="id" class="ml-1 text-[15px] font-semibold" :class="{ 'sr-only': hideLabel }">{{
+      label
+    }}</label>
     <div class="relative">
       <select
         :id="id"
         v-model="model"
-        class="min-h-12.5 w-full appearance-none rounded-field border-2 border-ink bg-card py-2 pr-10 pl-3.5 text-ink"
+        class="min-h-13.5 w-full appearance-none rounded-field bg-field py-2 pr-10 pl-4 text-ink"
       >
         <option v-if="placeholder" value="">{{ placeholder }}</option>
         <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>

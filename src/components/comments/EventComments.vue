@@ -126,10 +126,7 @@ watch(() => props.event.id, load, { immediate: true })
             @save="(t: string) => saveComment(item.comment.id, t)"
             @remove="removeComment(item.comment.id)"
           />
-          <ul
-            v-if="item.replies.length"
-            class="ml-5 flex flex-col gap-2 border-l-2 border-mute pl-3"
-          >
+          <ul v-if="item.replies.length" class="ml-5 flex flex-col gap-2 pl-3">
             <li v-for="r in item.replies" :key="r.id">
               <CommentItem
                 :comment="r"
@@ -170,14 +167,14 @@ watch(() => props.event.id, load, { immediate: true })
             rows="2"
             maxlength="1000"
             :placeholder="placeholder"
-            class="min-h-12.5 flex-1 rounded-field border-2 border-ink bg-card p-3 text-ink placeholder:text-ink-2"
+            class="min-h-12.5 flex-1 rounded-field bg-card p-3 text-ink placeholder:text-ink-2"
             @input="error = ''"
           />
           <button
             type="submit"
             :disabled="busy"
             aria-label="Отправить сообщение"
-            class="grid size-12.5 flex-none place-items-center rounded-full border-2 border-ink bg-cobalt text-xl font-bold text-white disabled:bg-mute"
+            class="grid size-12.5 flex-none place-items-center rounded-full bg-ink text-xl font-bold text-white disabled:bg-mute"
           >
             ↑
           </button>
@@ -189,12 +186,12 @@ watch(() => props.event.id, load, { immediate: true })
       <p v-else>
         <RouterLink
           :to="{ name: 'login', query: { redirect: route.fullPath } }"
-          class="font-bold text-cobalt underline underline-offset-4"
+          class="font-bold text-accent-ink underline underline-offset-4"
         >
           Войдите</RouterLink
         >, чтобы задать вопрос.
       </p>
-      <p v-if="error" class="font-medium text-cobalt" role="alert">✕ {{ error }}</p>
+      <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
     </template>
   </section>
 </template>

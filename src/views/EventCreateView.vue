@@ -35,12 +35,12 @@ const joinModes = [
   {
     value: 'open' as const,
     title: 'Свободно',
-    text: 'Человек нажимает «Записаться» и сразу становится участником.',
+    text: 'Сразу участник',
   },
   {
     value: 'approval' as const,
     title: 'По заявке',
-    text: 'Вы видите заявки и сами решаете, кого принять. Отказ — с причиной.',
+    text: 'Вы решаете, кого принять',
   },
 ]
 
@@ -103,26 +103,20 @@ async function submit() {
 
 <template>
   <section class="mx-auto flex w-full max-w-2xl flex-col gap-6">
-    <header>
-      <p class="font-hand text-xl text-cobalt">соберите компанию</p>
-      <h1 class="font-display text-2xl font-bold">Новое мероприятие</h1>
-      <p class="mt-1 text-ink-2">
-        Поля со звёздочкой обязательны. Остальное поможет людям решиться.
-      </p>
-    </header>
+    <h1 class="text-3xl font-bold">Новое мероприятие</h1>
 
-    <form class="flex flex-col gap-6" novalidate @submit.prevent="submit">
-      <fieldset v-if="organization" class="flex flex-col gap-2">
-        <legend class="mb-1.5 font-medium">От чьего имени</legend>
-        <div class="grid grid-cols-2 overflow-hidden rounded-field border-2 border-ink">
+    <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
+      <fieldset v-if="organization">
+        <legend class="sr-only">От чьего имени</legend>
+        <div class="grid grid-cols-2 gap-1 rounded-full bg-card p-1.5">
           <label
-            class="cursor-pointer px-3 py-2.5 text-center font-medium has-checked:bg-ink has-checked:text-paper has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-cobalt"
+            class="cursor-pointer truncate rounded-full px-3 py-3 text-center font-semibold has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-accent-ink"
           >
             <input v-model="form.organizationId" type="radio" :value="null" class="sr-only" />
             От себя
           </label>
           <label
-            class="cursor-pointer border-l-2 border-ink px-3 py-2.5 text-center font-medium has-checked:bg-ink has-checked:text-paper has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-cobalt"
+            class="cursor-pointer px-3 py-2.5 text-center font-medium has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-accent-ink"
           >
             <input
               v-model="form.organizationId"
@@ -135,8 +129,8 @@ async function submit() {
         </div>
       </fieldset>
 
-      <div class="flex flex-col gap-4">
-        <h2 class="font-display text-lg font-medium">Что и когда</h2>
+      <div class="flex flex-col gap-4 rounded-card bg-card p-5">
+        <h2 class="text-xl font-bold">Что и когда</h2>
         <UiTextField
           v-model="form.title"
           label="Название"
@@ -151,17 +145,11 @@ async function submit() {
           allow-create
           :options="sportOptions"
           placeholder="Футбол, йога, шахматы…"
-          :hint="
-            sportsFailed
-              ? 'Не получилось загрузить список — впишите направление сами'
-              : 'Нет в списке — впишите своё и выберите «Добавить»'
-          "
+          :hint="sportsFailed ? 'Список не загрузился — впишите своё' : undefined"
           :error="errors.sport"
           @create="addSport"
         />
-        <p v-if="isNewSport" class="-mt-2 text-sm text-cobalt">
-          ✦ Новое направление появится в списке после публикации.
-        </p>
+        <p v-if="isNewSport" class="-mt-2 ml-1 text-sm font-semibold">✦ Новое направление</p>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <UiTextField
             v-model="form.date"
@@ -189,13 +177,13 @@ async function submit() {
           v-model="form.description"
           label="Описание"
           :maxlength="2000"
-          placeholder="Что будем делать, для кого подойдёт, как найти группу на месте"
+          placeholder="Что будем делать и для кого"
           :error="errors.description"
         />
       </div>
 
-      <div class="flex flex-col gap-4">
-        <h2 class="font-display text-lg font-medium">Где</h2>
+      <div class="flex flex-col gap-4 rounded-card bg-card p-5">
+        <h2 class="text-xl font-bold">Где</h2>
         <UiTextField
           v-model="form.address"
           label="Адрес"
@@ -211,20 +199,20 @@ async function submit() {
         />
       </div>
 
-      <div class="flex flex-col gap-4">
-        <h2 class="font-display text-lg font-medium">Кто и как записывается</h2>
+      <div class="flex flex-col gap-4 rounded-card bg-card p-5">
+        <h2 class="text-xl font-bold">Запись</h2>
         <fieldset
           class="flex flex-col gap-2"
           :aria-describedby="errors.joinMode ? 'join-err' : undefined"
         >
-          <legend class="mb-1.5 font-medium">
-            Как записываться<span aria-hidden="true" class="text-cobalt"> *</span>
+          <legend class="mb-1.5 ml-1 text-[15px] font-semibold">
+            Как записываться<span aria-hidden="true" class="text-orange"> *</span>
           </legend>
           <label
             v-for="m in joinModes"
             :key="m.value"
-            class="flex cursor-pointer gap-3 rounded-card border-2 bg-card p-3.5 has-checked:border-cobalt has-checked:bg-cobalt-tint has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-cobalt"
-            :class="errors.joinMode ? 'border-dashed border-cobalt' : 'border-ink'"
+            class="flex cursor-pointer items-center gap-3 rounded-field bg-field p-4 has-checked:bg-accent-soft has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent-ink"
+            :class="errors.joinMode ? 'ring-2 ring-orange ring-inset' : ''"
           >
             <input
               v-model="form.joinMode"
@@ -232,17 +220,17 @@ async function submit() {
               name="join-mode"
               :value="m.value"
               :aria-invalid="errors.joinMode ? 'true' : undefined"
-              class="mt-1 size-5 flex-none accent-cobalt"
+              class="size-5 flex-none accent-ink"
             />
             <span class="flex flex-col">
               <b>{{ m.title }}</b>
-              <span class="text-[15px] text-ink-2">{{ m.text }}</span>
+              <span class="text-sm text-ink-2">{{ m.text }}</span>
             </span>
           </label>
           <p
             v-if="errors.joinMode"
             id="join-err"
-            class="text-sm font-medium text-cobalt"
+            class="ml-1 text-sm font-semibold text-orange-ink"
             role="alert"
           >
             ✕ {{ errors.joinMode }}
@@ -255,20 +243,19 @@ async function submit() {
             type="number"
             label="Сколько мест"
             placeholder="Без ограничения"
-            hint="Оставьте пустым, если мест сколько угодно"
             :error="errors.capacity"
           />
         </div>
         <UiTextField
           v-model="form.equipment"
           label="Что взять с собой"
-          placeholder="Своя ракетка, удобная обувь"
+          placeholder="Своя ракетка"
           :error="errors.equipment"
         />
         <UiTextField
           v-model="form.requirements"
-          label="Требования к участникам"
-          placeholder="С 16 лет, умеете держать ракетку"
+          label="Требования"
+          placeholder="С 16 лет"
           :error="errors.requirements"
         />
       </div>
@@ -276,22 +263,13 @@ async function submit() {
       <p
         v-if="formError"
         role="alert"
-        class="rounded-card border-2 border-dashed border-cobalt bg-card p-3.5 font-medium text-cobalt"
+        class="rounded-card bg-orange p-4 font-semibold text-orange-ink"
       >
         ✕ {{ formError }}
       </p>
 
       <div class="flex flex-col gap-2">
-        <UiButton type="submit" variant="accent" sparks :loading="submitting">
-          Опубликовать
-        </UiButton>
-        <p class="text-center text-sm text-ink-2">
-          {{
-            organization
-              ? 'Организация допущена — публикуем сразу, без повторной проверки.'
-              : 'Мероприятие появится в поиске сразу после публикации.'
-          }}
-        </p>
+        <UiButton type="submit" :loading="submitting">Опубликовать</UiButton>
       </div>
     </form>
   </section>

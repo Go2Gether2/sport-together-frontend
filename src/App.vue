@@ -12,7 +12,7 @@ const menuOpen = ref(false)
 <template>
   <a
     href="#main"
-    class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+    class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-white focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
   >
     Перейти к содержимому
   </a>

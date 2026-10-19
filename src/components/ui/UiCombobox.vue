@@ -94,13 +94,13 @@ function onBlur(e: FocusEvent) {
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="font-medium">
-      {{ label }}<span v-if="required" aria-hidden="true" class="text-cobalt"> *</span>
+    <label :for="id" class="ml-1 text-[15px] font-semibold">
+      {{ label }}<span v-if="required" aria-hidden="true" class="text-orange"> *</span>
     </label>
     <div class="relative">
       <div
-        class="flex min-h-12.5 items-center gap-2 rounded-field border-2 bg-card px-3.5 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-cobalt"
-        :class="error ? 'border-dashed border-cobalt' : 'border-ink'"
+        class="flex min-h-13.5 items-center gap-2 rounded-field bg-field px-4 focus-within:bg-card focus-within:outline-2 focus-within:outline-accent-strong"
+        :class="error ? 'ring-2 ring-orange ring-inset' : ''"
         @focusout="onBlur"
       >
         <input
@@ -128,7 +128,7 @@ function onBlur(e: FocusEvent) {
         :id="listId"
         role="listbox"
         :aria-label="label"
-        class="absolute inset-x-0 top-full z-20 mt-1.5 max-h-64 overflow-y-auto rounded-field border-2 border-ink bg-card p-1.5"
+        class="absolute inset-x-0 top-full z-20 mt-2 max-h-64 overflow-y-auto rounded-field bg-card p-1.5 shadow-[0_12px_32px_rgba(14,14,16,0.14)]"
       >
         <li
           v-for="(o, i) in filtered"
@@ -136,21 +136,23 @@ function onBlur(e: FocusEvent) {
           :key="o.value"
           role="option"
           :aria-selected="o.value === model ? 'true' : 'false'"
-          class="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2"
-          :class="i === active ? 'bg-cobalt-tint' : ''"
+          class="flex cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5"
+          :class="i === active ? 'bg-accent-soft' : ''"
           @mousedown.prevent="choose(i)"
           @mousemove="active = i"
         >
           <span>{{ o.label }}</span>
-          <span v-if="o.value === model" aria-hidden="true" class="font-bold text-cobalt">✓</span>
+          <span v-if="o.value === model" aria-hidden="true" class="font-bold text-accent-ink"
+            >✓</span
+          >
         </li>
         <li
           v-if="createText"
           :id="optionId(filtered.length)"
           role="option"
           aria-selected="false"
-          class="cursor-pointer rounded-xl px-3 py-2 font-bold text-cobalt"
-          :class="active === filtered.length ? 'bg-cobalt-tint' : ''"
+          class="cursor-pointer rounded-2xl px-3.5 py-2.5 font-bold"
+          :class="active === filtered.length ? 'bg-accent-soft' : ''"
           @mousedown.prevent="choose(filtered.length)"
           @mousemove="active = filtered.length"
         >
@@ -159,9 +161,14 @@ function onBlur(e: FocusEvent) {
         <li v-if="count === 0" class="px-3 py-2 text-ink-2">Ничего не нашлось</li>
       </ul>
     </div>
-    <p v-if="error" :id="`${id}-desc`" class="text-sm font-medium text-cobalt" role="alert">
+    <p
+      v-if="error"
+      :id="`${id}-desc`"
+      class="ml-1 text-sm font-semibold text-orange-ink"
+      role="alert"
+    >
       ✕ {{ error }}
     </p>
-    <p v-else-if="hint" :id="`${id}-desc`" class="text-sm text-ink-2">{{ hint }}</p>
+    <p v-else-if="hint" :id="`${id}-desc`" class="ml-1 text-sm text-ink-2">{{ hint }}</p>
   </div>
 </template>

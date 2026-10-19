@@ -7,8 +7,8 @@ defineEmits<{ click: [] }>()
   <button
     type="button"
     :aria-pressed="pressed ? 'true' : 'false'"
-    class="inline-flex flex-none items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3.5 py-1 font-medium transition-colors"
-    :class="pressed ? 'bg-ink text-paper' : 'bg-card text-ink hover:bg-cobalt-tint'"
+    class="inline-flex flex-none items-center gap-1 whitespace-nowrap rounded-full px-4 py-2 font-semibold transition-colors"
+    :class="pressed ? 'bg-ink text-white' : 'bg-field text-ink hover:bg-mute'"
     @click="$emit('click')"
   >
     <slot />

@@ -36,19 +36,19 @@ function onBackdrop(e: MouseEvent) {
     ref="dialog"
     :aria-labelledby="`${id}-title`"
     :aria-describedby="description ? `${id}-desc` : undefined"
-    class="m-auto w-[min(440px,calc(100vw-32px))] rounded-[22px] border-[2.5px] border-ink bg-card p-0 text-ink backdrop:bg-ink/40"
+    class="m-auto w-[min(440px,calc(100vw-32px))] rounded-[32px] bg-card p-0 text-ink backdrop:bg-ink/40"
     @close="onClose"
     @click="onBackdrop"
   >
-    <div v-if="open" class="flex flex-col gap-3 p-5">
+    <div v-if="open" class="flex flex-col gap-4 p-6">
       <div class="flex items-start justify-between gap-3">
-        <h2 :id="`${id}-title`" class="font-display text-lg font-medium leading-tight">
+        <h2 :id="`${id}-title`" class="text-xl font-bold leading-tight">
           {{ title }}
         </h2>
         <button
           type="button"
           aria-label="Закрыть"
-          class="grid size-9 flex-none place-items-center rounded-full border-2 border-ink hover:bg-cobalt-tint"
+          class="grid size-11 flex-none place-items-center rounded-full bg-field hover:bg-mute"
           @click="open = false"
         >
           ✕

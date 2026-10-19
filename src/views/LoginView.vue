@@ -74,14 +74,12 @@ onMounted(loadAccounts)
 
 <template>
   <section class="mx-auto flex max-w-md flex-col gap-6">
-    <header>
-      <p class="font-hand text-2xl text-cobalt">спорт — это когда вместе</p>
-      <h1 class="font-display text-2xl font-bold">
+    <header class="flex flex-col gap-1 rounded-card bg-accent p-6">
+      <p class="font-hand text-2xl text-accent-ink">спорт — это когда вместе</p>
+      <h1 class="text-3xl font-bold">
         {{ session.user ? 'Сменить роль' : 'Вход' }}
       </h1>
-      <p v-if="session.user" class="mt-1 text-ink-2">
-        Сейчас вы — {{ session.user.name }}. Выберите другой демо-аккаунт.
-      </p>
+      <p v-if="session.user" class="text-accent-ink">Сейчас: {{ session.user.name }}</p>
     </header>
 
     <section aria-labelledby="demo-title" class="flex flex-col gap-3">
@@ -96,13 +94,12 @@ onMounted(loadAccounts)
       </div>
       <ul v-else class="flex flex-col gap-2.5">
         <li v-for="account in accounts" :key="account.id">
-          <UiCard class="!flex-row items-center gap-3">
+          <UiCard class="!flex-row items-center gap-3 !py-3 !pr-3 !pl-5">
             <div class="min-w-0 flex-1">
               <p class="font-bold">{{ account.name }}</p>
               <p class="text-sm text-ink-2">{{ account.description }}</p>
             </div>
             <UiButton
-              variant="accent"
               class="!w-auto !min-h-11 shrink-0"
               :loading="pendingDemo === account.id"
               :disabled="pendingDemo !== null"
@@ -114,12 +111,12 @@ onMounted(loadAccounts)
           </UiCard>
         </li>
       </ul>
-      <p v-if="demoError" class="font-medium text-cobalt" role="alert">✕ {{ demoError }}</p>
+      <p v-if="demoError" class="font-semibold text-orange-ink" role="alert">✕ {{ demoError }}</p>
     </section>
 
     <form
       v-if="!session.user"
-      class="flex flex-col gap-4"
+      class="flex flex-col gap-4 rounded-card bg-card p-5"
       novalidate
       aria-labelledby="email-title"
       @submit.prevent="submit"
@@ -127,12 +124,12 @@ onMounted(loadAccounts)
       <h2 id="email-title" class="text-lg font-bold">или по почте</h2>
       <UiTextField v-model="email" label="Почта" type="email" placeholder="anna@example.ru" />
       <UiTextField v-model="password" label="Пароль" type="password" :error="formError" />
-      <UiButton type="submit" sparks :loading="submitting">Войти</UiButton>
+      <UiButton type="submit" :loading="submitting">Войти</UiButton>
       <p class="text-center">
         Нет аккаунта?
         <RouterLink
           :to="{ name: 'register' }"
-          class="font-bold text-cobalt underline underline-offset-4"
+          class="font-bold text-accent-ink underline underline-offset-4"
         >
           Зарегистрироваться
         </RouterLink>

@@ -2,20 +2,26 @@
 
 @theme {
   --font-sans: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+  --font-display: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-hand: 'Caveat', 'Onest', cursive;
 
   --color-ink: #0e0e10;
-  --color-ink-2: #4a4b55;
-  --color-paper: #fbfaf4;
+  --color-ink-2: #5b5d68;
+  --color-page: #eef0f5;
   --color-card: #ffffff;
-  --color-cobalt: #1a2a8c;
-  --color-cobalt-tint: #e4e7f6;
-  --color-mute: #d9d8d0;
+  --color-field: #e6e8ef;
+  --color-mute: #d9dce5;
+  --color-accent: #a6b8ff;
+  --color-accent-soft: #c9d4ff;
+  --color-accent-ink: #16204f;
+  --color-accent-strong: #6b82ee;
+  --color-orange: #f28c28;
+  --color-orange-ink: #2e1600;
+  --color-lilac: #e9b3f7;
 
-  --radius-card: 20px;
-  --radius-field: 14px;
-  --radius-screen: 28px;
+  --radius-card: 28px;
+  --radius-field: 18px;
+  --radius-screen: 32px;
 }
 
 html {
@@ -23,7 +29,7 @@ html {
 }
 
 body {
-  background-color: var(--color-paper);
+  background-color: var(--color-page);
   color: var(--color-ink);
   font-family: var(--font-sans);
   line-height: 1.5;
@@ -31,8 +37,17 @@ body {
 
 @layer base {
   :focus-visible {
-    outline: 3px solid var(--color-cobalt);
+    outline: 3px solid var(--color-accent-ink);
     outline-offset: 2px;
+  }
+
+  /* У полей ввода тёмная рамка выглядит тяжело — фокус показываем сиренью и белым фоном. */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 0;
+    background-color: var(--color-card);
   }
 }
 

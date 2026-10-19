@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { plural, seatsLabel, seatsPercent, statusView } from '@/components/ui'
+import { plural, seatsLabel, seatsPercent, seatsShort, statusView } from '@/components/ui'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiChip from '@/components/ui/UiChip.vue'
@@ -41,6 +41,9 @@ describe('места', () => {
     expect(seatsLabel(5, 8)).toBe('5 из 8 · осталось 3 места')
     expect(seatsLabel(8, 8)).toBe('8 из 8 · мест нет')
     expect(seatsLabel(2, null)).toBe('2 участника')
+    expect(seatsShort(5, 8)).toBe('ещё 3 места')
+    expect(seatsShort(8, 8)).toBe('мест нет')
+    expect(seatsShort(1, null)).toBe('1 участник')
   })
 })
 

@@ -34,18 +34,15 @@ function save() {
 </script>
 
 <template>
-  <div
-    v-if="comment.is_hidden"
-    class="rounded-field border-2 border-dashed border-ink-2 px-3.5 py-2.5 text-ink-2"
-  >
+  <div v-if="comment.is_hidden" class="rounded-field px-3.5 py-2.5 text-ink-2">
     <p class="font-medium">Сообщение скрыто модератором</p>
     <p v-if="comment.hidden_reason" class="text-sm">{{ comment.hidden_reason }}</p>
   </div>
 
   <div
     v-else
-    class="flex flex-col gap-1 rounded-field border-2 px-3.5 py-2.5"
-    :class="comment.is_organizer ? 'border-cobalt bg-cobalt-tint' : 'border-ink bg-card'"
+    class="flex flex-col gap-1 rounded-field px-3.5 py-2.5"
+    :class="comment.is_organizer ? ' bg-accent-soft' : ' bg-card'"
   >
     <p class="flex flex-wrap items-center gap-x-2 gap-y-1">
       <span class="font-bold">{{ comment.as_organization?.name ?? comment.author.name }}</span>
@@ -64,7 +61,7 @@ function save() {
         v-model="draft"
         rows="2"
         maxlength="1000"
-        class="rounded-field border-2 border-ink bg-card p-2.5"
+        class="rounded-field bg-card p-2.5"
       />
       <div class="flex gap-4 text-sm font-bold">
         <button type="submit" class="underline underline-offset-4" :disabled="busy">

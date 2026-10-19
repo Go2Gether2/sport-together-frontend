@@ -34,14 +34,14 @@ async function logout() {
   <dialog
     ref="dialog"
     aria-labelledby="app-menu-title"
-    class="m-0 mt-auto max-h-[85vh] w-full max-w-none rounded-t-3xl border-2 border-b-0 border-ink bg-card p-4 text-ink backdrop:bg-ink/40 xl:hidden"
+    class="m-0 mt-auto max-h-[85vh] w-full max-w-none rounded-t-[32px] bg-card p-5 text-ink backdrop:bg-ink/40 xl:hidden"
     @close="open = false"
   >
     <div class="mb-3 flex items-center justify-between">
       <h2 id="app-menu-title" class="font-display text-lg font-bold">Все разделы</h2>
       <button
         type="button"
-        class="grid size-11 place-items-center rounded-full border-2 border-ink text-xl"
+        class="grid size-11 place-items-center rounded-full bg-field text-xl"
         aria-label="Закрыть меню"
         @click="open = false"
       >
@@ -54,7 +54,7 @@ async function logout() {
         <li v-for="item in items" :key="item.label">
           <RouterLink
             :to="item.to"
-            class="flex items-center gap-3 rounded-field border-2 border-ink px-4 py-3 font-medium text-ink no-underline hover:bg-cobalt-tint"
+            class="flex items-center gap-3 rounded-full bg-field px-4 py-3 font-semibold text-ink no-underline hover:bg-mute"
           >
             <NavIcon :name="item.icon" />
             {{ item.label }}
@@ -63,7 +63,7 @@ async function logout() {
       </ul>
     </nav>
 
-    <div class="mt-4 border-t-2 border-mute pt-4">
+    <div class="mt-4 pt-4">
       <p v-if="session.user" class="flex items-center justify-between gap-3">
         <span class="truncate text-ink-2">{{ session.user.name }}</span>
         <span class="flex shrink-0 gap-4">

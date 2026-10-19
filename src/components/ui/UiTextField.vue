@@ -28,12 +28,12 @@ const id = useId()
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label :for="id" class="font-medium" :class="{ 'sr-only': hideLabel }">
-      {{ label }}<span v-if="required" aria-hidden="true" class="text-cobalt"> *</span>
+    <label :for="id" class="ml-1 text-[15px] font-semibold" :class="{ 'sr-only': hideLabel }">
+      {{ label }}<span v-if="required" aria-hidden="true" class="text-orange"> *</span>
     </label>
     <div
-      class="flex min-h-12.5 items-center gap-2.5 rounded-field border-2 bg-card px-3.5 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-cobalt"
-      :class="error ? 'border-cobalt border-dashed' : 'border-ink'"
+      class="flex min-h-13.5 items-center gap-2.5 rounded-field bg-field px-4 focus-within:bg-card focus-within:outline-2 focus-within:outline-accent-strong"
+      :class="error ? 'ring-2 ring-orange ring-inset' : ''"
     >
       <slot name="icon" />
       <input
@@ -48,9 +48,14 @@ const id = useId()
         class="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-ink-2"
       />
     </div>
-    <p v-if="error" :id="`${id}-desc`" class="text-sm font-medium text-cobalt" role="alert">
+    <p
+      v-if="error"
+      :id="`${id}-desc`"
+      class="ml-1 text-sm font-semibold text-orange-ink"
+      role="alert"
+    >
       ✕ {{ error }}
     </p>
-    <p v-else-if="hint" :id="`${id}-desc`" class="text-sm text-ink-2">{{ hint }}</p>
+    <p v-else-if="hint" :id="`${id}-desc`" class="ml-1 text-sm text-ink-2">{{ hint }}</p>
   </div>
 </template>

@@ -17,3 +17,10 @@ export function plural(n: number, forms: [string, string, string]): string {
   if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return forms[1]
   return forms[2]
 }
+
+/** Короткая подпись для карточки в списке: только то, что важно для решения. */
+export function seatsShort(taken: number, capacity: number | null): string {
+  if (!capacity) return `${taken} ${plural(taken, ['участник', 'участника', 'участников'])}`
+  const left = Math.max(0, capacity - taken)
+  return left === 0 ? 'мест нет' : `ещё ${left} ${plural(left, ['место', 'места', 'мест'])}`
+}

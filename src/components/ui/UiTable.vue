@@ -35,9 +35,9 @@ function pick(row: T) {
 </script>
 
 <template>
-  <div class="overflow-x-auto rounded-2xl border-2 border-ink bg-card">
+  <div class="overflow-x-auto">
     <table
-      class="w-full min-w-[640px] border-collapse text-[15px]"
+      class="w-full min-w-[640px] border-separate border-spacing-y-1.5 text-[15px]"
       :aria-busy="loading || undefined"
     >
       <caption class="sr-only">
@@ -51,7 +51,7 @@ function pick(row: T) {
             v-for="c in columns"
             :key="c.key"
             scope="col"
-            class="border-b-2 border-ink bg-paper px-3 py-2.5 text-left text-xs font-bold tracking-wider text-ink-2 uppercase"
+            class="px-4 py-1.5 text-left text-xs font-bold tracking-wider text-ink-2 uppercase"
             :class="c.class"
           >
             {{ c.label }}
@@ -61,13 +61,20 @@ function pick(row: T) {
       <tbody>
         <template v-if="loading">
           <tr v-for="i in 3" :key="i" aria-hidden="true">
-            <td v-for="c in columns" :key="c.key" class="border-b-[1.5px] border-mute px-3 py-3">
+            <td
+              v-for="c in columns"
+              :key="c.key"
+              class="bg-field px-4 py-3.5 first:rounded-l-full last:rounded-r-full"
+            >
               <div class="h-4 w-3/4 rounded-md bg-mute" />
             </td>
           </tr>
         </template>
         <tr v-else-if="rows.length === 0">
-          <td :colspan="columns.length" class="px-3 py-8 text-center text-ink-2">
+          <td
+            :colspan="columns.length"
+            class="rounded-card bg-field px-4 py-8 text-center text-ink-2"
+          >
             <slot name="empty">{{ emptyText }}</slot>
           </td>
         </tr>
@@ -77,19 +84,20 @@ function pick(row: T) {
             :key="rowKey(row)"
             :tabindex="clickable ? 0 : undefined"
             :aria-current="rowKey(row) === selectedKey ? 'true' : undefined"
-            class="[&:last-child>td]:border-b-0"
-            :class="[
-              rowKey(row) === selectedKey ? 'bg-cobalt-tint' : '',
-              clickable ? 'cursor-pointer hover:bg-cobalt-tint/60' : '',
-            ]"
+            class="group"
+            :class="clickable ? 'cursor-pointer' : ''"
             @click="pick(row)"
             @keydown.enter="pick(row)"
           >
             <td
               v-for="c in columns"
               :key="c.key"
-              class="border-b-[1.5px] border-mute px-3 py-2.5 align-middle"
-              :class="c.class"
+              class="px-4 py-3 align-middle first:rounded-l-full last:rounded-r-full"
+              :class="[
+                c.class,
+                rowKey(row) === selectedKey ? 'bg-accent-soft' : 'bg-field',
+                clickable ? 'group-hover:bg-mute' : '',
+              ]"
             >
               <slot :name="`cell-${c.key}`" :row="row">{{ cell(row, c.key) }}</slot>
             </td>
