@@ -19,6 +19,7 @@ pnpm dev
 | `pnpm lint` | oxlint + ESLint |
 | `pnpm typecheck` | проверка типов (vue-tsc) |
 | `pnpm test` | unit-тесты (Vitest) |
+| `pnpm e2e` | сценарии С1–С6 в браузере (Playwright, на моках) |
 | `pnpm format` | Prettier для `src/` |
 | `pnpm api:types` | типы из контракта бэка |
 

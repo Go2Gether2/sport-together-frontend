@@ -10,6 +10,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [vue(), tailwindcss()],
+    // E2E всегда идут на моках, что бы ни стояло в локальном .env.local.
+    define: mode === 'e2e' ? { 'import.meta.env.VITE_API_MOCK': JSON.stringify('true') } : {},
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

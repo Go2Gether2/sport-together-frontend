@@ -63,13 +63,36 @@ jobs:
             fi
           done
 
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Зависимости
+        run: pnpm install --frozen-lockfile
+      - name: Браузер для e2e
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Сценарии С1–С6 в браузере
+        run: pnpm e2e
+      - name: Отчёт при падении
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   ci:
     if: always()
-    needs: [pr-title, web]
+    needs: [pr-title, web, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Итог
         run: |
-          for r in "${{ needs.pr-title.result }}" "${{ needs.web.result }}"; do
+          for r in "${{ needs.pr-title.result }}" "${{ needs.web.result }}" "${{ needs.e2e.result }}"; do
             case "$r" in success|skipped) ;; *) echo "есть упавшие проверки: $r"; exit 1 ;; esac
           done
