@@ -119,6 +119,13 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       >
         Заявки и участники
       </RouterLink>
+      <RouterLink
+        v-if="event.status === 'published' && !event.is_past"
+        :to="{ name: 'event-edit', params: { id: event.id } }"
+        class="inline-flex min-h-13 items-center justify-center rounded-full bg-field px-5 font-bold text-ink no-underline"
+      >
+        Изменить
+      </RouterLink>
     </template>
     <p v-else-if="action.kind === 'admin'" class="text-ink-2">
       Администратор не записывается на мероприятия.

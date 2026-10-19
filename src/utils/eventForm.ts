@@ -1,4 +1,4 @@
-import type { EventInput, Id, JoinMode, Level } from '@/api/types'
+import type { EventDetails, EventInput, EventUpdate, Id, JoinMode, Level } from '@/api/types'
 
 export const NEW_SPORT_PREFIX = 'new:'
 
@@ -159,4 +159,87 @@ export function authorOptions(organizations: { id: Id; name: string }[]): Author
     { value: null, label: 'От себя' },
     ...organizations.map((o) => ({ value: o.id, label: o.name })),
   ]
+}
+
+function localDate(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function localTime(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** Форма редактирования из карточки мероприятия; дата и время — в часовом поясе браузера. */
+export function eventFormFrom(event: EventDetails): EventFormState {
+  const start = new Date(event.starts_at)
+  return {
+    title: event.title,
+    description: event.description ?? '',
+    sport: String(event.sport.id),
+    date: localDate(start),
+    startTime: localTime(start),
+    endTime: event.ends_at ? localTime(new Date(event.ends_at)) : '',
+    city: event.city ?? '',
+    address: event.address,
+    locationNote: event.location_note ?? '',
+    level: event.level ?? '',
+    joinMode: event.join_mode,
+    capacity: event.capacity != null ? String(event.capacity) : '',
+    requirements: event.requirements ?? '',
+    equipment: event.equipment ?? '',
+    organizationId: event.organizer.type === 'organization' ? event.organizer.id : null,
+  }
+}
+
+// PATCH бэка: null — «не менять», поэтому число мест, окончание и уровень, если они были, очистить нельзя.
+export function validateEventEdit(
+  form: EventFormState,
+  original: EventFormState,
+  now = new Date(),
+): EventFormErrors {
+  const errors = validateEventForm(form, now)
+  const timeChanged = form.date !== original.date || form.startTime !== original.startTime
+  if (!timeChanged && errors.startTime === 'Время начала уже прошло') delete errors.startTime
+  if (original.capacity && !capacityText(form))
+    errors.capacity = 'Убрать ограничение нельзя — укажите число'
+  if (original.endTime && !form.endTime) errors.endTime = 'Окончание можно изменить, но не убрать'
+  if (original.level && !form.level) errors.level = 'Уровень можно изменить, но не убрать'
+  return errors
+}
+
+const TEXT_FIELDS = {
+  title: 'title',
+  description: 'description',
+  city: 'city',
+  address: 'address',
+  locationNote: 'location_note',
+  requirements: 'requirements',
+  equipment: 'equipment',
+} as const
+
+/** Тело PATCH /events/{id}: только изменённые поля. Вызывать для формы без ошибок. */
+export function toEventUpdate(form: EventFormState, original: EventFormState): EventUpdate {
+  const update: EventUpdate = {}
+  for (const [key, api] of Object.entries(TEXT_FIELDS) as [keyof typeof TEXT_FIELDS, string][]) {
+    const value = form[key].trim()
+    if (value !== original[key].trim()) (update as Record<string, string>)[api] = value
+  }
+  if (form.sport !== original.sport && form.sport) {
+    if (form.sport.startsWith(NEW_SPORT_PREFIX))
+      update.sport_name = form.sport.slice(NEW_SPORT_PREFIX.length)
+    else update.sport_id = Number(form.sport)
+  }
+  if (form.date !== original.date || form.startTime !== original.startTime)
+    update.starts_at = toIso(form.date, form.startTime)!
+  if (form.endTime && (form.endTime !== original.endTime || form.date !== original.date))
+    update.ends_at = toIso(form.date, form.endTime) ?? undefined
+  if (form.level && form.level !== original.level) update.level = form.level
+  if (form.joinMode && form.joinMode !== original.joinMode) update.join_mode = form.joinMode
+  const capacity = capacityText(form)
+  if (capacity && capacity !== original.capacity) update.capacity = Number(capacity)
+  return update
 }

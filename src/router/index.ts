@@ -14,8 +14,14 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/events/new',
     name: 'event-create',
-    component: () => import('@/views/EventCreateView.vue'),
+    component: () => import('@/views/EventFormView.vue'),
     meta: { title: 'Новое мероприятие', requiresAuth: true, noAdmin: true },
+  },
+  {
+    path: '/events/:id/edit',
+    name: 'event-edit',
+    component: () => import('@/views/EventFormView.vue'),
+    meta: { title: 'Изменить мероприятие', requiresAuth: true, noAdmin: true },
   },
   {
     path: '/events/:id/manage',

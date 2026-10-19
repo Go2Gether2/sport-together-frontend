@@ -42,6 +42,16 @@ async function load({ quiet = false } = {}) {
 
 watch(id, () => load(), { immediate: true })
 
+const editedAt = computed(() =>
+  event.value?.updated_at
+    ? new Intl.DateTimeFormat('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(event.value.updated_at))
+    : '',
+)
 const when = computed(() =>
   event.value ? formatEventWhen(event.value.starts_at, event.value.ends_at) : '',
 )
@@ -127,9 +137,18 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
           <h1 class="text-2xl leading-tight font-bold md:text-3xl">
             {{ event.title }}
           </h1>
-          <UiBadge class="!bg-card !text-ink">
-            {{ JOIN_MODE_LABELS[event.join_mode] }}
-          </UiBadge>
+          <div class="flex flex-wrap gap-2">
+            <UiBadge class="!bg-card !text-ink">
+              {{ JOIN_MODE_LABELS[event.join_mode] }}
+            </UiBadge>
+            <UiBadge
+              v-if="event.is_edited"
+              class="!bg-card !text-ink"
+              :title="`Изменено ${editedAt}`"
+            >
+              ✎ Изменено
+            </UiBadge>
+          </div>
         </header>
 
         <p v-if="event.description" class="text-lg whitespace-pre-line">{{ event.description }}</p>
