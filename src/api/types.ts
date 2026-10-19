@@ -81,6 +81,8 @@ export interface EventSummary {
   starts_at: DateTime
   ends_at: DateTime | null
   address: string
+  lat: number | null
+  lng: number | null
   level: Level | null
   join_mode: JoinMode
   capacity: number | null
@@ -107,6 +109,8 @@ export interface EventInput {
   starts_at: DateTime
   ends_at?: DateTime
   address: string
+  lat?: number
+  lng?: number
   location_note?: string
   requirements?: string
   equipment?: string

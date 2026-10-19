@@ -162,6 +162,8 @@ export function toEventSummary(e: EventRow): EventSummary {
     starts_at: e.starts_at,
     ends_at: e.ends_at,
     address: e.address,
+    lat: e.lat,
+    lng: e.lng,
     level: e.level,
     join_mode: e.join_mode,
     capacity: e.capacity,

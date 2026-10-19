@@ -381,6 +381,8 @@ export const handlers = [
         starts_at: input.starts_at!,
         ends_at: input.ends_at ?? null,
         address: input.address!.trim(),
+        lat: input.lat ?? null,
+        lng: input.lng ?? null,
         location_note: input.location_note?.trim() || null,
         level: input.level ?? null,
         requirements: input.requirements?.trim() || null,
