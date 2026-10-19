@@ -4,7 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { ApiError, sportsApi, usersApi, type Sport } from '@/api'
 import NavIcon from '@/components/layout/NavIcon.vue'
 import type { NavIconName } from '@/components/layout/nav'
-import { UiButton, UiChip, UiSelect, UiTextArea, UiTextField } from '@/components/ui'
+import { UiButton, UiChip, UiModal, UiSelect, UiTextArea, UiTextField } from '@/components/ui'
 import { LEVEL_LABELS } from '@/features/events/filters'
 import {
   BIO_MAX,
@@ -76,6 +76,30 @@ async function save() {
     formError.value = e instanceof ApiError ? e.message : 'Не получилось сохранить.'
   } finally {
     busy.value = false
+  }
+}
+
+const deleteOpen = ref(false)
+const deleting = ref(false)
+const deleteError = ref('')
+
+function openDelete() {
+  deleteError.value = ''
+  deleteOpen.value = true
+}
+
+async function deleteAccount() {
+  deleting.value = true
+  deleteError.value = ''
+  try {
+    await usersApi.deleteMe()
+    session.clear()
+    deleteOpen.value = false
+    await router.push({ name: 'home' })
+  } catch (e) {
+    deleteError.value = e instanceof ApiError ? e.message : 'Не получилось удалить аккаунт.'
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -201,6 +225,31 @@ async function logout() {
           Выйти
         </button>
       </div>
+      <button
+        type="button"
+        class="w-fit px-1 text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
+        @click="openDelete"
+      >
+        Удалить аккаунт и данные
+      </button>
     </template>
+
+    <UiModal
+      v-model:open="deleteOpen"
+      title="Удалить аккаунт?"
+      description="Удалим имя, почту, город, интересы и «о себе», отменим ваши записи и мероприятия. В обсуждениях останется «Удалённый пользователь». Вернуть нельзя."
+    >
+      <p
+        v-if="deleteError"
+        class="rounded-field bg-orange p-4 font-semibold text-orange-ink"
+        role="alert"
+      >
+        {{ deleteError }}
+      </p>
+      <template #actions>
+        <UiButton variant="ghost" @click="deleteOpen = false">Отмена</UiButton>
+        <UiButton :loading="deleting" @click="deleteAccount">Удалить навсегда</UiButton>
+      </template>
+    </UiModal>
   </section>
 </template>
