@@ -72,11 +72,16 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     meta: { adminOnly: true },
     children: [
-      { path: '', name: 'admin', component: Placeholder, meta: { title: 'Админка' } },
+      {
+        path: '',
+        name: 'admin',
+        component: () => import('@/views/admin/AdminDashboardView.vue'),
+        meta: { title: 'Админка' },
+      },
       {
         path: 'organizations',
         name: 'admin-organizations',
-        component: Placeholder,
+        component: () => import('@/views/admin/AdminOrganizationsView.vue'),
         meta: { title: 'Админка: организации' },
       },
       {
