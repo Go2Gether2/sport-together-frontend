@@ -16,6 +16,11 @@ const EVENTS: NavItem = { label: 'Мероприятия', to: { name: 'events' 
 const MINE: NavItem = { label: 'Мои записи', to: { name: 'my-participations' }, icon: 'calendar' }
 const PROFILE: NavItem = { label: 'Профиль', to: { name: 'profile' }, icon: 'user' }
 const MY_EVENTS: NavItem = { label: 'Мои мероприятия', to: { name: 'my-events' }, icon: 'flag' }
+const MY_ORG: NavItem = {
+  label: 'Моя организация',
+  to: { name: 'my-organization' },
+  icon: 'building',
+}
 const ORGS: NavItem = { label: 'Организации', to: { name: 'organizations' }, icon: 'building' }
 const ADMIN: NavItem = { label: 'Админка', to: { name: 'admin' }, icon: 'shield' }
 const PRIVACY: NavItem = { label: 'Политика данных', to: { name: 'privacy' }, icon: 'doc' }
@@ -30,12 +35,12 @@ export function tabBarItems(): [NavItem[], NavItem[]] {
 
 /** Разделы, не вошедшие в нижнюю панель. */
 export function menuItems(isAdmin: boolean): NavItem[] {
-  return isAdmin ? [ORGS, ADMIN, PRIVACY] : [MY_EVENTS, ORGS, PRIVACY]
+  return isAdmin ? [ORGS, ADMIN, PRIVACY] : [MY_EVENTS, MY_ORG, ORGS, PRIVACY]
 }
 
 /** Боковая панель на компьютере: все разделы сразу, как в нижней панели и меню телефона. */
 export function desktopItems(isAdmin: boolean): NavItem[] {
   return isAdmin
     ? [HOME, EVENTS, ORGS, ADMIN, PROFILE]
-    : [HOME, EVENTS, MINE, MY_EVENTS, ORGS, PROFILE]
+    : [HOME, EVENTS, MINE, MY_EVENTS, MY_ORG, ORGS, PROFILE]
 }
