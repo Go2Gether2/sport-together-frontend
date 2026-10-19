@@ -3,7 +3,8 @@ import { computed, ref, useId } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, eventsApi, type EventDetails } from '@/api'
 import { useSessionStore } from '@/stores/session'
-import { StatusBadge, UiButton, UiModal } from '@/components/ui'
+import { StatusBadge, UiButton, UiModal, UiTextArea } from '@/components/ui'
+import { CANCEL_REASON_MAX, cancelReasonError } from '@/features/events/cancelEvent'
 import { joinAction } from '@/features/events/participation'
 import { formatEventWhen } from '@/utils/datetime'
 
@@ -56,6 +57,27 @@ async function apply() {
 async function leave() {
   cancelOpen.value = false
   await run(() => eventsApi.leave(props.event.id), 'Запись отменена.')
+}
+
+const editable = computed(() => props.event.status === 'published' && !props.event.is_past)
+const cancelEventOpen = ref(false)
+const cancelReason = ref('')
+const cancelReasonErr = ref<string | null>(null)
+
+function openCancelEvent() {
+  cancelReason.value = ''
+  cancelReasonErr.value = null
+  cancelEventOpen.value = true
+}
+
+async function cancelEvent() {
+  cancelReasonErr.value = cancelReasonError(cancelReason.value)
+  if (cancelReasonErr.value) return
+  cancelEventOpen.value = false
+  await run(
+    () => eventsApi.cancel(props.event.id, cancelReason.value.trim()),
+    'Мероприятие отменено. Участники увидят причину.',
+  )
 }
 
 const when = computed(() => formatEventWhen(props.event.starts_at, props.event.ends_at))
@@ -120,12 +142,21 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
         Заявки и участники
       </RouterLink>
       <RouterLink
-        v-if="event.status === 'published' && !event.is_past"
+        v-if="editable"
         :to="{ name: 'event-edit', params: { id: event.id } }"
         class="inline-flex min-h-13 items-center justify-center rounded-full bg-field px-5 font-bold text-ink no-underline"
       >
         Изменить
       </RouterLink>
+      <button
+        v-if="editable"
+        type="button"
+        class="inline-flex min-h-8 w-fit items-center self-center text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
+        :disabled="busy"
+        @click="openCancelEvent"
+      >
+        Отменить мероприятие
+      </button>
     </template>
     <p v-else-if="action.kind === 'admin'" class="text-ink-2">
       Администратор не записывается на мероприятия.
@@ -165,6 +196,25 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       <template #actions>
         <UiButton variant="ghost" @click="cancelOpen = false">Не отменять</UiButton>
         <UiButton @click="leave">Да, отменить</UiButton>
+      </template>
+    </UiModal>
+
+    <UiModal
+      v-model:open="cancelEventOpen"
+      title="Отменить мероприятие?"
+      description="Запись закроется, все записавшиеся увидят причину. Вернуть мероприятие нельзя — чтобы перенести, лучше измените дату."
+    >
+      <UiTextArea
+        v-model="cancelReason"
+        label="Причина"
+        :rows="3"
+        :maxlength="CANCEL_REASON_MAX"
+        placeholder="Заболел тренер, переносим на следующую неделю"
+        :error="cancelReasonErr ?? undefined"
+      />
+      <template #actions>
+        <UiButton variant="ghost" @click="cancelEventOpen = false">Не отменять</UiButton>
+        <UiButton @click="cancelEvent">Отменить мероприятие</UiButton>
       </template>
     </UiModal>
   </section>

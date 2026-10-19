@@ -20,7 +20,7 @@ const event: Record<EventStatus, StatusView> = {
   published: { tone: 'ok', label: 'Опубликовано' },
   unpublished: { tone: 'off', label: 'Снято с публикации' },
   deleted: { tone: 'off', label: 'Удалено' },
-  cancelled: { tone: 'off', label: 'Отменено' },
+  cancelled: { tone: 'off', label: 'Отменено организатором' },
 }
 
 const organization: Record<OrganizationStatus, StatusView> = {
