@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { setupServer } from 'msw/node'
-import { eventsApi, setToken } from '@/api'
+import { eventsApi } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
 import { E, U } from '@/mocks/seed'
@@ -15,7 +15,6 @@ const server = setupServer(...handlers)
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetDb()
-  setToken(null)
   setActivePinia(createPinia())
 })
 afterAll(() => server.close())

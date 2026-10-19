@@ -2,17 +2,7 @@ import type { ApiErrorBody } from './types'
 
 export const API_BASE = '/api/v1'
 
-// Токен только в памяти: по правилам безопасности не кладём его в localStorage.
-let token: string | null = null
-
-export function setToken(value: string | null) {
-  token = value
-}
-
-export function getToken() {
-  return token
-}
-
+// Вход держится в cookie HttpOnly, которую ставит бэк: токен скрипту не виден и нигде не хранится.
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
@@ -90,11 +80,11 @@ export async function request<T>(
 ): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (token) headers.Authorization = `Bearer ${token}`
 
   let response: Response
   try {
     response = await fetch(buildUrl(path, query), {
+      credentials: 'same-origin',
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),

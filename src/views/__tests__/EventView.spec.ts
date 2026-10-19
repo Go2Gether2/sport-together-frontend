@@ -3,7 +3,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { setupServer } from 'msw/node'
-import { setToken } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
 import { E, U } from '@/mocks/seed'
@@ -24,7 +23,6 @@ beforeAll(() => {
 })
 beforeEach(() => {
   resetDb()
-  setToken(null)
   setActivePinia(createPinia())
 })
 afterAll(() => server.close())

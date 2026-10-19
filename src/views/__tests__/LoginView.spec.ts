@@ -3,7 +3,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { setupServer } from 'msw/node'
-import { setToken } from '@/api'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
 import { useSessionStore } from '@/stores/session'
@@ -14,7 +13,6 @@ const server = setupServer(...handlers)
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetDb()
-  setToken(null)
   setActivePinia(createPinia())
 })
 afterAll(() => server.close())
@@ -59,7 +57,7 @@ describe('LoginView', () => {
   it('входит по почте и паролю', async () => {
     const { wrapper, router } = await setup()
     await wrapper.get('input[type="email"]').setValue('user@demo.local')
-    await wrapper.get('input[type="password"]').setValue('demo')
+    await wrapper.get('input[type="password"]').setValue('Demo1234!')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     expect(useSessionStore().user?.name).toBe('Анна Смирнова')

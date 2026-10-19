@@ -1,4 +1,4 @@
-export { ApiError, getToken, setToken } from './http'
+export { ApiError } from './http'
 export { authApi } from './auth'
 export { usersApi } from './users'
 export { sportsApi } from './sports'

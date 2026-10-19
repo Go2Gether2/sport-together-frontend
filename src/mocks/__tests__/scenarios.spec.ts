@@ -8,7 +8,6 @@ import {
   eventsApi,
   organizationsApi,
   participationsApi,
-  setToken,
   sportsApi,
   usersApi,
 } from '@/api'
@@ -22,13 +21,12 @@ const server = setupServer(...handlers)
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetDb()
-  setToken(null)
 })
 afterAll(() => server.close())
 
+// Вход держится в cookie (MSW хранит её между запросами, как браузер).
 async function loginAs(userId: number) {
-  const { token } = await authApi.login({ demo_account_id: userId })
-  setToken(token)
+  await authApi.login({ demo_account_id: userId })
 }
 
 const fail = (promise: Promise<unknown>) =>
@@ -233,7 +231,7 @@ describe('С5: обсуждение', () => {
   it('скрытое сообщение приходит без текста, остальное обсуждение на месте', async () => {
     await loginAs(U.admin)
     await adminApi.hideComment(1, 'Не по теме')
-    setToken(null)
+    await authApi.logout()
     const { items } = await commentsApi.list(E.football)
     expect(items.find((c) => c.id === 1)).toMatchObject({ is_hidden: true, text: null })
     expect(items.find((c) => c.id === 2)?.text).toBeTruthy()
@@ -270,25 +268,43 @@ describe('пагинация как у бэка', () => {
   })
 })
 
-describe('152-ФЗ: удаление аккаунта (мок по предложению бэку)', () => {
-  it('обезличивает профиль, отменяет записи и закрывает вход', async () => {
-    await loginAs(U.petr)
+describe('152-ФЗ: удаление аккаунта (как у бэка)', () => {
+  const register = (email: string) =>
+    authApi.register({ name: 'Вера Новикова', email, password: 'Secret123!' })
+
+  it('по паролю обезличивает профиль, отменяет записи и закрывает вход', async () => {
+    const { user } = await register('vera@example.ru')
     await eventsApi.join(E.yoga)
-    await usersApi.deleteMe()
+    await usersApi.deleteMe('Secret123!')
 
     expect((await fail(authApi.me()))?.status).toBe(401)
-    expect((await fail(usersApi.get(U.petr)))?.status).toBe(404)
-    const accounts = await authApi.demoAccounts()
-    expect(accounts.map((a) => a.id)).not.toContain(U.petr)
+    expect((await fail(usersApi.get(user.id)))?.status).toBe(404)
+    expect(
+      (await fail(authApi.login({ email: 'vera@example.ru', password: 'Secret123!' })))?.status,
+    ).toBe(401)
 
     await loginAs(U.anna)
-    const list = await eventsApi.participants(E.yoga)
-    expect(names(list)).not.toContain('Пётр Иванов')
+    expect(names(await eventsApi.participants(E.yoga))).not.toContain('Вера Новикова')
   })
 
+  it('без верного пароля и для демо-аккаунтов — отказ', async () => {
+    await register('vera@example.ru')
+    expect(await fail(usersApi.deleteMe('не тот'))).toMatchObject({
+      status: 403,
+      message: 'Неверный пароль',
+    })
+    await loginAs(U.petr)
+    expect(await fail(usersApi.deleteMe('Demo1234!'))).toMatchObject({
+      status: 403,
+      message: 'Демо-аккаунт удалить нельзя',
+    })
+  })
+
+  // Предположение: на бэке проверить не на чем — демо-владельцев удалить нельзя.
   it('владельца организации не удаляет', async () => {
-    await loginAs(U.igor)
-    expect(await fail(usersApi.deleteMe())).toMatchObject({
+    await register('vera@example.ru')
+    await organizationsApi.create({ name: 'Клуб Веры', type: 'club', contacts: '+7 900 000-00-99' })
+    expect(await fail(usersApi.deleteMe('Secret123!'))).toMatchObject({
       status: 409,
       code: 'HAS_ORGANIZATIONS',
     })

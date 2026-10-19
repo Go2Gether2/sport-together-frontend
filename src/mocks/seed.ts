@@ -65,7 +65,7 @@ export function createSeed(now: Date) {
     sport_ids: [],
     is_demo: false,
     created_at: created,
-    password: 'demo',
+    password: 'Demo1234!',
     contacts: null,
     demo_description: null,
     ...extra,
