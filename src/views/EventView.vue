@@ -117,8 +117,11 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
         >
           <StatusBadge :of="{ kind: 'event', status: event.status }" />
           <p class="font-medium">
-            Мероприятие недоступно<template v-if="event.unavailable_reason"
-              >: {{ event.unavailable_reason }}</template
+            {{
+              event.status === 'cancelled'
+                ? 'Организатор отменил мероприятие'
+                : 'Мероприятие недоступно'
+            }}<template v-if="event.unavailable_reason">: {{ event.unavailable_reason }}</template
             >.
           </p>
           <p class="text-ink-2">
