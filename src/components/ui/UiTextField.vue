@@ -10,8 +10,16 @@ withDefaults(
     hint?: string
     error?: string
     required?: boolean
+    min?: string
   }>(),
-  { hideLabel: false, type: 'text', placeholder: undefined, hint: undefined, error: undefined },
+  {
+    hideLabel: false,
+    type: 'text',
+    placeholder: undefined,
+    hint: undefined,
+    error: undefined,
+    min: undefined,
+  },
 )
 
 const model = defineModel<string>({ default: '' })
@@ -34,6 +42,7 @@ const id = useId()
         :type="type"
         :placeholder="placeholder"
         :required="required"
+        :min="min"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="error || hint ? `${id}-desc` : undefined"
         class="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-ink-2"
