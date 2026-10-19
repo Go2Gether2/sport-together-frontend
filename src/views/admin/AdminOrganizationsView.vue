@@ -108,6 +108,8 @@ watch(
 
 function select(org: Organization) {
   setQuery({ id: String(org.id) })
+  // На узком экране карточка открывается вместо списка — показываем её с начала.
+  window.scrollTo({ top: 0 })
 }
 
 function applyResult(updated: Organization) {
@@ -162,7 +164,10 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
     <h1 class="text-3xl font-bold">Организации</h1>
     <AdminNav />
 
-    <div class="flex flex-col gap-3 rounded-card bg-card p-4 lg:flex-row lg:items-end">
+    <div
+      class="flex-col gap-3 rounded-card bg-card p-4 lg:flex-row lg:items-end"
+      :class="selectedId ? 'hidden xl:flex' : 'flex'"
+    >
       <UiTextField
         v-model="query"
         label="Поиск"
@@ -184,7 +189,11 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
     </div>
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
-      <div class="flex min-w-0 flex-col gap-2" aria-live="polite">
+      <div
+        class="min-w-0 flex-col gap-2"
+        :class="selectedId ? 'hidden xl:flex' : 'flex'"
+        aria-live="polite"
+      >
         <div
           v-if="listState === 'error'"
           class="flex flex-col items-center gap-3 rounded-card bg-card p-6"
@@ -221,8 +230,19 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
         </template>
       </div>
 
-      <aside class="xl:sticky xl:top-6 xl:self-start" aria-live="polite">
-        <p v-if="detailsState === 'idle'" class="rounded-card bg-card p-6 text-center text-ink-2">
+      <aside class="flex flex-col gap-3 xl:sticky xl:top-6 xl:self-start" aria-live="polite">
+        <button
+          v-if="selectedId"
+          type="button"
+          class="inline-flex min-h-8 w-fit items-center font-semibold underline underline-offset-4 xl:hidden"
+          @click="setQuery({ id: undefined })"
+        >
+          ← Все организации
+        </button>
+        <p
+          v-if="detailsState === 'idle'"
+          class="hidden rounded-card bg-card p-6 text-center text-ink-2 xl:block"
+        >
           Выберите организацию в таблице
         </p>
         <div
