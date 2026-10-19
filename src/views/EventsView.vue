@@ -51,8 +51,14 @@ function update(patch: Partial<EventFilters>) {
 }
 
 function setView(v: View) {
+  // Диапазон из быстрых дат («На выходных») календарь показать не может — снимаем его.
+  const f = filters.value
+  const next =
+    v === 'calendar' && f.date_from !== f.date_to
+      ? { ...f, date_from: undefined, date_to: undefined }
+      : f
   router.replace({
-    query: { ...filtersToQuery(filters.value), ...(v === 'list' ? {} : { view: v }) },
+    query: { ...filtersToQuery(next), ...(v === 'list' ? {} : { view: v }) },
   })
 }
 
@@ -189,7 +195,8 @@ onMounted(async () => {
         placeholder="Футбол, йога, шахматы…"
       />
 
-      <fieldset class="flex flex-col gap-2">
+      <!-- В календаре дату выбирают в сетке — быстрые даты там дублировали бы её. -->
+      <fieldset v-if="view !== 'calendar'" class="flex flex-col gap-2">
         <legend class="mb-2 font-medium">Когда</legend>
         <div class="flex flex-wrap gap-2">
           <UiChip
