@@ -7,12 +7,12 @@ const props = withDefaults(defineProps<{ tone?: StatusTone | 'outline' | 'accent
 })
 
 const classes: Record<NonNullable<typeof props.tone>, string> = {
-  ok: 'bg-cobalt text-white border-cobalt',
-  wait: 'bg-card text-cobalt border-cobalt border-dashed',
-  no: 'bg-mute text-ink border-ink',
-  off: 'bg-card text-ink-2 border-ink-2 line-through',
-  outline: 'bg-card text-ink border-ink',
-  accent: 'bg-cobalt text-white border-cobalt',
+  ok: 'bg-ink text-white',
+  wait: 'bg-orange text-orange-ink',
+  no: 'bg-mute text-ink',
+  off: 'bg-field text-ink-2 line-through',
+  outline: 'bg-field text-ink',
+  accent: 'bg-accent text-ink',
 }
 
 const icon = computed(() => (props.tone in toneIcon ? toneIcon[props.tone as StatusTone] : ''))
@@ -20,7 +20,7 @@ const icon = computed(() => (props.tone in toneIcon ? toneIcon[props.tone as Sta
 
 <template>
   <span
-    class="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-0.5 text-sm font-bold"
+    class="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-bold"
     :class="classes[tone]"
   >
     <span v-if="icon" aria-hidden="true">{{ icon }}</span>

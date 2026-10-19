@@ -4,7 +4,7 @@ import { APP_NAME } from '@/router/access'
 </script>
 
 <template>
-  <footer class="border-t-2 border-ink bg-paper">
+  <footer class="bg-page">
     <div
       class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-4 text-sm text-ink-2"
     >

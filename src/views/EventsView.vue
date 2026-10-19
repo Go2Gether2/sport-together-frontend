@@ -104,7 +104,7 @@ onMounted(async () => {
       </div>
       <RouterLink
         :to="{ name: 'event-create' }"
-        class="hidden rounded-full border-2 border-ink px-4 py-1.5 font-bold text-ink no-underline hover:bg-cobalt-tint md:inline-block"
+        class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
       >
         + Создать своё
       </RouterLink>
@@ -166,7 +166,7 @@ onMounted(async () => {
       <button
         v-if="hasFilters"
         type="button"
-        class="w-fit font-medium text-ink underline underline-offset-4 hover:text-cobalt"
+        class="w-fit font-medium text-ink underline underline-offset-4 hover:text-accent-ink"
         @click="reset"
       >
         Сбросить фильтры
@@ -179,16 +179,12 @@ onMounted(async () => {
         class="grid grid-cols-1 gap-4 md:grid-cols-2"
         aria-label="Загрузка"
       >
-        <li
-          v-for="n in 4"
-          :key="n"
-          class="h-44 animate-pulse rounded-card border-2 border-mute bg-card"
-        />
+        <li v-for="n in 4" :key="n" class="h-44 animate-pulse rounded-card bg-card" />
       </ul>
 
       <div
         v-else-if="state === 'error'"
-        class="flex flex-col items-center gap-3 rounded-card border-2 border-dashed border-cobalt p-6 text-center"
+        class="flex flex-col items-center gap-3 rounded-card p-6 text-center"
         role="alert"
       >
         <p class="text-lg font-bold">Не получилось загрузить мероприятия</p>
@@ -198,9 +194,9 @@ onMounted(async () => {
 
       <div
         v-else-if="items.length === 0"
-        class="flex flex-col items-center gap-3 rounded-card border-2 border-ink bg-card p-6 text-center"
+        class="flex flex-col items-center gap-3 rounded-card bg-card p-6 text-center"
       >
-        <p class="font-hand text-2xl text-cobalt">пока пусто</p>
+        <p class="font-hand text-2xl text-accent-ink">пока пусто</p>
         <p class="text-lg font-bold">Пока никто не собирается</p>
         <p class="max-w-md text-ink-2">
           По этим условиям мероприятий нет. Создайте своё — к нему смогут присоединиться другие.
@@ -208,14 +204,14 @@ onMounted(async () => {
         <div class="flex flex-wrap justify-center gap-3">
           <RouterLink
             :to="{ name: 'event-create' }"
-            class="rounded-full border-2 border-cobalt bg-cobalt px-5 py-2.5 font-bold text-white no-underline"
+            class="rounded-full bg-ink px-5 py-2.5 font-bold text-white no-underline"
           >
             + Создать мероприятие
           </RouterLink>
           <button
             v-if="hasFilters"
             type="button"
-            class="rounded-full border-2 border-ink px-5 py-2.5 font-bold"
+            class="rounded-full px-5 py-2.5 font-bold"
             @click="reset"
           >
             Сбросить фильтры
@@ -233,7 +229,7 @@ onMounted(async () => {
           <UiButton variant="ghost" class="!w-auto" :loading="loadingMore" @click="loadMore">
             Показать ещё
           </UiButton>
-          <p v-if="error" class="text-cobalt" role="alert">✕ {{ error }}</p>
+          <p v-if="error" class="text-accent-ink" role="alert">✕ {{ error }}</p>
         </div>
       </template>
     </div>

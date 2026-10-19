@@ -5,7 +5,7 @@ import { APP_NAME } from '@/router/access'
 <template>
   <article class="mx-auto flex max-w-2xl flex-col gap-5">
     <header>
-      <p class="font-hand text-xl text-cobalt">документы</p>
+      <p class="font-hand text-xl text-accent-ink">документы</p>
       <h1 class="font-display text-2xl font-bold">Политика обработки персональных данных</h1>
     </header>
 

@@ -62,10 +62,7 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
 </script>
 
 <template>
-  <section
-    aria-labelledby="join-title"
-    class="flex flex-col gap-3 rounded-card border-2 border-ink bg-card p-4"
-  >
+  <section aria-labelledby="join-title" class="flex flex-col gap-3 rounded-card bg-card p-4">
     <h2 id="join-title" class="sr-only">Запись на мероприятие</h2>
 
     <template v-if="action.kind === 'confirmed'">
@@ -88,7 +85,7 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
 
     <template v-else-if="action.kind === 'join'">
       <p class="text-ink-2">Свободная запись: вы сразу станете участником.</p>
-      <UiButton variant="accent" sparks :loading="busy" @click="join">Записаться</UiButton>
+      <UiButton :loading="busy" @click="join">Записаться</UiButton>
     </template>
 
     <template v-else-if="action.kind === 'apply'">
@@ -99,7 +96,7 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       <p class="text-ink-2">
         Запись по заявке: организатор примет или отклонит её. До решения вы не участник.
       </p>
-      <UiButton variant="accent" sparks :loading="busy" @click="applyOpen = true">
+      <UiButton :loading="busy" @click="applyOpen = true">
         {{ action.again ? 'Подать заявку снова' : 'Подать заявку' }}
       </UiButton>
     </template>
@@ -108,7 +105,7 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       <p class="text-ink-2">Чтобы записаться, войдите в аккаунт.</p>
       <RouterLink
         :to="{ name: 'login', query: { redirect: route.fullPath } }"
-        class="inline-flex min-h-13 items-center justify-center rounded-full border-2 border-ink bg-ink px-5 font-bold text-paper no-underline"
+        class="inline-flex min-h-13 items-center justify-center rounded-full bg-ink px-5 font-bold text-white no-underline"
       >
         Войти и записаться
       </RouterLink>
@@ -124,8 +121,8 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
     <p v-else-if="action.kind === 'unavailable'" class="font-medium">Запись закрыта.</p>
     <p v-else-if="action.kind === 'full'" class="font-medium">Мест больше нет.</p>
 
-    <p v-if="notice" class="font-medium text-cobalt" role="status">{{ notice }}</p>
-    <p v-if="error" class="font-medium text-cobalt" role="alert">✕ {{ error }}</p>
+    <p v-if="notice" class="font-medium text-accent-ink" role="status">{{ notice }}</p>
+    <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
 
     <UiModal
       v-model:open="applyOpen"
@@ -138,12 +135,12 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
         v-model="message"
         rows="3"
         maxlength="500"
-        class="rounded-field border-2 border-ink bg-card p-3 text-ink"
+        class="rounded-field bg-card p-3 text-ink"
         placeholder="Например: играю второй сезон"
       />
       <template #actions>
         <UiButton variant="ghost" @click="applyOpen = false">Отмена</UiButton>
-        <UiButton variant="accent" @click="apply">Отправить заявку</UiButton>
+        <UiButton @click="apply">Отправить заявку</UiButton>
       </template>
     </UiModal>
 

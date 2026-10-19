@@ -12,7 +12,7 @@ const label = computed(() => seatsLabel(props.taken, props.capacity))
   <div class="flex flex-col gap-1">
     <div
       v-if="capacity"
-      class="h-3 overflow-hidden rounded-full border-2 border-ink bg-card"
+      class="h-2.5 overflow-hidden rounded-full bg-mute"
       role="progressbar"
       :aria-valuenow="taken"
       :aria-valuemin="0"

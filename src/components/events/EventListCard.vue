@@ -4,48 +4,34 @@ import { RouterLink } from 'vue-router'
 import type { EventSummary } from '@/api'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { sportIconName } from '@/components/illustrations/sportIcon'
-import { UiBadge, UiSeats } from '@/components/ui'
+import { UiBadge, seatsShort } from '@/components/ui'
 import { formatEventWhen } from '@/utils/datetime'
-import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
-import { organizerName } from './organizer'
 
 const props = defineProps<{ event: EventSummary }>()
 
-const when = computed(() => formatEventWhen(props.event.starts_at, props.event.ends_at))
-const level = computed(() =>
-  props.event.level ? LEVEL_LABELS[props.event.level] : 'любой уровень',
-)
+const when = computed(() => formatEventWhen(props.event.starts_at))
+const seats = computed(() => seatsShort(props.event.confirmed_count, props.event.capacity))
 </script>
 
 <template>
   <article
-    class="relative flex flex-col gap-2.5 rounded-card border-2 border-ink bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-cobalt hover:bg-cobalt-tint/40"
+    class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
   >
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="font-display text-lg font-bold text-cobalt">{{ when }}</p>
-      <UiBadge :tone="event.join_mode === 'approval' ? 'outline' : 'accent'">
-        {{ JOIN_MODE_LABELS[event.join_mode] }}
-      </UiBadge>
+    <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
+      <SportIcon :name="sportIconName(event.sport)" :size="40" />
+    </span>
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <p class="font-semibold text-accent-ink">{{ when }}</p>
+      <h3 class="line-clamp-2 text-lg leading-snug font-bold">
+        <RouterLink
+          :to="{ name: 'event', params: { id: event.id } }"
+          class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"
+        >
+          {{ event.title }}
+        </RouterLink>
+      </h3>
+      <p class="truncate text-ink-2">{{ event.sport.name }} · {{ seats }}</p>
     </div>
-
-    <div class="flex items-start gap-3">
-      <SportIcon :name="sportIconName(event.sport)" :size="44" class="shrink-0" />
-      <div class="min-w-0 flex-1">
-        <h3 class="text-lg leading-snug font-bold">
-          <RouterLink
-            :to="{ name: 'event', params: { id: event.id } }"
-            class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"
-          >
-            {{ event.title }}
-          </RouterLink>
-        </h3>
-        <p class="text-ink-2">{{ event.sport.name }} · {{ level }}</p>
-        <p class="truncate text-ink-2">{{ event.address }}</p>
-      </div>
-    </div>
-
-    <UiSeats :taken="event.confirmed_count" :capacity="event.capacity">
-      <span class="truncate">{{ organizerName(event.organizer) }}</span>
-    </UiSeats>
+    <UiBadge v-if="event.join_mode === 'approval'" class="self-start">По заявке</UiBadge>
   </article>
 </template>

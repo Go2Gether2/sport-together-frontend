@@ -9,7 +9,7 @@ const [left, right] = tabBarItems()
 <template>
   <nav
     aria-label="Основные разделы"
-    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-3xl border-2 border-ink bg-card px-1 py-1.5 lg:hidden"
+    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-[28px] bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] lg:hidden"
   >
     <RouterLink
       v-for="item in left"
@@ -24,11 +24,11 @@ const [left, right] = tabBarItems()
 
     <RouterLink
       :to="CREATE_ITEM.to"
-      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-cobalt no-underline"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline"
     >
       <span
         aria-hidden="true"
-        class="-mt-6 grid size-12 place-items-center rounded-full border-2 border-ink bg-cobalt text-3xl leading-none text-white"
+        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-3xl leading-none text-white"
         >+</span
       >
       {{ CREATE_ITEM.label }}

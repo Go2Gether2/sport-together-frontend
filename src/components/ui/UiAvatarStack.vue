@@ -21,8 +21,8 @@ function initials(name: string): string {
     <span
       v-for="(u, i) in shown"
       :key="u.id"
-      class="grid size-7 place-items-center overflow-hidden rounded-full border-2 border-ink bg-cobalt-tint text-[11px] font-bold"
-      :class="{ '-ml-2': i > 0 }"
+      class="grid size-8 place-items-center overflow-hidden rounded-full text-[11px] font-bold ring-2 ring-card"
+      :class="[i > 0 ? '-ml-2.5' : '', ['bg-accent', 'bg-orange', 'bg-lilac'][i % 3]]"
       aria-hidden="true"
     >
       <img v-if="u.avatar_url" :src="u.avatar_url" alt="" class="size-full object-cover" />
@@ -30,7 +30,7 @@ function initials(name: string): string {
     </span>
     <span
       v-if="rest > 0"
-      class="-ml-2 grid size-7 place-items-center rounded-full border-2 border-ink bg-card text-[11px] font-bold"
+      class="-ml-2.5 grid size-8 place-items-center rounded-full bg-field ring-2 ring-card text-[11px] font-bold"
       aria-hidden="true"
       >+{{ rest }}</span
     >

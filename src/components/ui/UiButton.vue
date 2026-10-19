@@ -11,9 +11,9 @@ withDefaults(
 )
 
 const variants = {
-  primary: 'bg-ink text-paper border-ink hover:bg-ink/85',
-  accent: 'bg-cobalt text-white border-cobalt hover:bg-cobalt/90',
-  ghost: 'bg-transparent text-ink border-ink hover:bg-cobalt-tint',
+  primary: 'bg-ink text-white hover:bg-ink/85',
+  accent: 'bg-accent text-ink hover:bg-accent-soft',
+  ghost: 'bg-field text-ink hover:bg-mute',
 }
 </script>
 
@@ -22,7 +22,7 @@ const variants = {
     :type="type"
     :disabled="disabled || loading"
     :aria-busy="loading || undefined"
-    class="inline-flex min-h-13 w-full items-center justify-center gap-2.5 rounded-full border-2 px-5 font-bold transition-colors disabled:cursor-not-allowed disabled:border-mute disabled:bg-mute disabled:text-ink-2"
+    class="inline-flex min-h-13 w-full items-center justify-center gap-2.5 rounded-full px-6 font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:bg-mute disabled:text-ink-2"
     :class="variants[variant]"
   >
     <span v-if="sparks" aria-hidden="true" class="text-sm">✦</span>

@@ -50,12 +50,12 @@ const participants = computed(() => event.value?.participants ?? [])
   <div aria-live="polite" :aria-busy="state === 'loading'">
     <div v-if="state === 'loading'" class="flex flex-col gap-4" aria-label="Загрузка">
       <div class="h-10 w-2/3 animate-pulse rounded-field bg-mute" />
-      <div class="h-56 animate-pulse rounded-card border-2 border-mute bg-card" />
+      <div class="h-56 animate-pulse rounded-card bg-card" />
     </div>
 
     <section
       v-else-if="state === 'gone'"
-      class="mx-auto flex max-w-xl flex-col gap-3 rounded-card border-2 border-ink bg-card p-5"
+      class="mx-auto flex max-w-xl flex-col gap-3 rounded-card bg-card p-5"
     >
       <UiBadge tone="off">Запись закрыта</UiBadge>
       <h1 class="font-display text-2xl font-bold">Мероприятие недоступно</h1>
@@ -65,7 +65,7 @@ const participants = computed(() => event.value?.participants ?? [])
       </p>
       <RouterLink
         :to="{ name: 'events' }"
-        class="font-bold text-cobalt underline underline-offset-4"
+        class="font-bold text-accent-ink underline underline-offset-4"
       >
         Найти другие мероприятия
       </RouterLink>
@@ -79,7 +79,7 @@ const participants = computed(() => event.value?.participants ?? [])
       <p class="text-ink-2">Возможно, ссылка с ошибкой.</p>
       <RouterLink
         :to="{ name: 'events' }"
-        class="font-bold text-cobalt underline underline-offset-4"
+        class="font-bold text-accent-ink underline underline-offset-4"
       >
         К мероприятиям
       </RouterLink>
@@ -87,7 +87,7 @@ const participants = computed(() => event.value?.participants ?? [])
 
     <section
       v-else-if="state === 'error'"
-      class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-card border-2 border-dashed border-cobalt p-6 text-center"
+      class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-card p-6 text-center"
       role="alert"
     >
       <p class="text-lg font-bold">Не получилось загрузить мероприятие</p>
@@ -99,7 +99,7 @@ const participants = computed(() => event.value?.participants ?? [])
       <div class="flex min-w-0 flex-col gap-5">
         <div
           v-if="event.status !== 'published'"
-          class="flex flex-col gap-1 rounded-card border-2 border-ink bg-mute p-4"
+          class="flex flex-col gap-1 rounded-card bg-mute p-4"
           role="alert"
         >
           <StatusBadge :of="{ kind: 'event', status: event.status }" />
@@ -113,30 +113,30 @@ const participants = computed(() => event.value?.participants ?? [])
           </p>
         </div>
 
-        <header class="flex flex-col gap-2">
-          <p class="flex items-center gap-2 font-medium">
-            <SportIcon :name="sportIconName(event.sport)" :size="32" />
+        <header class="flex flex-col gap-3 rounded-card bg-accent p-6">
+          <p class="flex items-center gap-3 font-semibold">
+            <span class="grid size-12 place-items-center rounded-full bg-card">
+              <SportIcon :name="sportIconName(event.sport)" :size="34" />
+            </span>
             {{ event.sport.name }}
           </p>
-          <p class="font-display text-xl font-bold text-cobalt">{{ when }}</p>
-          <h1 class="font-display text-2xl leading-tight font-bold md:text-3xl">
+          <p class="text-xl font-bold text-accent-ink">{{ when }}</p>
+          <h1 class="text-2xl leading-tight font-bold md:text-3xl">
             {{ event.title }}
           </h1>
-          <UiBadge :tone="event.join_mode === 'approval' ? 'outline' : 'accent'">
+          <UiBadge class="!bg-card !text-ink">
             {{ JOIN_MODE_LABELS[event.join_mode] }}
           </UiBadge>
         </header>
 
         <p v-if="event.description" class="text-lg whitespace-pre-line">{{ event.description }}</p>
 
-        <dl
-          class="grid gap-3 rounded-card border-2 border-ink bg-card p-4 sm:grid-cols-[auto_1fr] sm:gap-x-6"
-        >
+        <dl class="grid gap-3 rounded-card bg-card p-4 sm:grid-cols-[auto_1fr] sm:gap-x-6">
           <dt class="font-bold">Организатор</dt>
           <dd>
             <RouterLink
               :to="organizerLink(event.organizer)"
-              class="text-cobalt underline underline-offset-4"
+              class="text-accent-ink underline underline-offset-4"
             >
               {{ organizerName(event.organizer) }}
             </RouterLink>
