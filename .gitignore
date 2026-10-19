@@ -1,0 +1,70 @@
+# Белый список: по умолчанию игнорируется всё, разрешённое перечислено явно.
+# Добавляешь новый тип файлов или каталог — расширяй список осознанно.
+*
+!*/
+
+!/.gitignore
+!/.gitattributes
+!/.editorconfig
+!/README.md
+!/LICENSE
+!/Dockerfile
+!/.dockerignore
+!/.env.example
+!/docs/**
+!/scripts/**
+!/.github/**
+
+# Node и конфиги сборки (лишнее после выбора стека удалить)
+!/package.json
+!/pnpm-lock.yaml
+!/pnpm-workspace.yaml
+!/package-lock.json
+!/yarn.lock
+!/.npmrc
+!/.nvmrc
+!/*.config.ts
+!/*.config.js
+!/*.config.mjs
+!/*.config.cjs
+!/tsconfig*.json
+!/index.html
+!/.prettierrc
+!/.prettierignore
+
+# Исходники (оставить то, что использует выбранный фреймворк)
+!/src/**
+!/app/**
+!/pages/**
+!/components/**
+!/public/**
+!/shared/**
+!/tests/**
+!/e2e/**
+
+# Артефакты
+**/node_modules/
+**/dist/
+**/build/
+**/.output/
+**/.nuxt/
+**/.next/
+**/.svelte-kit/
+**/.vite/
+**/coverage/
+**/test-results/
+**/playwright-report/
+
+# Секреты — никогда
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Мусор ОС и редакторов
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
