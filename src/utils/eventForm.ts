@@ -143,3 +143,16 @@ export function mapServerErrors(fields: Record<string, string>): {
   }
   return { errors, rest }
 }
+
+export interface AuthorOption {
+  value: Id | null
+  label: string
+}
+
+/** «От себя» и все допущенные организации пользователя — от их имени можно публиковать. */
+export function authorOptions(organizations: { id: Id; name: string }[]): AuthorOption[] {
+  return [
+    { value: null, label: 'От себя' },
+    ...organizations.map((o) => ({ value: o.id, label: o.name })),
+  ]
+}

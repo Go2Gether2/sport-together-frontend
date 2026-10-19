@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  authorOptions,
   emptyEventForm,
   mapServerErrors,
   newSportValue,
@@ -104,5 +105,24 @@ describe('toIso', () => {
   it('отклоняет неполные значения', () => {
     expect(toIso('', '10:00')).toBeNull()
     expect(toIso('2026-10-24', '')).toBeNull()
+  })
+})
+
+describe('authorOptions', () => {
+  it('«От себя» первым, затем все допущенные организации', () => {
+    expect(
+      authorOptions([
+        { id: 3, name: 'Беговой клуб «Енисей»' },
+        { id: 7, name: 'Шахматный клуб «Ладья»' },
+      ]),
+    ).toEqual([
+      { value: null, label: 'От себя' },
+      { value: 3, label: 'Беговой клуб «Енисей»' },
+      { value: 7, label: 'Шахматный клуб «Ладья»' },
+    ])
+  })
+
+  it('без организаций — только «От себя», выбор не показываем', () => {
+    expect(authorOptions([])).toHaveLength(1)
   })
 })
