@@ -1,0 +1,200 @@
+<script setup lang="ts">
+import { computed, nextTick, ref, useId, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+import { ApiError, commentsApi, type Comment, type EventDetails } from '@/api'
+import { useSessionStore } from '@/stores/session'
+import { UiButton, plural } from '@/components/ui'
+import { buildThread } from '@/features/comments/thread'
+import { isEventOrganizer } from '@/features/events/participation'
+import CommentItem from './CommentItem.vue'
+
+const props = defineProps<{ event: EventDetails }>()
+
+const session = useSessionStore()
+const route = useRoute()
+
+const comments = ref<Comment[]>([])
+const state = ref<'loading' | 'ready' | 'error'>('loading')
+const busy = ref(false)
+const error = ref('')
+const text = ref('')
+const replyTo = ref<Comment | null>(null)
+const inputId = useId()
+const input = ref<HTMLTextAreaElement | null>(null)
+
+const thread = computed(() => buildThread(comments.value))
+const countText = computed(
+  () =>
+    `${comments.value.length} ${plural(comments.value.length, ['сообщение', 'сообщения', 'сообщений'])}`,
+)
+const isOrganizer = computed(() =>
+  isEventOrganizer(props.event, { user: session.user, organization: session.organization }),
+)
+// Владелец допущенной организации отвечает в обсуждении её события от её имени.
+const asOrganizationId = computed(() =>
+  isOrganizer.value && props.event.organizer.type === 'organization'
+    ? props.event.organizer.organization.id
+    : undefined,
+)
+const placeholder = computed(() =>
+  isOrganizer.value ? 'Ответьте участникам или добавьте уточнение…' : 'Задать вопрос организатору…',
+)
+
+async function load() {
+  state.value = 'loading'
+  try {
+    comments.value = (await commentsApi.list(props.event.id)).items
+    state.value = 'ready'
+  } catch {
+    state.value = 'error'
+  }
+}
+
+async function act(fn: () => Promise<unknown>) {
+  busy.value = true
+  error.value = ''
+  try {
+    await fn()
+    comments.value = (await commentsApi.list(props.event.id)).items
+    return true
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : 'Не получилось отправить. Попробуйте ещё раз.'
+    return false
+  } finally {
+    busy.value = false
+  }
+}
+
+async function send() {
+  const body = text.value.trim()
+  if (!body) {
+    error.value = 'Напишите сообщение.'
+    return
+  }
+  const ok = await act(() =>
+    commentsApi.create(props.event.id, {
+      text: body,
+      parent_id: replyTo.value?.id,
+      as_organization_id: asOrganizationId.value,
+    }),
+  )
+  if (ok) {
+    text.value = ''
+    replyTo.value = null
+  }
+}
+
+function saveComment(id: string, body: string) {
+  return act(() => commentsApi.update(id, body))
+}
+
+function removeComment(id: string) {
+  return act(() => commentsApi.remove(id))
+}
+
+async function reply(comment: Comment) {
+  replyTo.value = comment
+  await nextTick()
+  input.value?.focus()
+}
+
+watch(() => props.event.id, load, { immediate: true })
+</script>
+
+<template>
+  <section aria-labelledby="comments-title" class="flex flex-col gap-3">
+    <h2 id="comments-title" class="flex items-baseline gap-2 text-lg font-bold">
+      Обсуждение
+      <span v-if="state === 'ready'" class="text-base font-normal text-ink-2">{{ countText }}</span>
+    </h2>
+
+    <p v-if="state === 'loading'" class="text-ink-2" role="status">Загружаем сообщения…</p>
+    <div v-else-if="state === 'error'" class="flex flex-col items-start gap-2" role="alert">
+      <p class="text-ink-2">Не получилось загрузить обсуждение.</p>
+      <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
+    </div>
+
+    <template v-else>
+      <p v-if="comments.length === 0" class="text-ink-2">
+        Вопросов пока нет. Спросите о том, что важно перед записью.
+      </p>
+      <ul class="flex flex-col gap-3">
+        <li v-for="item in thread" :key="item.comment.id" class="flex flex-col gap-2">
+          <CommentItem
+            :comment="item.comment"
+            :mine="item.comment.author.id === session.user?.id"
+            :can-reply="!!session.user"
+            :busy="busy"
+            @reply="reply(item.comment)"
+            @save="(t: string) => saveComment(item.comment.id, t)"
+            @remove="removeComment(item.comment.id)"
+          />
+          <ul
+            v-if="item.replies.length"
+            class="ml-5 flex flex-col gap-2 border-l-2 border-mute pl-3"
+          >
+            <li v-for="r in item.replies" :key="r.id">
+              <CommentItem
+                :comment="r"
+                :mine="r.author.id === session.user?.id"
+                :can-reply="!!session.user"
+                :busy="busy"
+                @reply="reply(item.comment)"
+                @save="(t: string) => saveComment(r.id, t)"
+                @remove="removeComment(r.id)"
+              />
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <form v-if="session.user" class="flex flex-col gap-2" @submit.prevent="send">
+        <p v-if="replyTo" class="flex items-center gap-3 text-sm">
+          <span class="text-ink-2">
+            Ответ для {{ replyTo.as_organization?.name ?? replyTo.author.name }}
+          </span>
+          <button
+            type="button"
+            class="font-bold underline underline-offset-4"
+            @click="replyTo = null"
+          >
+            Не отвечать
+          </button>
+        </p>
+        <label :for="inputId" class="sr-only">{{ placeholder }}</label>
+        <div class="flex items-end gap-2">
+          <textarea
+            :id="inputId"
+            ref="input"
+            v-model="text"
+            rows="2"
+            maxlength="1000"
+            :placeholder="placeholder"
+            class="min-h-12.5 flex-1 rounded-field border-2 border-ink bg-card p-3 text-ink placeholder:text-ink-2"
+            @input="error = ''"
+          />
+          <button
+            type="submit"
+            :disabled="busy"
+            aria-label="Отправить сообщение"
+            class="grid size-12.5 flex-none place-items-center rounded-full border-2 border-ink bg-cobalt text-xl font-bold text-white disabled:bg-mute"
+          >
+            ↑
+          </button>
+        </div>
+        <p v-if="asOrganizationId" class="text-sm text-ink-2">
+          Сообщение будет от имени организации.
+        </p>
+      </form>
+      <p v-else>
+        <RouterLink
+          :to="{ name: 'login', query: { redirect: route.fullPath } }"
+          class="font-bold text-cobalt underline underline-offset-4"
+        >
+          Войдите</RouterLink
+        >, чтобы задать вопрос.
+      </p>
+      <p v-if="error" class="font-medium text-cobalt" role="alert">✕ {{ error }}</p>
+    </template>
+  </section>
+</template>

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, eventsApi, type EventDetails } from '@/api'
 import type { Participant } from '@/api/events'
+import EventComments from '@/components/comments/EventComments.vue'
 import EventJoinPanel from '@/components/events/EventJoinPanel.vue'
 import { organizerName } from '@/components/events/organizer'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
@@ -177,6 +178,8 @@ const organizerLink = computed(() => {
       <aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
         <EventJoinPanel :event="event" @changed="load({ quiet: true })" />
       </aside>
+
+      <EventComments :event="event" class="lg:col-start-1" />
     </article>
   </div>
 </template>
