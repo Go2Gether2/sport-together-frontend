@@ -111,9 +111,15 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
       </RouterLink>
     </template>
 
-    <p v-else-if="action.kind === 'organizer'" class="font-medium">
-      Вы организатор этого мероприятия.
-    </p>
+    <template v-else-if="action.kind === 'organizer'">
+      <p class="font-medium">Вы организатор этого мероприятия.</p>
+      <RouterLink
+        :to="{ name: 'event-manage', params: { id: event.id } }"
+        class="inline-flex min-h-13 items-center justify-center rounded-full bg-ink px-5 font-bold text-white no-underline"
+      >
+        Заявки и участники
+      </RouterLink>
+    </template>
     <p v-else-if="action.kind === 'admin'" class="text-ink-2">
       Администратор не записывается на мероприятия.
     </p>
