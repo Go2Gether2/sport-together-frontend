@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import ForYou from '@/components/events/ForYou.vue'
+import PromoBanners from '@/components/home/PromoBanners.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { useSessionStore } from '@/stores/session'
 
@@ -34,6 +35,8 @@ const sports = [
         <SportIcon name="running" :size="180" />
       </span>
     </div>
+
+    <PromoBanners />
 
     <ForYou v-if="session.user && !session.isAdmin" />
 
