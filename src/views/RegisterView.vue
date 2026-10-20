@@ -61,8 +61,8 @@ async function submit() {
       >
         спорт — это когда вместе
       </p>
-      <p class="text-4xl leading-tight font-bold text-orange-ink">Найдите компанию для спорта!</p>
-      <p class="max-w-md text-lg text-orange-ink">
+      <p class="text-4xl leading-tight font-bold text-danger">Найдите компанию для спорта!</p>
+      <p class="max-w-md text-lg text-danger">
         Футбол во дворе, пробежка по набережной, шахматы в парке — собирайтесь с людьми своего
         уровня рядом с домом.
       </p>
@@ -117,12 +117,12 @@ async function submit() {
               политике
             </RouterLink>
           </UiCheckbox>
-          <p v-if="errors.consent" class="ml-1 text-sm font-semibold text-orange-ink" role="alert">
+          <p v-if="errors.consent" class="ml-1 text-sm font-semibold text-danger" role="alert">
             ✕ {{ errors.consent }}
           </p>
         </div>
 
-        <p v-if="formError" class="font-semibold text-orange-ink" role="alert">✕ {{ formError }}</p>
+        <p v-if="formError" class="font-semibold text-danger" role="alert">✕ {{ formError }}</p>
 
         <UiButton type="submit" :disabled="!form.consent" :loading="busy">
           Создать аккаунт

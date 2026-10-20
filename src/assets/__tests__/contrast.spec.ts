@@ -28,47 +28,52 @@ function contrast(tokens: Record<string, string>, fg: string, bg: string) {
   return (a! + 0.05) / (b! + 0.05)
 }
 
-const LIGHT = ['page', 'card', 'field', 'mute', 'accent-soft', 'lilac']
+// Нейтральные поверхности — по ним текст темы; бренд-поверхности одинаковы в обеих темах, текст на них #111111.
+const NEUTRAL = ['page', 'card', 'field']
+const BRAND = ['accent', 'accent-soft', 'lilac', 'orange', 'cream']
+const STATUSES = ['success', 'warning', 'queue', 'danger']
+const onBrand = { ink: '#111111', 'ink-2': '#34364a', 'accent-ink': '#1b1f6b' }
 
-describe('контраст цветов светлой темы', () => {
-  it.each(LIGHT)('основной и вторичный текст читаются на фоне %s', (bg) => {
-    expect(contrast(light, 'ink', bg)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(light, 'ink-2', bg)).toBeGreaterThanOrEqual(4.5)
+describe.each([
+  ['светлой', light],
+  ['тёмной', dark],
+])('контраст %s темы', (_, tokens) => {
+  it.each(NEUTRAL)('основной и вторичный текст читаются на фоне %s', (bg) => {
+    expect(contrast(tokens, 'ink', bg)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(tokens, 'ink-2', bg)).toBeGreaterThanOrEqual(4.5)
   })
 
-  it.each(['accent', 'orange'])('на насыщенном фоне %s читается тёмно-синий', (bg) => {
-    expect(contrast(light, 'accent-ink', bg)).toBeGreaterThanOrEqual(4.5)
+  it.each(['page', 'card'])('даты и ошибки читаются на фоне %s', (bg) => {
+    expect(contrast(tokens, 'accent-ink', bg)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(tokens, 'danger', bg)).toBeGreaterThanOrEqual(4.5)
   })
 
-  it('на сирени и оранжевом вторичный текст перекрашивается правилом', () => {
-    // Правило общее для обеих тем, ниже проверено и для тёмной.
-    expect(css).toMatch(
-      /\.bg-accent \.text-ink-2,\s*\.bg-orange \.text-ink-2 \{\s*color: var\(--color-accent-ink\)/,
-    )
+  it('текст на главной кнопке читается', () => {
+    expect(contrast(tokens, 'white', 'ink')).toBeGreaterThanOrEqual(4.5)
   })
 })
 
-describe('контраст цветов тёмной темы', () => {
-  it('в тёмном блоке переопределены все цвета светлой', () => {
-    expect(Object.keys(dark)).toEqual(expect.arrayContaining(Object.keys(light)))
+describe('бренд-цвета и статусы', () => {
+  it.each(BRAND)('на %s текст, вторичный текст и даты читаются', (bg) => {
+    for (const fg of Object.values(onBrand)) {
+      expect(contrast({ ...light, fg }, 'fg', bg)).toBeGreaterThanOrEqual(4.5)
+    }
   })
 
-  it.each(LIGHT)('основной и вторичный текст читаются на фоне %s', (bg) => {
-    expect(contrast(dark, 'ink', bg)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(dark, 'ink-2', bg)).toBeGreaterThanOrEqual(4.5)
+  it('на бренд-поверхностях цвета текста переопределены правилом', () => {
+    expect(css).toMatch(
+      /:is\(\.bg-accent, \.bg-accent-soft, \.bg-lilac, \.bg-orange, \.bg-cream\) \{\s*--color-ink: #111111;/,
+    )
   })
 
-  it.each(['accent', 'orange'])('на фоне %s читаются основной текст и accent-ink', (bg) => {
-    expect(contrast(dark, 'ink', bg)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(dark, 'accent-ink', bg)).toBeGreaterThanOrEqual(4.5)
+  it.each(STATUSES)('статус %s: пара фон и текст читается', (k) => {
+    expect(contrast(light, `${k}-fg`, `${k}-bg`)).toBeGreaterThanOrEqual(4.5)
   })
 
-  it.each(['card', 'orange'])('ошибки orange-ink читаются на фоне %s', (bg) => {
-    expect(contrast(dark, 'orange-ink', bg)).toBeGreaterThanOrEqual(4.5)
-  })
-
-  it('текст на кнопках bg-ink читается', () => {
-    expect(contrast(dark, 'white', 'ink')).toBeGreaterThanOrEqual(4.5)
+  it('бренд-цвета и статусы в тёмной теме не меняются', () => {
+    for (const k of [...BRAND, ...STATUSES.flatMap((x) => [`${x}-bg`, `${x}-fg`])]) {
+      expect(dark[k]).toBeUndefined()
+    }
   })
 
   it('блок для системной тёмной темы совпадает с явным выбором', () => {

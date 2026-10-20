@@ -29,19 +29,10 @@ const cards = computed(() =>
 
 <template>
   <section v-if="cards.length" class="flex flex-col gap-3" aria-labelledby="similar-title">
-    <h2 id="similar-title" class="text-xl font-bold">{{ $t('event.similar') }}</h2>
+    <h2 id="similar-title" class="text-[22px]">{{ $t('event.similar') }}</h2>
     <ul class="grid gap-3 md:grid-cols-2">
       <li v-for="{ event, reasons } in cards" :key="event.id" class="flex min-w-0 flex-col gap-1.5">
-        <EventListCard :event="event" />
-        <p v-if="reasons.length" class="flex flex-wrap gap-1.5 px-2 text-sm">
-          <span
-            v-for="r in reasons"
-            :key="r"
-            class="rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent-ink"
-          >
-            {{ r }}
-          </span>
-        </p>
+        <EventListCard :event="event" :reasons="reasons" />
       </li>
     </ul>
   </section>

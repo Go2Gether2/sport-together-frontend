@@ -32,8 +32,11 @@ const id = useId()
       {{ label }}<span v-if="required" aria-hidden="true" class="text-orange"> *</span>
     </label>
     <div
-      class="flex min-h-13.5 items-center gap-2.5 rounded-field bg-field px-4 focus-within:bg-card focus-within:outline-2 focus-within:outline-accent-strong"
-      :class="error ? 'ring-2 ring-orange ring-inset' : ''"
+      class="flex min-h-13.5 items-center gap-2.5 rounded-field px-4 focus-within:bg-card focus-within:outline-3 focus-within:outline-accent-strong"
+      :class="[
+        type === 'search' ? 'bg-card shadow-raised' : 'bg-field',
+        error ? 'ring-2 ring-danger ring-inset' : '',
+      ]"
     >
       <slot name="icon" />
       <input
@@ -48,12 +51,7 @@ const id = useId()
         class="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-ink-2"
       />
     </div>
-    <p
-      v-if="error"
-      :id="`${id}-desc`"
-      class="ml-1 text-sm font-semibold text-orange-ink"
-      role="alert"
-    >
+    <p v-if="error" :id="`${id}-desc`" class="ml-1 text-sm font-semibold text-danger" role="alert">
       ✕ {{ error }}
     </p>
     <p v-else-if="hint" :id="`${id}-desc`" class="ml-1 text-sm text-ink-2">{{ hint }}</p>

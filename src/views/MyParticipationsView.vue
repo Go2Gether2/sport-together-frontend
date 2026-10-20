@@ -122,9 +122,7 @@ const EMPTY: Record<MyTab, string> = {
         </UiChip>
       </div>
 
-      <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
-        ✕ {{ actionError }}
-      </p>
+      <p v-if="actionError" class="font-semibold text-danger" role="alert">✕ {{ actionError }}</p>
 
       <div
         v-if="!current.length"

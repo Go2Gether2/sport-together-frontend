@@ -561,9 +561,7 @@ onMounted(async () => {
             </RouterLink>
           </template>
 
-          <p v-if="saveError" class="font-semibold text-orange-ink" role="alert">
-            ✕ {{ saveError }}
-          </p>
+          <p v-if="saveError" class="font-semibold text-danger" role="alert">✕ {{ saveError }}</p>
 
           <div v-if="step !== 'done'" class="mt-auto flex items-center justify-between gap-3 pt-2">
             <UiButton v-if="step > 1" variant="ghost" class="!w-auto" @click="back">

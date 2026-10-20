@@ -62,7 +62,7 @@ onMounted(load)
       class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2"
       :aria-label="$t('common.loading')"
     >
-      <li v-for="i in 2" :key="i" class="h-28 animate-pulse rounded-card bg-card" />
+      <li v-for="i in 2" :key="i" class="h-64 animate-pulse rounded-card bg-card" />
     </ul>
     <div
       v-else-if="state === 'error'"
@@ -83,16 +83,7 @@ onMounted(load)
     </p>
     <ul v-else class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
       <li v-for="{ event, reasons } in cards" :key="event.id" class="flex min-w-0 flex-col gap-1.5">
-        <EventListCard :event="event" />
-        <p v-if="reasons.length" class="flex flex-wrap gap-1.5 px-2 text-sm">
-          <span
-            v-for="r in reasons"
-            :key="r"
-            class="rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent-ink"
-          >
-            {{ r }}
-          </span>
-        </p>
+        <EventListCard :event="event" :reasons="reasons" />
       </li>
     </ul>
   </section>

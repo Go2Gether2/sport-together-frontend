@@ -146,7 +146,7 @@ async function submit(form: OrgFormState) {
           @submit="submit"
           @cancel="editing = null"
         />
-        <p v-if="formError" class="font-semibold text-orange-ink" role="alert">✕ {{ formError }}</p>
+        <p v-if="formError" class="font-semibold text-danger" role="alert">✕ {{ formError }}</p>
       </template>
 
       <div
@@ -179,7 +179,7 @@ async function submit(form: OrgFormState) {
 
             <p
               v-if="org.status === 'pending'"
-              class="rounded-[22px] bg-orange p-4 font-medium text-orange-ink"
+              class="rounded-[22px] bg-warning-bg p-4 font-medium text-warning-fg"
             >
               Заявка на проверке. Публиковать от имени организации можно после допуска.
             </p>
@@ -221,9 +221,7 @@ async function submit(form: OrgFormState) {
               @submit="submit"
               @cancel="editing = null"
             />
-            <p v-if="formError" class="font-semibold text-orange-ink" role="alert">
-              ✕ {{ formError }}
-            </p>
+            <p v-if="formError" class="font-semibold text-danger" role="alert">✕ {{ formError }}</p>
           </template>
         </li>
       </ul>

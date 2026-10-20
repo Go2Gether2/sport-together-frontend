@@ -40,7 +40,7 @@ const types = computed(() => Object.entries(ORG_TYPE_LABELS) as [OrganizationTyp
       </legend>
       <div
         class="flex flex-wrap gap-2"
-        :class="errors.type ? 'rounded-full ring-2 ring-orange' : ''"
+        :class="errors.type ? 'rounded-full ring-2 ring-danger' : ''"
       >
         <UiChip
           v-for="[value, label] in types"
@@ -51,7 +51,7 @@ const types = computed(() => Object.entries(ORG_TYPE_LABELS) as [OrganizationTyp
           {{ label }}
         </UiChip>
       </div>
-      <p v-if="errors.type" class="ml-1 text-sm font-semibold text-orange-ink" role="alert">
+      <p v-if="errors.type" class="ml-1 text-sm font-semibold text-danger" role="alert">
         ✕ {{ errors.type }}
       </p>
     </fieldset>
@@ -99,7 +99,7 @@ const types = computed(() => Object.entries(ORG_TYPE_LABELS) as [OrganizationTyp
           политике
         </RouterLink>
       </UiCheckbox>
-      <p v-if="errors.consent" class="ml-1 text-sm font-semibold text-orange-ink" role="alert">
+      <p v-if="errors.consent" class="ml-1 text-sm font-semibold text-danger" role="alert">
         ✕ {{ errors.consent }}
       </p>
     </div>

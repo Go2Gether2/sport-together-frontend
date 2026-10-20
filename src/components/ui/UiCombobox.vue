@@ -100,7 +100,7 @@ function onBlur(e: FocusEvent) {
     <div class="relative">
       <div
         class="flex min-h-13.5 items-center gap-2 rounded-field bg-field px-4 focus-within:bg-card focus-within:outline-2 focus-within:outline-accent-strong"
-        :class="error ? 'ring-2 ring-orange ring-inset' : ''"
+        :class="error ? 'ring-2 ring-danger ring-inset' : ''"
         @focusout="onBlur"
       >
         <input
@@ -161,12 +161,7 @@ function onBlur(e: FocusEvent) {
         <li v-if="count === 0" class="px-3 py-2 text-ink-2">{{ $t('ui.nothingFound') }}</li>
       </ul>
     </div>
-    <p
-      v-if="error"
-      :id="`${id}-desc`"
-      class="ml-1 text-sm font-semibold text-orange-ink"
-      role="alert"
-    >
+    <p v-if="error" :id="`${id}-desc`" class="ml-1 text-sm font-semibold text-danger" role="alert">
       ✕ {{ error }}
     </p>
     <p v-else-if="hint" :id="`${id}-desc`" class="ml-1 text-sm text-ink-2">{{ hint }}</p>

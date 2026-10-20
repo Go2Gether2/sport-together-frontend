@@ -321,7 +321,7 @@ const shortDate = computed(
               {{ $t('admin.orgs.reject') }}
             </UiButton>
           </div>
-          <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
+          <p v-if="actionError" class="font-semibold text-danger" role="alert">
             ✕ {{ actionError }}
           </p>
 

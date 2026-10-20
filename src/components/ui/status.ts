@@ -1,8 +1,8 @@
 import type { EventStatus, OrganizationStatus, ParticipationStatus } from '@/api/types'
 import { t } from '@/i18n'
 
-// Статусы различаются формой и значком, а не цветом (ADR 0002): так их читают и при нарушении цветовосприятия.
-export type StatusTone = 'ok' | 'wait' | 'no' | 'off'
+// Статус всегда текстом и значком, цвет только помогает (дизайн-система Go2Gether): так его читают и при нарушении цветовосприятия.
+export type StatusTone = 'ok' | 'wait' | 'queue' | 'no' | 'off'
 
 export interface StatusView {
   tone: StatusTone
@@ -20,7 +20,7 @@ const sv = (tone: StatusTone, key: string): StatusView => ({
 const participation: Record<ParticipationStatus, StatusView> = {
   confirmed: sv('ok', 'participation.confirmed'),
   pending: sv('wait', 'participation.pending'),
-  waitlist: sv('wait', 'participation.waitlist'),
+  waitlist: sv('queue', 'participation.waitlist'),
   rejected: sv('no', 'participation.rejected'),
   cancelled: sv('off', 'participation.cancelled'),
 }
@@ -57,6 +57,7 @@ export function statusView(s: StatusOf): StatusView {
 export const toneIcon: Record<StatusTone, string> = {
   ok: '✓',
   wait: '◷',
+  queue: '≡',
   no: '✕',
   off: '',
 }

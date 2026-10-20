@@ -105,9 +105,7 @@ async function confirmDelete() {
     </p>
 
     <template v-else>
-      <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
-        ✕ {{ actionError }}
-      </p>
+      <p v-if="actionError" class="font-semibold text-danger" role="alert">✕ {{ actionError }}</p>
       <ul class="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
         <li v-for="b in banners" :key="b.id" class="flex flex-col gap-3 rounded-card bg-card p-4">
           <div class="flex items-start gap-3">
