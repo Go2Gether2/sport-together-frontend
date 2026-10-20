@@ -27,9 +27,9 @@ export async function start(page: Page) {
 }
 
 /** Вход или смена роли через экран входа, как на демо. */
-export async function loginAs(page: Page, name: string) {
+export async function loginAs(page: Page, name: string, prefix = 'Войти:') {
   await go(page, '/login')
-  await page.getByRole('button', { name: `Войти: ${name}` }).click()
+  await page.getByRole('button', { name: `${prefix} ${name}` }).click()
   await expect(page).not.toHaveURL(/\/login/)
 }
 

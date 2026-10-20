@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 5174
+// Свой порт, если 5174 уже занят dev-сервером на реальном бэке: E2E_PORT=5176 pnpm e2e.
+const PORT = Number(process.env.E2E_PORT) || 5174
 
 export default defineConfig({
   testDir: 'e2e',

@@ -10,8 +10,8 @@ const session = useSessionStore()
 </script>
 
 <template>
-  <header class="sticky top-0 z-20 bg-page lg:hidden">
-    <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+  <header class="sticky top-0 z-20 bg-page short:static lg:hidden">
+    <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 short:py-2">
       <AppLogo />
 
       <div class="ml-auto flex items-center gap-3">

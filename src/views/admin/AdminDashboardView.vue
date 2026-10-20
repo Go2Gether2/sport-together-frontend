@@ -126,16 +126,16 @@ const tiles = computed<Tile[]>(() => {
       <UiButton variant="ghost" class="!w-auto" @click="load">{{ $t('common.retry') }}</UiButton>
     </div>
 
-    <ul v-else class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+    <ul v-else class="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 lg:grid-cols-3">
       <li v-for="tile in tiles" :key="tile.label">
         <component
           :is="tile.to ? RouterLink : 'div'"
           :to="tile.to"
-          class="flex h-full flex-col gap-1 rounded-card p-5 text-ink no-underline"
+          class="flex h-full flex-col gap-1 rounded-card p-4 text-ink no-underline sm:p-5"
           :class="[tile.bg, tile.to ? 'hover:brightness-95' : '']"
         >
           <b class="text-4xl font-bold tabular-nums">{{ tile.value }}</b>
-          <span class="font-medium">{{ tile.label }}</span>
+          <span class="font-medium hyphens-auto [overflow-wrap:anywhere]">{{ tile.label }}</span>
         </component>
       </li>
     </ul>
@@ -154,7 +154,10 @@ const tiles = computed<Tile[]>(() => {
         <p class="text-sm text-ink-2">{{ $t('admin.dashboard.exportHint') }}</p>
       </div>
     </div>
-    <div v-if="chartsState === 'loading'" class="grid gap-3 lg:grid-cols-2">
+    <div
+      v-if="chartsState === 'loading'"
+      class="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2"
+    >
       <div v-for="i in 4" :key="i" class="h-56 animate-pulse rounded-card bg-card" />
     </div>
     <div
@@ -167,7 +170,7 @@ const tiles = computed<Tile[]>(() => {
         $t('common.retry')
       }}</UiButton>
     </div>
-    <div v-else class="grid gap-3 lg:grid-cols-2">
+    <div v-else class="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
       <UiCard as="section" class="gap-4 p-5 lg:col-span-2" aria-labelledby="st-weeks">
         <h3 id="st-weeks" class="text-lg font-bold">{{ $t('admin.dashboard.byWeek') }}</h3>
         <WeekColumns :weeks="weeks" />

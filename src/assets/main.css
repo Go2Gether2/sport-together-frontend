@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Телефон в альбомной ориентации: высоты мало, закреплённые панели съедают половину экрана. */
+@custom-variant short (@media (orientation: landscape) and (max-height: 500px));
+
 @theme {
   --font-sans: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;

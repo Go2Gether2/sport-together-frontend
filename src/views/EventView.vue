@@ -111,7 +111,10 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       <UiButton variant="ghost" class="!w-auto" @click="load()">{{ $t('common.retry') }}</UiButton>
     </section>
 
-    <article v-else-if="event" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <article
+      v-else-if="event"
+      class="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"
+    >
       <div class="flex min-w-0 flex-col gap-5">
         <div
           v-if="event.status !== 'published'"

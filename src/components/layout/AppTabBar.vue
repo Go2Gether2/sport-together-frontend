@@ -12,13 +12,13 @@ const [left, right] = tabBarItems()
 <template>
   <nav
     :aria-label="$t('nav.main')"
-    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-[28px] bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] lg:hidden"
+    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-[28px] bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] short:items-center short:py-1 lg:hidden"
   >
     <RouterLink
       v-for="item in left"
       :key="item.label"
       :to="item.to"
-      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words leading-tight text-ink-2 no-underline"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words leading-tight text-ink-2 no-underline short:min-h-10 short:flex-row short:justify-center short:gap-1.5 short:text-xs"
       exact-active-class="font-bold !text-ink"
     >
       <NavIcon :name="item.icon" />
@@ -29,11 +29,11 @@ const [left, right] = tabBarItems()
     <RouterLink
       v-if="session.isAdmin"
       :to="{ name: 'admin' }"
-      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline short:min-h-10 short:flex-row short:justify-center short:gap-1.5 short:text-xs"
     >
       <span
         aria-hidden="true"
-        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-white"
+        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-white short:mt-0 short:size-9"
         ><NavIcon name="shield"
       /></span>
       {{ $t('nav.admin') }}
@@ -41,11 +41,11 @@ const [left, right] = tabBarItems()
     <RouterLink
       v-else
       :to="CREATE_ITEM.to"
-      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words font-bold leading-tight text-ink no-underline short:min-h-10 short:flex-row short:justify-center short:gap-1.5 short:text-xs"
     >
       <span
         aria-hidden="true"
-        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-3xl leading-none text-white"
+        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-3xl leading-none text-white short:mt-0 short:size-9 short:text-2xl"
         >+</span
       >
       {{ CREATE_ITEM.label }}
@@ -55,7 +55,7 @@ const [left, right] = tabBarItems()
       v-for="item in right"
       :key="item.label"
       :to="item.to"
-      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words leading-tight text-ink-2 no-underline"
+      class="flex min-w-0 flex-col items-center gap-0.5 text-center text-[11px] break-words leading-tight text-ink-2 no-underline short:min-h-10 short:flex-row short:justify-center short:gap-1.5 short:text-xs"
       active-class="font-bold !text-ink"
     >
       <NavIcon :name="item.icon" />

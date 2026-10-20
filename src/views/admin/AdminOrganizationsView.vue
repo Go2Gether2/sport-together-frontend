@@ -191,7 +191,7 @@ const shortDate = computed(
       </div>
     </div>
 
-    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
       <div
         class="min-w-0 flex-col gap-2"
         :class="selectedId ? 'hidden xl:flex' : 'flex'"

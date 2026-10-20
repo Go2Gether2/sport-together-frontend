@@ -50,9 +50,11 @@ function addToCalendar() {
     :aria-label="$t('share.group')"
     class="flex flex-col gap-2 rounded-card bg-card p-4"
   >
-    <div class="flex gap-2">
-      <UiButton variant="ghost" class="flex-1" @click="share">{{ $t('share.share') }}</UiButton>
-      <UiButton v-if="calendar" variant="ghost" class="flex-1" @click="addToCalendar">
+    <div class="flex flex-wrap gap-2">
+      <UiButton variant="ghost" class="min-w-32 flex-1" @click="share">{{
+        $t('share.share')
+      }}</UiButton>
+      <UiButton v-if="calendar" variant="ghost" class="min-w-32 flex-1" @click="addToCalendar">
         {{ $t('share.calendar') }}
       </UiButton>
     </div>
