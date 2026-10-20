@@ -6,6 +6,7 @@ export interface ProfileFormState {
   level: Level | ''
   bio: string
   sportIds: Id[]
+  avatar: string
 }
 
 export type ProfileFormErrors = Partial<Record<keyof ProfileFormState, string>>
@@ -19,6 +20,7 @@ export function profileFormFrom(user: User): ProfileFormState {
     level: user.level ?? '',
     bio: user.bio ?? '',
     sportIds: [...user.sport_ids],
+    avatar: user.avatar_url ?? '',
   }
 }
 
@@ -38,18 +40,10 @@ export function toProfileInput(form: ProfileFormState): ProfileInput {
     bio: form.bio.trim(),
     level: form.level || undefined,
     sport_ids: form.sportIds,
+    avatar_url: form.avatar,
   }
 }
 
 export function toggleSport(ids: Id[], id: Id): Id[] {
   return ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
-}
-
-export function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('')
 }

@@ -3,9 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, usersApi, type PublicUser } from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
-import { UiButton } from '@/components/ui'
+import { UiAvatar, UiButton } from '@/components/ui'
 import { LEVEL_LABELS } from '@/features/events/filters'
-import { initials } from '@/features/profile/profileForm'
 import { APP_NAME } from '@/router/access'
 import { useSessionStore } from '@/stores/session'
 
@@ -65,12 +64,7 @@ watch(id, load, { immediate: true })
 
     <article v-else-if="person" class="mx-auto flex max-w-4xl flex-col gap-5">
       <header class="flex flex-col gap-4 rounded-card bg-accent p-6 sm:flex-row sm:items-center">
-        <span
-          class="grid size-20 flex-none place-items-center rounded-full bg-orange text-2xl font-bold"
-          aria-hidden="true"
-        >
-          {{ initials(person.name) }}
-        </span>
+        <UiAvatar :name="person.name" :url="person.avatar_url" size="xl" />
         <div class="flex min-w-0 flex-1 flex-col gap-1">
           <h1 class="text-3xl leading-tight font-bold">{{ person.name }}</h1>
           <p class="text-accent-ink">

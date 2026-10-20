@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import UiAvatar from '@/components/ui/UiAvatar.vue'
 import AppLogo from './AppLogo.vue'
 import NavIcon from './NavIcon.vue'
 import { CREATE_ITEM, desktopItems } from './nav'
@@ -9,13 +10,6 @@ import { CREATE_ITEM, desktopItems } from './nav'
 const session = useSessionStore()
 const router = useRouter()
 const items = computed(() => desktopItems(session.isAdmin))
-const initials = computed(() =>
-  (session.user?.name ?? '')
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join(''),
-)
 
 async function logout() {
   await session.logout()
@@ -55,11 +49,7 @@ async function logout() {
       <div class="mt-auto flex flex-col gap-3 rounded-[24px] bg-field p-3">
         <template v-if="session.user">
           <div class="flex items-center gap-3">
-            <span
-              class="grid size-10 flex-none place-items-center rounded-full bg-orange text-sm font-bold"
-            >
-              {{ initials }}
-            </span>
+            <UiAvatar :name="session.user.name" :url="session.user.avatar_url" />
             <span class="min-w-0 truncate font-semibold">{{ session.user.name }}</span>
           </div>
           <div class="grid grid-cols-[1fr_auto] gap-2">

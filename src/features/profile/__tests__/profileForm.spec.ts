@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { User } from '@/api'
 import {
-  initials,
   profileFormFrom,
   toProfileInput,
   toggleSport,
@@ -19,7 +18,14 @@ const user = {
 describe('profileForm', () => {
   it('заполняет форму из профиля, пустые поля — пустые строки', () => {
     const form = profileFormFrom(user)
-    expect(form).toEqual({ name: 'Анна Смирнова', city: '', level: '', bio: '', sportIds: [1, 2] })
+    expect(form).toEqual({
+      name: 'Анна Смирнова',
+      city: '',
+      level: '',
+      bio: '',
+      sportIds: [1, 2],
+      avatar: '',
+    })
     form.sportIds.push(3)
     expect(user.sport_ids).toEqual([1, 2])
   })
@@ -37,6 +43,7 @@ describe('profileForm', () => {
       ...profileFormFrom(user),
       city: ' Красноярск ',
       level: 'amateur',
+      avatar: 'preset:tennis',
     })
     expect(input).toEqual({
       name: 'Анна Смирнова',
@@ -44,6 +51,7 @@ describe('profileForm', () => {
       bio: '',
       level: 'amateur',
       sport_ids: [1, 2],
+      avatar_url: 'preset:tennis',
     })
     expect(toProfileInput(profileFormFrom(user)).level).toBeUndefined()
   })
@@ -51,10 +59,5 @@ describe('profileForm', () => {
   it('переключает интересы', () => {
     expect(toggleSport([1, 2], 2)).toEqual([1])
     expect(toggleSport([1], 3)).toEqual([1, 3])
-  })
-
-  it('инициалы для аватара', () => {
-    expect(initials('Анна Смирнова')).toBe('АС')
-    expect(initials('  Пётр  ')).toBe('П')
   })
 })
