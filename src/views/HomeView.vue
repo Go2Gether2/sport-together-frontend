@@ -16,24 +16,24 @@ const sports = [
 </script>
 
 <template>
-  <section class="flex flex-col gap-4 py-2">
+  <section class="flex flex-col gap-[22px] py-2">
     <StoriesRow />
 
     <HomeCarousel />
 
     <ForYou v-if="session.user && !session.isAdmin" />
 
-    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" :aria-label="$t('home.popularSports')">
+    <ul class="grid grid-cols-2 gap-3.5 sm:grid-cols-4" :aria-label="$t('home.popularSports')">
       <li
         v-for="s in sports"
         :key="s.icon"
-        class="flex flex-col gap-6 rounded-card p-4"
+        class="flex min-h-[120px] flex-col justify-between gap-[22px] rounded-[26px] p-4"
         :class="s.bg"
       >
-        <span class="grid size-12 place-items-center rounded-full bg-ink">
-          <SportIcon :name="s.icon" :size="36" class="invert" />
+        <span class="grid size-[46px] place-items-center rounded-full bg-ink">
+          <SportIcon :name="s.icon" :size="34" class="invert" />
         </span>
-        <b class="text-lg">{{ $t(`home.sports.${s.icon}`) }}</b>
+        <b class="font-display text-xl">{{ $t(`home.sports.${s.icon}`) }}</b>
       </li>
     </ul>
   </section>

@@ -37,7 +37,7 @@ onMounted(load)
 <template>
   <section class="flex flex-col gap-3" aria-labelledby="for-you-title" aria-live="polite">
     <div class="flex flex-wrap items-baseline justify-between gap-2">
-      <h2 id="for-you-title" class="text-2xl font-bold">
+      <h2 id="for-you-title" class="font-display text-2xl uppercase">
         {{ emptyProfile ? $t('forYou.popular') : $t('forYou.title') }}
       </h2>
       <RouterLink

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { SafetyBanner, SafetyBannerDetails } from '@/api'
+import type { SafetyBanner } from '@/api'
 import { bannerToStory, pickForEvent } from '@/features/safety/safety'
 
 const banner = (id: number, patch: Partial<SafetyBanner> = {}): SafetyBanner => ({
@@ -15,20 +15,42 @@ const banner = (id: number, patch: Partial<SafetyBanner> = {}): SafetyBanner => 
 })
 
 describe('bannerToStory', () => {
-  it('слайды баннера — слайды сторис, оговорка — на последнем', () => {
-    const details: SafetyBannerDetails = {
-      ...banner(5, { title: 'Безопасная пробежка', category: 'safety_rules' }),
-      slides: [
-        { position: 1, title: 'Будьте заметны', body: 'Светоотражатели', image_url: null },
-        { position: 2, title: null, body: 'Навстречу движению', image_url: null },
-      ],
-      disclaimer: 'Не заменяет врача',
-    }
-    const story = bannerToStory(details, 'Бег')
+  const slides = [
+    { position: 2, title: null, body: 'Навстречу движению', image_url: null },
+    { position: 1, title: 'Будьте заметны', body: 'Светоотражатели', image_url: null },
+  ]
+
+  it('слайды по порядку, без заголовка — название памятки, оговорка — у всей сторис', () => {
+    const story = bannerToStory(
+      { ...banner(5, { title: 'Безопасная пробежка' }), slides, disclaimer: 'Не заменяет врача' },
+      'Бег',
+    )
     expect(story).toMatchObject({ id: 'safety-5', label: 'Безопасная пробежка', icon: 'running' })
     expect(story.slides.map((s) => s.title)).toEqual(['Будьте заметны', 'Безопасная пробежка'])
-    expect(story.slides[0]!.note).toBeUndefined()
-    expect(story.slides[1]!.note).toBe('Не заменяет врача')
+    expect(story.disclaimer).toBe('Не заменяет врача')
+  })
+
+  it('известная тема — обложка, короткое имя, иконки и кнопка 112 из макета', () => {
+    const story = bannerToStory({
+      ...banner(6, { title: 'Экстренные номера', category: 'emergency' }),
+      slides: [
+        { position: 1, title: 'Номера', body: '112', image_url: null },
+        { position: 2, title: 'Что сказать', body: 'Адрес', image_url: null },
+      ],
+      disclaimer: null,
+    })
+    expect(story).toMatchObject({ cover: 'emergency', short: 'Номера 112' })
+    expect(story.slides.map((s) => [s.icon, s.call])).toEqual([
+      ['numbers', true],
+      ['speech', false],
+    ])
+  })
+
+  it('памятка из админки — без обложки, в цвете категории', () => {
+    const story = bannerToStory({ ...banner(7, { title: 'Жара' }), slides, disclaimer: null })
+    expect(story.cover).toBeUndefined()
+    expect(story.bg).toBe('bg-accent-soft')
+    expect(story.slides[0]!.icon).toBeUndefined()
   })
 })
 

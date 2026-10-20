@@ -147,3 +147,180 @@ body {
     animation: none !important;
   }
 }
+
+/* Анимации рисунков из макета Go2Gether (обложки и пиктограммы сторис). При «меньше движения» — без них. */
+@keyframes art-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes art-zoom {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+@keyframes art-flow {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+@keyframes art-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(9px, -6px);
+  }
+}
+@keyframes art-tw {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+@keyframes art-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes art-pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.art-spin {
+  animation: art-spin 7s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.art-zoom {
+  animation: art-zoom 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.art-flow {
+  animation: art-flow 3s linear infinite;
+}
+.art-drift {
+  animation: art-drift 3s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.art-drift2 {
+  animation: art-drift 3s ease-in-out 1.5s infinite;
+  transform-box: fill-box;
+}
+.art-tw {
+  animation: art-tw 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.art-tw2 {
+  animation: art-tw 1.8s ease-in-out 0.9s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.art-jump {
+  animation: art-jump 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.art-jump2 {
+  animation: art-jump 1.4s ease-in-out 0.35s infinite;
+  transform-box: fill-box;
+}
+.art-pulse {
+  animation: art-pulse 2.6s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes art-streak {
+  0% {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-80px);
+    opacity: 0;
+  }
+}
+@keyframes art-run {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+@keyframes art-kick {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+.art-st {
+  animation: art-streak 1.8s ease-in infinite;
+}
+.art-st2 {
+  animation: art-streak 1.8s ease-in 0.6s infinite;
+}
+.art-st3 {
+  animation: art-streak 1.8s ease-in 1.2s infinite;
+}
+.art-run {
+  animation: art-run 0.9s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.art-run2 {
+  animation: art-run 0.9s ease-in-out 0.45s infinite;
+  transform-box: fill-box;
+}
+.art-kick {
+  animation: art-kick 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .art-st,
+  .art-st2,
+  .art-st3,
+  .art-run,
+  .art-run2,
+  .art-kick,
+  .art-spin,
+  .art-zoom,
+  .art-flow,
+  .art-drift,
+  .art-drift2,
+  .art-tw,
+  .art-tw2,
+  .art-jump,
+  .art-jump2,
+  .art-pulse {
+    animation: none;
+  }
+}

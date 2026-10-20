@@ -11,6 +11,8 @@ export interface Promo {
   starts: string
   ends: string
   icon: SportIconName
+  /** Большая иллюстрация из макета; без неё — рисунок вида спорта. */
+  art?: 'runners' | 'kick'
   bg: string
   cta: string
   to: RouteLocationRaw
@@ -41,6 +43,7 @@ export const PROMOS: Promo[] = [
     starts: '2026-10-01',
     ends: '2026-11-30',
     icon: 'football',
+    art: 'kick',
     bg: 'bg-orange',
     to: { name: 'organizations' },
   }),
@@ -55,6 +58,7 @@ export const PROMOS: Promo[] = [
     starts: '2026-09-15',
     ends: '2026-11-30',
     icon: 'running',
+    art: 'runners',
     bg: 'bg-accent-soft',
     to: { name: 'events', query: { q: 'бег' } },
   }),

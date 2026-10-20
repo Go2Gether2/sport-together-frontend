@@ -1,6 +1,7 @@
 import type { Id, SafetyBanner, SafetyBannerDetails, SafetyCategory } from '@/api'
 import type { SportIconName } from '@/components/illustrations/SportIcon.vue'
 import type { Story } from '@/features/home/stories'
+import { artFor } from './storyArt'
 import { t } from '@/i18n'
 
 // Цвет баннера с бэка тёмный — чёрный текст на нём не читается. Фон берём из токенов по категории,
@@ -32,20 +33,29 @@ export const categoryBg = (c: SafetyCategory) => CATEGORY_BG[c]
 
 export const categoryLabel = (c: SafetyCategory) => t(`safety.categories.${c}`)
 
-/** Баннер — это сторис: те же карточка и просмотрщик со слайдами. */
+/** Баннер — это сторис: те же карточка и просмотрщик со слайдами. Известные темы — с рисунками макета. */
 export function bannerToStory(b: SafetyBannerDetails, sportName?: string): Story {
-  const last = b.slides.length - 1
+  const art = artFor(b.title)
   return {
     id: `safety-${b.id}`,
     label: b.title,
     icon: (sportName && SPORT_ICONS[sportName]) || 'custom',
     bg: categoryBg(b.category),
+    cover: art?.cover,
+    short: art ? t(`safety.short.${art.short}`) : undefined,
+    palette: art ? { bg: art.bg, fg: art.fg } : undefined,
+    subtitle: b.subtitle ?? undefined,
     badge: categoryLabel(b.category),
-    slides: b.slides.map((s, i) => ({
-      title: s.title ?? b.title,
-      text: s.body,
-      note: i === last ? (b.disclaimer ?? undefined) : undefined,
-    })),
+    badgeColor: b.accent_color ?? undefined,
+    disclaimer: b.disclaimer ?? undefined,
+    slides: [...b.slides]
+      .sort((x, y) => x.position - y.position)
+      .map((s, i) => ({
+        title: s.title ?? b.title,
+        text: s.body,
+        icon: art?.icons[i],
+        call: art?.call.includes(i),
+      })),
   }
 }
 

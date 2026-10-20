@@ -1,5 +1,6 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { SportIconName } from '@/components/illustrations/SportIcon.vue'
+import { INTRO_ART, type CoverKind, type SlideIcon } from '@/features/safety/storyArt'
 import { t } from '@/i18n'
 
 // Сторис будут приходить с бэка (данные в БД); пока набор задан здесь — заменить источник, форма та же.
@@ -7,17 +8,31 @@ export interface StorySlide {
   title: string
   text: string
   cta?: { label: string; to: RouteLocationRaw }
-  /** Мелкая оговорка под текстом (у памяток по безопасности — «не заменяет врача»). */
-  note?: string
+  /** Пиктограмма слайда памятки; без неё — рисунок вида спорта. */
+  icon?: SlideIcon
+  /** Кнопка «Позвонить 112». */
+  call?: boolean
 }
 
 export interface Story {
   id: string
   label: string
   icon: SportIconName
+  /** Фон карточки, если нет обложки. */
   bg: string
-  /** Подпись над названием на карточке, например категория памятки. */
+  /** Обложка памятки и короткое имя на стикере карточки. */
+  cover?: CoverKind
+  short?: string
+  /** Карточка-вступление «Полезно знать»: текст вместо рисунка. */
+  intro?: { note: string }
+  /** Цвета просмотра (фон и текст) из макета; без них — фон карточки и цвет текста темы. */
+  palette?: { bg: string; fg: string }
+  /** Рукописная подпись, категория и цвет её метки — у памяток. */
+  subtitle?: string
   badge?: string
+  badgeColor?: string
+  /** Оговорка под каждым слайдом. */
+  disclaimer?: string
   slides: StorySlide[]
 }
 
@@ -57,6 +72,38 @@ function story(
   }
 }
 
+/** Первая карточка ленты: объясняет, что памятки по безопасности всегда здесь. */
+export const INTRO_STORY: Story = {
+  id: 'intro',
+  icon: 'custom',
+  bg: 'bg-ink',
+  cover: 'intro',
+  palette: { bg: INTRO_ART.bg, fg: INTRO_ART.fg },
+  get label() {
+    return t('stories.intro.label')
+  },
+  get short() {
+    return t('stories.intro.label')
+  },
+  get subtitle() {
+    return t('stories.intro.subtitle')
+  },
+  intro: {
+    get note() {
+      return t('stories.intro.note')
+    },
+  },
+  slides: INTRO_ART.icons.map((icon, i) => ({
+    icon,
+    get title() {
+      return t(`stories.intro.s${i}.title`)
+    },
+    get text() {
+      return t(`stories.intro.s${i}.text`)
+    },
+  })),
+}
+
 export const STORIES: Story[] = [
   story('start', 'custom', 'bg-accent', [{ name: 'events' }, null, null]),
   story('clubs', 'football', 'bg-orange', [null, { name: 'organizations' }]),
@@ -84,11 +131,6 @@ export function stepStory(
   const target = stories[story]
   if (!target) return null
   return { story, slide: direction === 1 ? 0 : target.slides.length - 1 }
-}
-
-/** Непросмотренные — первыми, порядок внутри групп сохраняется. */
-export function sortBySeen(stories: Story[], seen: ReadonlySet<string>): Story[] {
-  return [...stories.filter((s) => !seen.has(s.id)), ...stories.filter((s) => seen.has(s.id))]
 }
 
 // Что уже смотрели — удобство конкретного браузера, не данные: при ошибке хранилища просто всё «новое».
