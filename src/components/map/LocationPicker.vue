@@ -94,7 +94,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <fieldset v-if="enabled" class="flex flex-col gap-2">
+  <fieldset v-if="enabled" class="flex min-w-0 flex-col gap-2">
     <legend class="mb-1.5 ml-1 text-[15px] font-semibold">Точка на карте</legend>
     <p class="ml-1 text-sm text-ink-2">
       Без точки мероприятие не появится на карте. Найдите по адресу или нажмите на карту.
