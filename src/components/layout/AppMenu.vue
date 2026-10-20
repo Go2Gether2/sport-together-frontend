@@ -4,7 +4,6 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import NavIcon from './NavIcon.vue'
 import LocaleSwitch from './LocaleSwitch.vue'
-import ThemeSwitch from './ThemeSwitch.vue'
 import { menuItems } from './nav'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -40,7 +39,7 @@ async function logout() {
     @close="open = false"
   >
     <div class="mb-3 flex items-center justify-between">
-      <h2 id="app-menu-title" class="font-display text-lg font-bold">
+      <h2 id="app-menu-title" class="font-display text-lg uppercase">
         {{ $t('nav.allSections') }}
       </h2>
       <button
@@ -67,9 +66,11 @@ async function logout() {
       </ul>
     </nav>
 
-    <div class="mt-4 rounded-[24px] bg-field p-3">
-      <ThemeSwitch />
-      <LocaleSwitch class="mt-3" />
+    <div
+      class="mt-4 flex items-center justify-between gap-3 rounded-[24px] bg-field py-2 pr-2 pl-4"
+    >
+      <span class="font-semibold">{{ $t('locale.title') }}</span>
+      <LocaleSwitch class="[&>div]:bg-card" />
     </div>
 
     <div class="mt-4 pt-4">

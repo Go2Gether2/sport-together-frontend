@@ -44,11 +44,15 @@ describe('icsFold', () => {
 })
 
 describe('buildIcs', () => {
-  const ics = buildIcs(event, 'https://vmeste.example/events/7', new Date('2026-10-20T00:00:00Z'))
+  const ics = buildIcs(
+    event,
+    'https://go2gether.example/events/7',
+    new Date('2026-10-20T00:00:00Z'),
+  )
 
   it('собирает одно событие с местом, описанием и ссылкой', () => {
     expect(ics).toContain('BEGIN:VEVENT\r\n')
-    expect(ics).toContain('UID:event-7@vmeste')
+    expect(ics).toContain('UID:event-7@go2gether')
     expect(ics).toContain('DTSTART:20261025T010000Z')
     expect(ics).toContain('SUMMARY:Йога\\, на траве\\; утро')
     expect(ics).toContain('LOCATION:Красноярск\\, Остров Татышев')
@@ -60,7 +64,7 @@ describe('buildIcs', () => {
   })
 
   it('имя файла по id', () => {
-    expect(icsFileName(event)).toBe('vmeste-7.ics')
+    expect(icsFileName(event)).toBe('go2gether-7.ics')
   })
 })
 

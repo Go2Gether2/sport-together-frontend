@@ -4,7 +4,6 @@ import { RouterView } from 'vue-router'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import AppMenu from '@/components/layout/AppMenu.vue'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppTabBar from '@/components/layout/AppTabBar.vue'
 
 const menuOpen = ref(false)
@@ -17,19 +16,16 @@ const menuOpen = ref(false)
   >
     {{ $t('nav.skip') }}
   </a>
-  <div class="lg:grid lg:grid-cols-[288px_minmax(0,1fr)]">
-    <AppSidebar />
-    <div class="flex min-h-dvh min-w-0 flex-col">
-      <AppHeader @open-menu="menuOpen = true" />
-      <main
-        id="main"
-        tabindex="-1"
-        class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none lg:px-8 lg:py-8 2xl:max-w-7xl"
-      >
-        <RouterView />
-      </main>
-      <AppFooter class="pb-24 short:pb-16 lg:pb-0" />
-    </div>
+  <div class="flex min-h-dvh min-w-0 flex-col">
+    <AppHeader @open-menu="menuOpen = true" />
+    <main
+      id="main"
+      tabindex="-1"
+      class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none lg:px-8 lg:py-8 2xl:max-w-7xl"
+    >
+      <RouterView />
+    </main>
+    <AppFooter class="pb-24 short:pb-16 lg:pb-0" />
   </div>
   <AppTabBar />
   <AppMenu v-model:open="menuOpen" />

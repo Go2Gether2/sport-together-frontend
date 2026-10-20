@@ -49,9 +49,13 @@ export function menuItems(isAdmin: boolean): NavItem[] {
   return isAdmin ? [ORGS, ADMIN, PRIVACY] : [MY_EVENTS, MY_ORG, ORGS, PRIVACY]
 }
 
-/** Боковая панель на компьютере: все разделы сразу, как в нижней панели и меню телефона. */
-export function desktopItems(isAdmin: boolean): NavItem[] {
-  return isAdmin
-    ? [HOME, EVENTS, ORGS, ADMIN, PROFILE]
-    : [HOME, EVENTS, MINE, MY_EVENTS, MY_ORG, ORGS, PROFILE]
+/** Шапка на компьютере: главные разделы. На узком экране — только первые два (`wide: false`). */
+export function headerItems(isAdmin: boolean): { item: NavItem; wide: boolean }[] {
+  const list = isAdmin ? [HOME, EVENTS, ORGS, ADMIN] : [HOME, EVENTS, MINE, ORGS]
+  return list.map((item, n) => ({ item, wide: n > 1 }))
+}
+
+/** Меню аватара в шапке: личные разделы, которых нет в навигации. */
+export function userMenuItems(isAdmin: boolean): NavItem[] {
+  return isAdmin ? [PROFILE] : [PROFILE, MY_EVENTS, MY_ORG]
 }

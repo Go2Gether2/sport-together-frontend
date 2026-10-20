@@ -58,7 +58,7 @@ export function buildIcs(event: CalendarEvent, url: string, now = new Date()): s
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:event-${event.id}@vmeste`,
+    `UID:event-${event.id}@go2gether`,
     `DTSTAMP:${icsDate(now.toISOString())}`,
     `DTSTART:${icsDate(event.starts_at)}`,
     `DTEND:${icsDate(end)}`,
@@ -73,7 +73,7 @@ export function buildIcs(event: CalendarEvent, url: string, now = new Date()): s
 }
 
 export function icsFileName(event: Pick<EventDetails, 'id'>): string {
-  return `vmeste-${event.id}.ics`
+  return `go2gether-${event.id}.ics`
 }
 
 /** Календарь — тем, кто точно придёт: организатору, подтверждённым и на свободную запись. */
