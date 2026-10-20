@@ -5,6 +5,7 @@ const items = [
   { key: 'overview', to: { name: 'admin' } },
   { key: 'organizations', to: { name: 'admin-organizations' } },
   { key: 'events', to: { name: 'admin-events' } },
+  { key: 'safety', to: { name: 'admin-safety' } },
 ] as const
 </script>
 

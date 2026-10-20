@@ -112,6 +112,24 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/AdminEventsView.vue'),
         meta: { title: 'Админка: мероприятия' },
       },
+      {
+        path: 'safety',
+        name: 'admin-safety',
+        component: () => import('@/views/admin/AdminSafetyView.vue'),
+        meta: { title: 'Админка: безопасность' },
+      },
+      {
+        path: 'safety/new',
+        name: 'admin-safety-new',
+        component: () => import('@/views/admin/AdminSafetyEditView.vue'),
+        meta: { title: 'Новая памятка' },
+      },
+      {
+        path: 'safety/:id',
+        name: 'admin-safety-edit',
+        component: () => import('@/views/admin/AdminSafetyEditView.vue'),
+        meta: { title: 'Памятка' },
+      },
     ],
   },
   {

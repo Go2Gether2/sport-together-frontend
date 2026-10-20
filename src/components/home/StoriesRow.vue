@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { safetyApi, sportsApi } from '@/api'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
+import { bannerToStory } from '@/features/safety/safety'
 import {
   STORIES,
   readSeen,
@@ -12,8 +14,23 @@ import StoryViewer from './StoryViewer.vue'
 
 const seen = ref(readSeen())
 // Порядок фиксируем при открытии страницы: иначе просмотренная сторис уезжала бы в конец прямо во время показа.
-const stories = sortBySeen(STORIES, seen.value)
+const stories = ref(sortBySeen(STORIES, seen.value))
 const position = ref<StoryPosition | null>(null)
+
+// Памятки по безопасности с бэка — те же сторис, в конце ленты. Не загрузились — лента без них.
+onMounted(async () => {
+  try {
+    const [banners, sports] = await Promise.all([safetyApi.list(), sportsApi.list()])
+    const sportName = (id: number | null) => sports.find((s) => s.id === id)?.name
+    const details = await Promise.allSettled(banners.map((b) => safetyApi.get(b.id)))
+    const safety = details
+      .flatMap((d) => (d.status === 'fulfilled' && d.value.slides.length ? [d.value] : []))
+      .map((b) => bannerToStory(b, sportName(b.sport_id)))
+    if (safety.length) stories.value = [...stories.value, ...sortBySeen(safety, seen.value)]
+  } catch {
+    // без памяток лента всё равно работает
+  }
+})
 
 function onSeen(id: string) {
   if (seen.value.has(id)) return
@@ -36,6 +53,11 @@ function onSeen(id: string) {
           <span aria-hidden="true" class="pointer-events-none absolute -top-2 -right-2 opacity-70">
             <SportIcon :name="s.icon" :size="72" />
           </span>
+          <span
+            v-if="s.badge"
+            class="relative text-[11px] font-bold tracking-wider uppercase opacity-80"
+            >{{ s.badge }}</span
+          >
           <span class="relative text-base leading-tight font-bold">{{ s.label }}</span>
         </button>
       </li>

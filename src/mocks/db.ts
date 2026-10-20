@@ -6,6 +6,7 @@ import type {
   OrganizationStatus,
   OrganizationType,
   ParticipationStatus,
+  SafetyCategory,
   Sport,
   User,
 } from '@/api/types'
@@ -109,6 +110,19 @@ export interface ModerationRow {
   created_at: string
 }
 
+export interface SafetyBannerRow {
+  id: Id
+  title: string
+  subtitle: string | null
+  category: SafetyCategory
+  cover_url: string | null
+  accent_color: string | null
+  sport_id: Id | null
+  sort_order: number
+  published: boolean
+  slides: { title: string | null; body: string; image_url: string | null }[]
+}
+
 export interface Db {
   users: UserRow[]
   organizations: OrganizationRow[]
@@ -117,6 +131,7 @@ export interface Db {
   participations: ParticipationRow[]
   comments: CommentRow[]
   moderation: ModerationRow[]
+  safetyBanners: SafetyBannerRow[]
   sessions: Map<string, Id>
 }
 
@@ -128,6 +143,7 @@ export const db: Db = {
   participations: [],
   comments: [],
   moderation: [],
+  safetyBanners: [],
   sessions: new Map(),
 }
 
@@ -143,6 +159,7 @@ export function resetDb(now = new Date()) {
   db.participations = seed.participations
   db.comments = seed.comments
   db.moderation = []
+  db.safetyBanners = seed.safetyBanners
   db.sessions = new Map()
   lastId = 1000
 }

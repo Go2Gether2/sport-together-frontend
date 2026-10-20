@@ -9,6 +9,9 @@ import type {
   OrganizationInput,
   OrganizationStatus,
   ParticipationStatus,
+  SafetyBanner,
+  SafetyBannerDetails,
+  SafetyBannerInput,
 } from '@/api/types'
 import { API_BASE } from '@/api/http'
 import {
@@ -20,6 +23,7 @@ import {
   type ModerationRow,
   type OrganizationRow,
   type ParticipationRow,
+  type SafetyBannerRow,
   type UserRow,
 } from './db'
 import {
@@ -1150,4 +1154,152 @@ export const handlers = [
         .map(({ e, reasons, score }) => ({ event: toEventSummary(e), score, reasons }))
     }),
   ),
+
+  // Памятки по безопасности: публично — только опубликованные, с sport — этого вида и общие.
+  http.get(
+    url('/safety/banners'),
+    route(({ request }) => {
+      const sp = search(request)
+      const sport = numberParam(sp, 'sport')
+      const category = sp.get('category')
+      return db.safetyBanners
+        .filter((b) => b.published)
+        .filter((b) => !category || b.category === category)
+        .filter((b) => sport === undefined || b.sport_id === null || b.sport_id === sport)
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map(toSafetyCard)
+    }),
+  ),
+  http.get(
+    url('/safety/banners/:id'),
+    route(({ params }) => {
+      const banner = db.safetyBanners.find((b) => b.id === idParam(params, 'id') && b.published)
+      return toSafetyDetails(banner ?? fail(404, 'NOT_FOUND', 'Не найдено'))
+    }),
+  ),
+  http.get(
+    url('/admin/safety/banners'),
+    route(({ request }) => {
+      requireAdmin(request)
+      return [...db.safetyBanners].sort((a, b) => a.sort_order - b.sort_order).map(toSafetyCard)
+    }),
+  ),
+  http.get(
+    url('/admin/safety/banners/:id'),
+    route(({ request, params }) => {
+      requireAdmin(request)
+      return toSafetyDetails(findBanner(idParam(params, 'id')))
+    }),
+  ),
+  http.post(
+    url('/admin/safety/banners'),
+    route(async ({ request }) => {
+      requireAdmin(request)
+      const body = await readJson<SafetyBannerInput>(request)
+      validateBanner(body)
+      const banner: SafetyBannerRow = {
+        id: newId(),
+        ...bannerFields(body),
+        sort_order: body.sort_order ?? db.safetyBanners.length + 1,
+        published: body.published ?? false,
+      }
+      db.safetyBanners.push(banner)
+      return created(toSafetyDetails(banner))
+    }),
+  ),
+  http.put(
+    url('/admin/safety/banners/:id'),
+    route(async ({ request, params }) => {
+      requireAdmin(request)
+      const banner = findBanner(idParam(params, 'id'))
+      const body = await readJson<SafetyBannerInput>(request)
+      validateBanner(body)
+      Object.assign(banner, bannerFields(body), {
+        sort_order: body.sort_order ?? banner.sort_order,
+        published: body.published ?? banner.published,
+      })
+      return toSafetyDetails(banner)
+    }),
+  ),
+  http.delete(
+    url('/admin/safety/banners/:id'),
+    route(({ request, params }) => {
+      requireAdmin(request)
+      const banner = findBanner(idParam(params, 'id'))
+      db.safetyBanners = db.safetyBanners.filter((b) => b !== banner)
+      return noContent()
+    }),
+  ),
+  http.post(
+    url('/admin/safety/banners/:id/publish'),
+    route(({ request, params }) => {
+      requireAdmin(request)
+      const banner = findBanner(idParam(params, 'id'))
+      banner.published = true
+      return toSafetyCard(banner)
+    }),
+  ),
+  http.post(
+    url('/admin/safety/banners/:id/unpublish'),
+    route(({ request, params }) => {
+      requireAdmin(request)
+      const banner = findBanner(idParam(params, 'id'))
+      banner.published = false
+      return toSafetyCard(banner)
+    }),
+  ),
 ]
+
+function findBanner(id: Id): SafetyBannerRow {
+  return db.safetyBanners.find((b) => b.id === id) ?? fail(404, 'NOT_FOUND', 'Не найдено')
+}
+
+function toSafetyCard(b: SafetyBannerRow): SafetyBanner {
+  return {
+    id: b.id,
+    title: b.title,
+    subtitle: b.subtitle,
+    category: b.category,
+    cover_url: b.cover_url,
+    accent_color: b.accent_color,
+    sport_id: b.sport_id,
+    published: b.published,
+  }
+}
+
+function toSafetyDetails(b: SafetyBannerRow): SafetyBannerDetails {
+  return {
+    ...toSafetyCard(b),
+    slides: b.slides.map((s, i) => ({ position: i + 1, ...s })),
+    disclaimer: 'Памятка не заменяет медицинскую помощь. При угрозе жизни звоните 112.',
+  }
+}
+
+function validateBanner(body: Partial<SafetyBannerInput>) {
+  const fields: Record<string, string> = {}
+  if (!body.title?.trim()) fields.title = 'не должно быть пустым'
+  if (!body.category) fields.category = 'не должно быть пустым'
+  if (body.accent_color && !/^#[0-9A-Fa-f]{6}$/.test(body.accent_color))
+    fields.accent_color = 'должно соответствовать формату #RRGGBB'
+  if (!body.slides?.length) fields.slides = 'Добавьте хотя бы один слайд'
+  body.slides?.forEach((s, i) => {
+    if (!s.body?.trim()) fields[`slides[${i}].body`] = 'не должно быть пустым'
+  })
+  if (Object.keys(fields).length) validation(fields)
+}
+
+function bannerFields(body: Partial<SafetyBannerInput>) {
+  return {
+    title: body.title!.trim(),
+    subtitle: body.subtitle?.trim() || null,
+    category: body.category!,
+    cover_url: body.cover_url?.trim() || null,
+    accent_color: body.accent_color || null,
+    sport_id: body.sport_id ?? null,
+    slides: (body.slides ?? []).map((s) => ({
+      title: s.title?.trim() || null,
+      body: s.body.trim(),
+      image_url: s.image_url?.trim() || null,
+    })),
+  }
+}

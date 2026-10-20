@@ -188,3 +188,20 @@ export type Recommendation = {
   /** По убыванию вклада; неизвестные коды фронт пропускает. */
   reasons: RecommendationReason[]
 }
+
+export type SafetyCategory = NonNullable<S['SafetyBannerCard']['category']>
+
+export type SafetyBanner = Model<
+  S['SafetyBannerCard'],
+  'subtitle' | 'cover_url' | 'accent_color' | 'sport_id'
+>
+
+export type SafetySlide = Model<S['SafetySlideResponse'], 'title' | 'image_url'>
+
+export type SafetyBannerDetails = SafetyBanner & {
+  slides: SafetySlide[]
+  /** Оговорка «не заменяет врача» — показываем мелко на последнем слайде. */
+  disclaimer: string | null
+}
+
+export type SafetyBannerInput = S['SafetyBannerRequest']

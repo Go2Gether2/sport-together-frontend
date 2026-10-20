@@ -3,6 +3,7 @@ import type {
   EventRow,
   OrganizationRow,
   ParticipationRow,
+  SafetyBannerRow,
   SportRow,
   UserRow,
 } from './db'
@@ -444,5 +445,83 @@ export function createSeed(now: Date) {
     }),
   ]
 
-  return { users, organizations, sports, events, participations, comments }
+  // Памятки по безопасности — как на бэке: общие и привязанные к виду спорта.
+  const slide = (title: string | null, body: string) => ({ title, body, image_url: null })
+  const safetyBanners: SafetyBannerRow[] = [
+    {
+      id: 1,
+      title: 'Ушибы и растяжения',
+      subtitle: 'Что делать в первые минуты',
+      category: 'first_aid',
+      cover_url: null,
+      accent_color: '#B3261E',
+      sport_id: null,
+      sort_order: 1,
+      published: true,
+      slides: [
+        slide(
+          'Остановите нагрузку',
+          'Сразу прекратите тренировку — «через боль» травма усиливается.',
+        ),
+        slide('Холод', 'Приложите холод через ткань на 15–20 минут.'),
+        slide('Когда к врачу', 'Сильная боль, отёк, нельзя опереться — нужен осмотр врача.'),
+      ],
+    },
+    {
+      id: 2,
+      title: 'Разминка перед тренировкой',
+      subtitle: 'Как не травмироваться',
+      category: 'safety_rules',
+      cover_url: null,
+      accent_color: '#1F6F43',
+      sport_id: null,
+      sort_order: 2,
+      published: true,
+      slides: [
+        slide('5–10 минут', 'Лёгкий бег или ходьба, чтобы разогреть мышцы.'),
+        slide('Суставы', 'Вращения шеей, плечами, тазом, коленями и стопами.'),
+      ],
+    },
+    {
+      id: 3,
+      title: 'Безопасная пробежка',
+      subtitle: 'Город, темнота, дорога',
+      category: 'safety_rules',
+      cover_url: null,
+      accent_color: '#2B4C7E',
+      sport_id: SP.running,
+      sort_order: 3,
+      published: true,
+      slides: [
+        slide('Будьте заметны', 'В темноте — светоотражатели и яркая одежда.'),
+        slide('Дорога', 'Бегите навстречу движению и не надевайте оба наушника.'),
+      ],
+    },
+    {
+      id: 4,
+      title: 'Экстренные номера',
+      subtitle: '112 — единый номер',
+      category: 'emergency',
+      cover_url: null,
+      accent_color: '#C2410C',
+      sport_id: null,
+      sort_order: 4,
+      published: true,
+      slides: [slide('112', 'Звонок бесплатный, с любого телефона, даже без денег на счёте.')],
+    },
+    {
+      id: 5,
+      title: 'Черновик: жара',
+      subtitle: 'Пока не опубликован',
+      category: 'safety_rules',
+      cover_url: null,
+      accent_color: '#C2410C',
+      sport_id: null,
+      sort_order: 5,
+      published: false,
+      slides: [slide(null, 'Пейте воду каждые 15–20 минут.')],
+    },
+  ]
+
+  return { users, organizations, sports, events, participations, comments, safetyBanners }
 }

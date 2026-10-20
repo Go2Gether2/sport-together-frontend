@@ -9,6 +9,7 @@ import {
   organizationsApi,
   participationsApi,
   recommendationsApi,
+  safetyApi,
   sportsApi,
   usersApi,
 } from '@/api'
@@ -331,5 +332,38 @@ describe('рекомендации (как у бэка)', () => {
     const similar = await recommendationsApi.similar(base.id, 10)
     expect(similar.map((r) => r.event.id)).not.toContain(base.id)
     expect(similar[0]!.reasons[0]).toBe('same_sport')
+  })
+})
+
+describe('памятки безопасности', () => {
+  it('публично — только опубликованные, по виду спорта — его и общие', async () => {
+    const all = await safetyApi.list()
+    expect(all.every((b) => b.published)).toBe(true)
+    const running = await safetyApi.list({ sport: SP.running })
+    expect(running.every((b) => b.sport_id === null || b.sport_id === SP.running)).toBe(true)
+    expect(running.some((b) => b.sport_id === SP.running)).toBe(true)
+    const details = await safetyApi.get(all[0]!.id)
+    expect(details.slides.length).toBeGreaterThan(0)
+  })
+
+  it('админ создаёт черновик, публикует и удаляет', async () => {
+    expect((await fail(adminApi.safetyBanners()))?.status).toBe(401)
+    await loginAs(U.admin)
+    const created = await adminApi.createSafetyBanner({
+      title: 'Жара',
+      category: 'safety_rules',
+      published: false,
+      slides: [{ body: 'Пейте воду' }],
+    })
+    expect((await safetyApi.list()).map((b) => b.id)).not.toContain(created.id)
+    await adminApi.publishSafetyBanner(created.id)
+    expect((await safetyApi.list()).map((b) => b.id)).toContain(created.id)
+    await adminApi.deleteSafetyBanner(created.id)
+    expect((await fail(safetyApi.get(created.id)))?.status).toBe(404)
+  })
+
+  it('не админ в раздел не попадает', async () => {
+    await loginAs(U.anna)
+    expect((await fail(adminApi.safetyBanners()))?.status).toBe(403)
   })
 })
