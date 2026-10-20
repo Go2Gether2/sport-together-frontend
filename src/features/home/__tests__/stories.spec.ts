@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { readSeen, saveSeen, sortBySeen, stepStory, type Story } from '@/features/home/stories'
+import { readSeen, saveSeen, stepStory, type Story } from '@/features/home/stories'
 
 const story = (id: string, slides: number) =>
   ({ id, slides: Array.from({ length: slides }, () => ({})) }) as Story
@@ -20,12 +20,6 @@ describe('stepStory', () => {
   it('за краями — null', () => {
     expect(stepStory(list, { story: 2, slide: 2 }, 1)).toBeNull()
     expect(stepStory(list, { story: 0, slide: 0 }, -1)).toBeNull()
-  })
-})
-
-describe('sortBySeen', () => {
-  it('непросмотренные первыми, порядок сохраняется', () => {
-    expect(sortBySeen(list, new Set(['a'])).map((s) => s.id)).toEqual(['b', 'c', 'a'])
   })
 })
 

@@ -128,6 +128,28 @@ const en: Dictionary<typeof ru> = {
     },
   },
   stories: {
+    intro: {
+      label: 'Good to know',
+      subtitle: 'What this is and why',
+      note: 'Short safety tips — always here',
+      s0: {
+        title: 'Good to know',
+        text: 'Here are short safety tips for training: first aid, warm-up, gear and emergency numbers.',
+      },
+      s1: {
+        title: 'Always at hand',
+        text: 'The cards never disappear: you can come back to them from the home page at any time, even after you have seen them all.',
+      },
+      s2: {
+        title: 'A minute per topic',
+        text: 'Each card has a few slides. Use “Next” to move on and the cross to close the story.',
+      },
+    },
+    position: '{n} of {total}',
+    back: 'Back',
+    forward: 'Next',
+    nextTopic: 'Next topic',
+    call112: 'Call 112',
     title: 'Stories',
     viewer: 'Story: {name}',
     unseen: '{name}, new',
@@ -849,6 +871,16 @@ const en: Dictionary<typeof ru> = {
     count: 'Suggestions: {n}',
   },
   safety: {
+    short: {
+      intro: 'Good to know',
+      warmup: 'Warm-up',
+      pack: 'What to take',
+      run: 'Running',
+      bruise: 'Bruises',
+      bleeding: 'Bleeding',
+      emergency: 'Numbers 112',
+      cpr: 'CPR',
+    },
     beforeTraining: 'Before training',
     allSports: 'All sports',
     categories: {
