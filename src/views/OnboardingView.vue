@@ -13,7 +13,8 @@ import EventListCard from '@/components/events/EventListCard.vue'
 import CityField from '@/components/map/CityField.vue'
 import AppLogo from '@/components/layout/AppLogo.vue'
 import OnboardingArt, { type OnboardingArtName } from '@/components/illustrations/OnboardingArt.vue'
-import SportIcon from '@/components/illustrations/SportIcon.vue'
+import AvatarArt from '@/components/illustrations/AvatarArt.vue'
+import TeamPhotoArt from '@/components/illustrations/TeamPhotoArt.vue'
 import { UiAvatar, UiButton, UiChip, UiTextField } from '@/components/ui'
 import { reasonLabels } from '@/features/events/recommendations'
 import { LEVEL_LABELS } from '@/features/events/filters'
@@ -232,11 +233,13 @@ onMounted(async () => {
       <div class="flex flex-1 flex-col gap-4 lg:flex-row">
         <section
           class="relative flex min-w-0 flex-col justify-between gap-4 overflow-hidden rounded-[32px] p-4 lg:flex-[1_1_400px] lg:p-8"
-          :class="art.bg"
+          :class="[art.bg, art.art === 'interests' && 'min-h-[380px] lg:min-h-[560px]']"
           aria-hidden="true"
         >
+          <!-- Командное фото занимает всю панель, подпись лежит поверх (макет «Чем любите заниматься?»). -->
+          <TeamPhotoArt v-if="art.art === 'interests'" class="absolute inset-0" />
           <p
-            class="max-w-xs -rotate-3 self-start rounded-xl bg-card px-3.5 py-1 font-hand text-2xl leading-tight font-bold text-ink"
+            class="relative max-w-xs -rotate-3 self-start rounded-xl bg-cream px-3.5 py-1 font-hand text-2xl leading-tight font-bold"
           >
             {{
               step === 'done'
@@ -244,7 +247,12 @@ onMounted(async () => {
                 : $t(`onboarding.phrases.${art.art}`)
             }}
           </p>
-          <OnboardingArt :key="art.art" :name="art.art" class="hidden lg:block" />
+          <OnboardingArt
+            v-if="art.art !== 'interests'"
+            :key="art.art"
+            :name="art.art"
+            class="hidden lg:block"
+          />
         </section>
 
         <section
@@ -274,11 +282,12 @@ onMounted(async () => {
             </div>
             <fieldset class="flex flex-col gap-2">
               <legend class="mb-2 font-bold">{{ $t('onboarding.photo.pick') }}</legend>
-              <div class="flex flex-wrap gap-3">
+              <div class="grid grid-cols-4 gap-2.5 sm:grid-cols-6">
                 <label
                   v-for="p in AVATAR_PRESETS"
                   :key="p.id"
-                  class="cursor-pointer rounded-full p-1 has-checked:ring-3 has-checked:ring-ink has-focus-visible:outline-3 has-focus-visible:outline-accent-strong"
+                  :title="p.label"
+                  class="relative cursor-pointer overflow-hidden rounded-lg ring-ink has-checked:ring-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent-strong"
                 >
                   <input
                     v-model="answers.avatar"
@@ -288,9 +297,15 @@ onMounted(async () => {
                     class="sr-only"
                   />
                   <span class="sr-only">{{ p.label }}</span>
-                  <span class="grid size-16 place-items-center rounded-full" :class="p.bg">
-                    <SportIcon :name="p.id" :size="44" />
+                  <span class="block aspect-square">
+                    <AvatarArt v-if="p.art" :kind="p.art" />
                   </span>
+                  <span
+                    v-if="answers.avatar === presetAvatarUrl(p.id)"
+                    aria-hidden="true"
+                    class="absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-[#111111] text-xs font-bold text-[#ffffff]"
+                    >✓</span
+                  >
                 </label>
               </div>
             </fieldset>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import AvatarArt from '@/components/illustrations/AvatarArt.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { avatarView } from '@/features/profile/avatar'
 
@@ -28,8 +29,13 @@ const s = computed(() => SIZES[props.size])
     ]"
     aria-hidden="true"
   >
-    <SportIcon v-if="view.kind === 'preset'" :name="view.preset.id" :size="s.icon" />
+    <AvatarArt v-if="view.kind === 'preset' && view.preset.art" :kind="view.preset.art" />
+    <SportIcon
+      v-else-if="view.kind === 'preset' && view.preset.sport"
+      :name="view.preset.sport"
+      :size="s.icon"
+    />
     <img v-else-if="view.kind === 'image'" :src="view.src" alt="" class="size-full object-cover" />
-    <template v-else>{{ view.text }}</template>
+    <template v-else-if="view.kind === 'initials'">{{ view.text }}</template>
   </span>
 </template>

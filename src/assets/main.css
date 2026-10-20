@@ -338,7 +338,62 @@ body {
   transform-box: fill-box;
   transform-origin: 0% 100%;
 }
+@keyframes art-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes art-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-16deg);
+  }
+}
+@keyframes art-sway {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes art-flash {
+  0%,
+  90%,
+  100% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 0.85;
+  }
+}
+.art-breathe {
+  animation: art-breathe 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.art-wave {
+  animation: art-wave 1.2s ease-in-out infinite;
+}
+.art-sway {
+  animation: art-sway 2.4s ease-in-out infinite;
+}
+.art-flash {
+  opacity: 0;
+  animation: art-flash 6s linear infinite;
+}
 @media (prefers-reduced-motion: reduce) {
+  .art-breathe,
+  .art-wave,
+  .art-sway,
+  .art-flash,
   .art-st,
   .art-st2,
   .art-st3,
