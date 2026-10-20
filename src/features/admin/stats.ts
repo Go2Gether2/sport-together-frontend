@@ -1,4 +1,5 @@
 import type { AdminDashboard, EventSummary, ModerationLog } from '@/api'
+import { intlLocale, t } from '@/i18n'
 
 export interface Slice {
   key: string
@@ -12,10 +13,10 @@ export interface WeekSlice extends Slice {
 
 export function eventStatusSlices(d: AdminDashboard): Slice[] {
   return [
-    { key: 'published', label: 'Опубликовано', value: d.published_events },
-    { key: 'cancelled', label: 'Отменено организатором', value: d.cancelled_events },
-    { key: 'unpublished', label: 'Снято с публикации', value: d.unpublished_events },
-    { key: 'deleted', label: 'Удалено', value: d.deleted_events },
+    { key: 'published', label: t('status.event.published'), value: d.published_events },
+    { key: 'cancelled', label: t('status.event.cancelled'), value: d.cancelled_events },
+    { key: 'unpublished', label: t('status.event.unpublished'), value: d.unpublished_events },
+    { key: 'deleted', label: t('status.event.deleted'), value: d.deleted_events },
   ]
 }
 
@@ -35,7 +36,7 @@ export function topBy<T>(
     .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, 'ru'))
   if (sorted.length <= limit) return sorted
   const rest = sorted.slice(limit).reduce((sum, s) => sum + s.value, 0)
-  return [...sorted.slice(0, limit), { key: '__other', label: 'Другие', value: rest }]
+  return [...sorted.slice(0, limit), { key: '__other', label: t('stats.other'), value: rest }]
 }
 
 function startOfWeek(date: Date): Date {
@@ -44,8 +45,6 @@ function startOfWeek(date: Date): Date {
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
   return d
 }
-
-const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' })
 
 /** Мероприятия по неделям начала: `before` недель назад, текущая и `after` вперёд. */
 export function eventsByWeek(
@@ -62,7 +61,9 @@ export function eventsByWeek(
     start.setDate(first.getDate() + i * 7)
     weeks.push({
       key: start.toISOString(),
-      label: dayMonth.format(start).replace('.', ''),
+      label: new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'short' })
+        .format(start)
+        .replace('.', ''),
       value: 0,
       current: i === before,
     })
@@ -79,18 +80,9 @@ export function eventsByWeek(
   return weeks
 }
 
-const actionLabels: Record<ModerationLog['action'], string> = {
-  org_approved: 'Допущено организаций',
-  org_rejected: 'Отказано организациям',
-  event_unpublished: 'Снято мероприятий',
-  event_deleted: 'Удалено мероприятий',
-  event_restored: 'Возвращено в публикацию',
-  comment_hidden: 'Скрыто сообщений',
-}
-
 export function moderationSlices(logs: ModerationLog[]): Slice[] {
   return topBy(logs, (l) => l.action, Infinity).map((s) => ({
     ...s,
-    label: actionLabels[s.key as ModerationLog['action']] ?? s.key,
+    label: t(`stats.actions.${s.key}`),
   }))
 }

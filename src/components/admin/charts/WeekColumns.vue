@@ -27,7 +27,7 @@ const max = computed(() => Math.max(1, ...props.weeks.map((w) => w.value)))
           class="sm:not-last:after:content-['_']"
           >{{ part }}</span
         >
-        <span v-if="w.current" class="sr-only">, эта неделя</span>
+        <span v-if="w.current" class="sr-only">, {{ $t('stats.thisWeek') }}</span>
       </span>
     </li>
   </ol>
