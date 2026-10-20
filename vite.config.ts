@@ -24,11 +24,16 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           // Бэк ставит cookie входа с Secure, а локально мы на http — Safari и заход по IP её отбрасывают.
           // Только в dev-прокси снимаем Secure; на стенде с HTTPS cookie остаётся как у бэка.
+          // Со старой cookie (бэк перезапущен, вход истёк) бэк отвечает 401 даже на открытые запросы,
+          // а HttpOnly-cookie скрипт стереть не может — на такой 401 прокси сам её удаляет.
           configure: (proxy) => {
-            proxy.on('proxyRes', (res) => {
-              const cookies = res.headers['set-cookie']
-              if (cookies)
-                res.headers['set-cookie'] = cookies.map((c) => c.replace(/;\s*Secure/gi, ''))
+            proxy.on('proxyRes', (res, req) => {
+              const cookies = [...(res.headers['set-cookie'] ?? [])].map((c) =>
+                c.replace(/;\s*Secure/gi, ''),
+              )
+              if (res.statusCode === 401 && /(?:^|;\s*)jwt=/.test(req.headers.cookie ?? ''))
+                cookies.push('jwt=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict')
+              if (cookies.length) res.headers['set-cookie'] = cookies
             })
           },
         },
