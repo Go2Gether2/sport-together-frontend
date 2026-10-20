@@ -12,12 +12,6 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Мероприятия' },
   },
   {
-    path: '/nearby',
-    name: 'nearby',
-    component: () => import('@/views/NearbyView.vue'),
-    meta: { title: 'Рядом со мной' },
-  },
-  {
     path: '/events/new',
     name: 'event-create',
     component: () => import('@/views/EventFormView.vue'),

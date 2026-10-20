@@ -63,3 +63,55 @@ export function activeQuickDate(f: EventFilters, now = new Date()): QuickDate | 
 export function countFilters(f: EventFilters) {
   return [f.sport, f.city, f.date_from || f.date_to, f.level, f.join_mode].filter(Boolean).length
 }
+
+export type FilterChipKey = 'date' | 'city' | 'sport' | 'level' | 'join_mode'
+
+export interface FilterChip {
+  key: FilterChipKey
+  label: string
+}
+
+const QUICK_LABELS: Record<QuickDate, string> = {
+  today: 'Сегодня',
+  tomorrow: 'Завтра',
+  weekend: 'На выходных',
+}
+
+const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+const day = (iso: string) => dayMonth.format(new Date(`${iso}T00:00:00`))
+
+/** Подпись выбранных дат: «Завтра», «24 октября», «24 октября — 26 октября». */
+export function dateLabel(f: EventFilters, now = new Date()): string | null {
+  const quick = activeQuickDate(f, now)
+  if (quick) return QUICK_LABELS[quick]
+  if (f.date_from && f.date_to)
+    return f.date_from === f.date_to ? day(f.date_from) : `${day(f.date_from)} — ${day(f.date_to)}`
+  if (f.date_from) return `с ${day(f.date_from)}`
+  if (f.date_to) return `до ${day(f.date_to)}`
+  return null
+}
+
+/** Выбранные фильтры чипами под кнопкой «Фильтры» — каждый можно снять отдельно. */
+export function filterChips(
+  f: EventFilters,
+  sportName: (id: number) => string | undefined,
+  now = new Date(),
+): FilterChip[] {
+  const chips: FilterChip[] = []
+  const date = dateLabel(f, now)
+  if (date) chips.push({ key: 'date', label: date })
+  if (f.city) chips.push({ key: 'city', label: f.city })
+  if (f.sport) chips.push({ key: 'sport', label: sportName(f.sport) ?? 'Направление' })
+  if (f.level) chips.push({ key: 'level', label: LEVEL_LABELS[f.level] })
+  if (f.join_mode) chips.push({ key: 'join_mode', label: JOIN_MODE_LABELS[f.join_mode] })
+  return chips
+}
+
+export function withoutFilter(f: EventFilters, key: FilterChipKey): EventFilters {
+  const next = { ...f }
+  if (key === 'date') {
+    delete next.date_from
+    delete next.date_to
+  } else delete next[key]
+  return next
+}

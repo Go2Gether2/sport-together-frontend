@@ -39,6 +39,9 @@ async function setup(path = '/events') {
   return { wrapper, router }
 }
 
+const button = (wrapper: Awaited<ReturnType<typeof setup>>['wrapper'], text: string) =>
+  wrapper.findAll('button').find((b) => b.text().startsWith(text))!
+
 const titles = (wrapper: Awaited<ReturnType<typeof setup>>['wrapper']) =>
   wrapper.findAll('article h3').map((h) => h.text())
 
@@ -50,12 +53,20 @@ describe('EventsView', () => {
     expect(wrapper.text()).toContain('Найдено 9 мероприятий')
   })
 
-  it('фильтр по режиму записи попадает в адрес и сужает список', async () => {
+  it('фильтры открываются шторкой и применяются по «Показать»', async () => {
     const { wrapper, router } = await setup()
-    const chip = wrapper.findAll('button').find((b) => b.text() === 'По заявке')!
-    await chip.trigger('click')
+    await button(wrapper, 'Фильтры').trigger('click')
+    await flushPromises()
+    await button(wrapper, 'По заявке').trigger('click')
+    // До «Показать» адрес не меняется — условия копятся в шторке.
+    expect(router.currentRoute.value.query).toEqual({})
+    await new Promise((r) => setTimeout(r, 350))
+    await flushPromises()
+    const apply = wrapper.findAll('button').find((b) => b.text().startsWith('Показать 3'))!
+    await apply.trigger('click')
     await flushPromises()
     expect(router.currentRoute.value.query).toEqual({ join_mode: 'approval' })
+    expect(wrapper.text()).toContain('По заявке')
     expect(titles(wrapper).sort()).toEqual(
       ['Дворовый футбол 5×5', 'Интервальная тренировка на стадионе', 'Пляжный волейбол'].sort(),
     )
@@ -71,12 +82,16 @@ describe('EventsView', () => {
     expect(titles(wrapper).length).toBe(9)
   })
 
+  it('выбранный фильтр снимается чипом', async () => {
+    const { wrapper, router } = await setup('/events?join_mode=open&q=йога')
+    await wrapper.get('[aria-label="Убрать фильтр: Свободная запись"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query).toEqual({ q: 'йога' })
+  })
+
   it('переключается на карту, сохраняя фильтры в адресе', async () => {
     const { wrapper, router } = await setup('/events?join_mode=open')
-    await wrapper
-      .findAll('button')
-      .find((b) => b.text() === 'Картой')!
-      .trigger('click')
+    await button(wrapper, 'Карта').trigger('click')
     await flushPromises()
     expect(router.currentRoute.value.query).toEqual({ join_mode: 'open', view: 'map' })
     // В тестах ключа 2ГИС нет — карта честно говорит, что не подключена, список остаётся.

@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { sportsApi, type EventFilters, type JoinMode, type Level } from '@/api'
+import { sportsApi, type EventFilters } from '@/api'
+import EventFiltersSheet from '@/components/events/EventFiltersSheet.vue'
 import EventListCard from '@/components/events/EventListCard.vue'
-import EventsCalendar from '@/components/events/EventsCalendar.vue'
-import EventsMap from '@/components/map/EventsMap.vue'
-import { UiButton, UiChip, UiSelect, UiTextField, plural, type UiOption } from '@/components/ui'
+import NearbyMap from '@/components/map/NearbyMap.vue'
+import { UiButton, UiTextField, plural, type UiOption } from '@/components/ui'
 import {
-  JOIN_MODE_LABELS,
-  LEVEL_LABELS,
-  activeQuickDate,
   countFilters,
+  filterChips,
   filtersFromQuery,
   filtersToQuery,
+  withoutFilter,
+  type FilterChipKey,
 } from '@/features/events/filters'
 import { useEventList } from '@/features/events/useEventList'
-import { useSessionStore } from '@/stores/session'
-import type { MapPoint } from '@/features/map/geo'
+import { geocode } from '@/features/map/geocode'
+import { DEFAULT_CENTER, type LngLat, type MapPoint } from '@/features/map/geo'
+import { mapKey } from '@/features/map/mapgl'
+import { formatDistance, visibleNearby, type Bounds } from '@/features/map/nearby'
 import { useEventCoords } from '@/features/map/useEventCoords'
-import { quickDateRange, type QuickDate } from '@/utils/datetime'
+import { useSessionStore } from '@/stores/session'
 
 const route = useRoute()
 const session = useSessionStore()
@@ -28,50 +30,60 @@ const filters = computed(() => filtersFromQuery(route.query))
 const { items, total, state, error, loadingMore, load, loadMore } = useEventList(filters)
 
 const sportOptions = ref<UiOption[]>([])
-const levelOptions: UiOption[] = (Object.keys(LEVEL_LABELS) as Level[]).map((value) => ({
-  value,
-  label: LEVEL_LABELS[value],
-}))
-const QUICK: { kind: QuickDate; label: string }[] = [
-  { kind: 'today', label: 'Сегодня' },
-  { kind: 'tomorrow', label: 'Завтра' },
-  { kind: 'weekend', label: 'На выходных' },
-]
+const sheetOpen = ref(false)
 
-// Вид «Картой» или «Календарём» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
-type View = 'list' | 'map' | 'calendar'
-const view = computed<View>(() =>
-  route.query.view === 'map' || route.query.view === 'calendar' ? route.query.view : 'list',
-)
-const viewQuery = () => (view.value === 'list' ? {} : { view: view.value })
+// Вид «Карта» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
+type View = 'list' | 'map'
+const view = computed<View>(() => (route.query.view === 'map' ? 'map' : 'list'))
+const viewQuery = () => (view.value === 'map' ? { view: 'map' } : {})
 
-function update(patch: Partial<EventFilters>) {
-  const next = { ...filters.value, ...patch, page: undefined }
-  router.replace({ query: { ...filtersToQuery(next), ...viewQuery() } })
+function applyFilters(next: EventFilters) {
+  router.replace({ query: { ...filtersToQuery({ ...next, page: undefined }), ...viewQuery() } })
 }
 
 function setView(v: View) {
-  // Диапазон из быстрых дат («На выходных») календарь показать не может — снимаем его.
-  const f = filters.value
-  const next =
-    v === 'calendar' && f.date_from !== f.date_to
-      ? { ...f, date_from: undefined, date_to: undefined }
-      : f
   router.replace({
-    query: { ...filtersToQuery(next), ...(v === 'list' ? {} : { view: v }) },
+    query: { ...filtersToQuery(filters.value), ...(v === 'map' ? { view: v } : {}) },
   })
 }
 
-// В календаре выбранный день — это фильтр «с этой даты по эту же».
-const calendarDay = computed(() =>
-  filters.value.date_from && filters.value.date_from === filters.value.date_to
-    ? filters.value.date_from
-    : null,
+const search = ref(filters.value.q ?? '')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(search, (value) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(
+    () => applyFilters({ ...filters.value, q: value.trim() || undefined }),
+    350,
+  )
+})
+watch(
+  () => filters.value.q,
+  (q) => {
+    if ((q ?? '') !== search.value.trim()) search.value = q ?? ''
+  },
 )
-function selectDay(date: string | null) {
-  update({ date_from: date ?? undefined, date_to: date ?? undefined })
+
+const filterCount = computed(() => countFilters(filters.value))
+const chips = computed(() =>
+  filterChips(filters.value, (id) => sportOptions.value.find((o) => o.value === String(id))?.label),
+)
+function removeChip(key: FilterChipKey) {
+  applyFilters(withoutFilter(filters.value, key))
 }
 
+const hasFilters = computed(() => filterCount.value > 0 || !!filters.value.q)
+function reset() {
+  search.value = ''
+  router.replace({ query: viewQuery() })
+}
+
+const foundText = computed(
+  () =>
+    `Найдено ${total.value} ${plural(total.value, ['мероприятие', 'мероприятия', 'мероприятий'])}`,
+)
+
+// Карта: точки мероприятий, «Где я» и список того, что сейчас видно на карте, — ближайшие первыми.
+const hasMap = !!mapKey()
 const isMap = computed(() => view.value === 'map')
 const { coords } = useEventCoords(items, isMap)
 const points = computed<MapPoint[]>(() =>
@@ -81,70 +93,61 @@ const points = computed<MapPoint[]>(() =>
   }),
 )
 const withoutCoords = computed(() => items.value.filter((e) => coords.value.get(e.id) === null))
+
+const center = ref<LngLat>(DEFAULT_CENTER)
+const me = ref<LngLat | null>(null)
+const bounds = ref<Bounds | null>(null)
 const selectedId = ref<number | null>(null)
-async function selectOnMap(id: number) {
+const locating = ref(false)
+const locateNotice = ref('')
+
+const visible = computed(() => {
+  const byId = new Map(items.value.map((e) => [e.id, e]))
+  return visibleNearby(points.value, bounds.value, me.value ?? center.value).flatMap((p) => {
+    const event = byId.get(p.id)
+    return event ? [{ event, distance: p.distance }] : []
+  })
+})
+
+function locate() {
+  locateNotice.value = ''
+  if (!navigator.geolocation) {
+    locateNotice.value = 'Браузер не умеет определять место — карта остаётся на городе'
+    return
+  }
+  locating.value = true
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      me.value = [pos.coords.longitude, pos.coords.latitude]
+      center.value = me.value
+      locating.value = false
+    },
+    () => {
+      locating.value = false
+      locateNotice.value = 'Не получилось узнать, где вы, — карта остаётся на городе'
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
+  )
+}
+
+function selectOnMap(id: number) {
   selectedId.value = id
   document.getElementById(`event-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 }
 
-const search = ref(filters.value.q ?? '')
-let searchTimer: ReturnType<typeof setTimeout> | undefined
-watch(search, (value) => {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => update({ q: value.trim() || undefined }), 350)
-})
+// Пока человек не нажал «Где я», карта стоит на городе из фильтра или профиля.
+async function centerOnCity() {
+  const city = (filters.value.city ?? session.user?.city ?? '').trim()
+  if (!hasMap || !city || me.value) return
+  const found = await geocode(city, '').catch(() => null)
+  if (found && !me.value) center.value = [found.lng, found.lat]
+}
 watch(
-  () => filters.value.q,
-  (q) => {
-    if ((q ?? '') !== search.value.trim()) search.value = q ?? ''
+  () => [isMap.value, filters.value.city] as const,
+  ([map]) => {
+    if (map) centerOnCity()
   },
-)
-
-const city = ref(filters.value.city ?? '')
-let cityTimer: ReturnType<typeof setTimeout> | undefined
-watch(city, (value) => {
-  clearTimeout(cityTimer)
-  cityTimer = setTimeout(() => update({ city: value.trim() || undefined }), 350)
-})
-watch(
-  () => filters.value.city,
-  (c) => {
-    if ((c ?? '') !== city.value.trim()) city.value = c ?? ''
-  },
-)
-
-const sport = computed({
-  get: () => (filters.value.sport ? String(filters.value.sport) : ''),
-  set: (value: string) => update({ sport: value ? Number(value) : undefined }),
-})
-const level = computed({
-  get: () => filters.value.level ?? '',
-  set: (value: string) => update({ level: (value || undefined) as Level | undefined }),
-})
-
-const quick = computed(() => activeQuickDate(filters.value))
-function toggleQuick(kind: QuickDate) {
-  if (quick.value === kind) update({ date_from: undefined, date_to: undefined })
-  else {
-    const range = quickDateRange(kind)
-    update({ date_from: range.from, date_to: range.to })
-  }
-}
-
-function setJoinMode(mode: JoinMode | undefined) {
-  update({ join_mode: mode })
-}
-
-const hasFilters = computed(() => countFilters(filters.value) > 0 || !!filters.value.q)
-function reset() {
-  search.value = ''
-  city.value = ''
-  router.replace({ query: viewQuery() })
-}
-
-const foundText = computed(
-  () =>
-    `Найдено ${total.value} ${plural(total.value, ['мероприятие', 'мероприятия', 'мероприятий'])}`,
+  { immediate: true },
 )
 
 watch(() => route.query, load, { immediate: true, deep: true })
@@ -160,33 +163,22 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="flex flex-col gap-5">
+  <section class="flex flex-col gap-4">
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="font-display text-2xl font-bold">Мероприятия</h1>
         <p v-if="state === 'ready'" class="text-ink-2" role="status">{{ foundText }}</p>
       </div>
-      <div class="flex min-w-0 max-w-full items-center gap-2">
-        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Как показать">
-          <UiChip :pressed="view === 'list'" @click="setView('list')">Списком</UiChip>
-          <UiChip :pressed="view === 'map'" @click="setView('map')">Картой</UiChip>
-          <UiChip :pressed="view === 'calendar'" @click="setView('calendar')">Календарём</UiChip>
-        </div>
-        <RouterLink
-          v-if="!session.isAdmin"
-          :to="{ name: 'event-create' }"
-          class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
-        >
-          + Создать своё
-        </RouterLink>
-      </div>
+      <RouterLink
+        v-if="!session.isAdmin"
+        :to="{ name: 'event-create' }"
+        class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
+      >
+        + Создать своё
+      </RouterLink>
     </header>
 
-    <div
-      class="flex flex-col gap-4 lg:rounded-card lg:bg-card lg:p-5"
-      role="search"
-      aria-label="Поиск мероприятий"
-    >
+    <div class="flex flex-col gap-3" role="search" aria-label="Поиск мероприятий">
       <UiTextField
         v-model="search"
         label="Поиск"
@@ -194,68 +186,92 @@ onMounted(async () => {
         type="search"
         placeholder="Футбол, йога, шахматы…"
       />
-
-      <!-- В календаре дату выбирают в сетке — быстрые даты там дублировали бы её. -->
-      <fieldset v-if="view !== 'calendar'" class="flex flex-col gap-2">
-        <legend class="mb-2 font-medium">Когда</legend>
-        <div class="flex flex-wrap gap-2">
-          <UiChip
-            v-for="item in QUICK"
-            :key="item.kind"
-            :pressed="quick === item.kind"
-            @click="toggleQuick(item.kind)"
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="inline-flex min-h-12 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-bold max-[359px]:px-3 sm:gap-2 sm:px-5"
+          :class="filterCount ? 'bg-ink text-white' : 'bg-card text-ink hover:bg-mute'"
+          aria-haspopup="dialog"
+          @click="sheetOpen = true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            class="max-[359px]:hidden"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
           >
-            {{ item.label }}
-          </UiChip>
+            <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+            <circle cx="16" cy="7" r="2" />
+            <circle cx="10" cy="17" r="2" />
+          </svg>
+          Фильтры
+          <span
+            v-if="filterCount"
+            class="grid min-w-6 place-items-center rounded-full bg-white px-1.5 text-sm text-ink"
+          >
+            {{ filterCount }}
+          </span>
+        </button>
+        <div
+          class="ml-auto flex shrink-0 rounded-full bg-card p-1 max-[359px]:p-0.5"
+          role="group"
+          aria-label="Как показать"
+        >
+          <button
+            v-for="v in [
+              { key: 'list', label: 'Список' },
+              { key: 'map', label: 'Карта' },
+            ] as const"
+            :key="v.key"
+            type="button"
+            class="min-h-10 rounded-full px-2.5 text-[15px] font-semibold max-[359px]:px-1.5 sm:px-4 sm:text-base"
+            :class="view === v.key ? 'bg-ink text-white' : 'text-ink hover:bg-field'"
+            :aria-pressed="view === v.key"
+            @click="setView(v.key)"
+          >
+            {{ v.label }}
+          </button>
         </div>
-      </fieldset>
-
-      <div class="grid gap-4 sm:grid-cols-3">
-        <UiTextField v-model="city" label="Город" placeholder="Любой" />
-        <UiSelect
-          v-model="sport"
-          label="Направление"
-          :options="sportOptions"
-          placeholder="Все направления"
-        />
-        <UiSelect
-          v-model="level"
-          label="Уровень"
-          :options="levelOptions"
-          placeholder="Любой уровень"
-        />
       </div>
 
-      <fieldset class="flex flex-col gap-2">
-        <legend class="mb-2 font-medium">Запись</legend>
-        <div class="flex flex-wrap gap-2">
-          <UiChip :pressed="!filters.join_mode" @click="setJoinMode(undefined)">Любая</UiChip>
-          <UiChip
-            v-for="mode in ['open', 'approval'] as const"
-            :key="mode"
-            :pressed="filters.join_mode === mode"
-            @click="setJoinMode(mode)"
-          >
-            {{ JOIN_MODE_LABELS[mode] }}
-          </UiChip>
-        </div>
-      </fieldset>
-
-      <button
-        v-if="hasFilters"
-        type="button"
-        class="w-fit font-medium text-ink underline underline-offset-4 hover:text-accent-ink"
-        @click="reset"
+      <ul
+        v-if="chips.length"
+        class="flex gap-2 overflow-x-auto pb-1"
+        aria-label="Выбранные фильтры"
       >
-        Сбросить фильтры
-      </button>
+        <li v-for="c in chips" :key="c.key" class="shrink-0">
+          <button
+            type="button"
+            class="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-accent-soft px-4 font-semibold text-accent-ink"
+            :aria-label="`Убрать фильтр: ${c.label}`"
+            @click="removeChip(c.key)"
+          >
+            {{ c.label }} <span aria-hidden="true">✕</span>
+          </button>
+        </li>
+        <li v-if="chips.length > 1" class="shrink-0">
+          <button
+            type="button"
+            class="inline-flex min-h-10 items-center px-2 font-semibold underline underline-offset-4"
+            @click="reset"
+          >
+            Сбросить все
+          </button>
+        </li>
+      </ul>
     </div>
 
-    <EventsCalendar
-      v-if="view === 'calendar'"
+    <EventFiltersSheet
+      v-model:open="sheetOpen"
       :filters="filters"
-      :selected="calendarDay"
-      @select="selectDay"
+      :total="total"
+      :sport-options="sportOptions"
+      @apply="applyFilters"
     />
 
     <div aria-live="polite" :aria-busy="state === 'loading'">
@@ -307,27 +323,62 @@ onMounted(async () => {
         </div>
       </div>
 
+      <div v-else-if="isMap" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div class="relative">
+          <NearbyMap
+            class="h-[60vh] min-h-72 xl:h-[calc(100vh-17rem)]"
+            :points="points"
+            :center="center"
+            :me="me"
+            :selected-id="selectedId"
+            @select="selectOnMap"
+            @bounds="bounds = $event"
+          />
+          <UiButton
+            v-if="hasMap"
+            variant="ghost"
+            class="!absolute bottom-4 left-4 !w-auto !bg-card shadow-md"
+            :loading="locating"
+            @click="locate"
+          >
+            ◎ Где я
+          </UiButton>
+        </div>
+        <div
+          class="flex min-w-0 flex-col gap-3 xl:h-[calc(100vh-17rem)] xl:overflow-y-auto xl:pr-1"
+        >
+          <p v-if="locateNotice" class="text-sm text-ink-2" role="status">{{ locateNotice }}</p>
+          <h2 class="font-bold">
+            На карте {{ visible.length }}
+            {{ plural(visible.length, ['мероприятие', 'мероприятия', 'мероприятий']) }}
+          </h2>
+          <p v-if="hasMap && !visible.length" class="rounded-card bg-card p-4 text-ink-2">
+            В этой части карты мероприятий нет — отдалите карту или смените фильтры.
+          </p>
+          <ul class="flex flex-col gap-3">
+            <li
+              v-for="{ event, distance } in visible"
+              :id="`event-${event.id}`"
+              :key="event.id"
+              class="flex min-w-0 scroll-mt-4 flex-col gap-1 rounded-card"
+              :class="selectedId === event.id ? 'outline-3 outline-accent-strong' : ''"
+            >
+              <EventListCard :event="event" />
+              <p class="px-3 text-sm font-semibold text-ink-2">
+                {{ formatDistance(distance) }} {{ me ? 'от вас' : 'от центра города' }}
+              </p>
+            </li>
+          </ul>
+          <p v-if="withoutCoords.length" class="text-sm text-ink-2">
+            Без отметки на карте: {{ withoutCoords.map((e) => e.title).join(', ') }}.
+          </p>
+        </div>
+      </div>
+
       <template v-else>
-        <EventsMap
-          v-if="isMap"
-          class="mb-5 h-[min(60vh,520px)]"
-          :points="points"
-          :selected-id="selectedId"
-          label="Карта мероприятий"
-          @select="selectOnMap"
-        />
-        <p v-if="isMap && withoutCoords.length" class="mb-3 text-ink-2">
-          Без отметки на карте: {{ withoutCoords.map((e) => e.title).join(', ') }}.
-        </p>
         <h2 class="sr-only">Найденные мероприятия</h2>
         <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <li
-            v-for="event in items"
-            :id="`event-${event.id}`"
-            :key="event.id"
-            class="scroll-mt-24 rounded-card"
-            :class="selectedId === event.id && isMap ? 'outline-3 outline-accent-strong' : ''"
-          >
+          <li v-for="event in items" :key="event.id" class="rounded-card">
             <EventListCard :event="event" />
           </li>
         </ul>
