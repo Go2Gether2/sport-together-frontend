@@ -1,5 +1,6 @@
 import type {
   CommentRow,
+  ReportRow,
   EventRow,
   OrganizationRow,
   ParticipationRow,
@@ -529,5 +530,20 @@ export function createSeed(now: Date) {
     },
   ]
 
-  return { users, organizations, sports, events, participations, comments, safetyBanners }
+  // Как в демо-данных бэка: одна нерассмотренная жалоба от первого пользователя.
+  const reports: ReportRow[] = [
+    {
+      id: 1,
+      event_id: E.runMorning,
+      reporter_id: U.anna,
+      reason: 'misleading',
+      comment: 'На набережной ремонт, место встречи неактуально',
+      status: 'pending',
+      resolution_note: null,
+      resolved_at: null,
+      created_at: created,
+    },
+  ]
+
+  return { users, organizations, sports, events, participations, comments, safetyBanners, reports }
 }

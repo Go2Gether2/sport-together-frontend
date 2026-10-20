@@ -76,6 +76,7 @@ const en: Dictionary<typeof ru> = {
     admin: 'Admin',
     'admin-organizations': 'Admin: organizations',
     'admin-events': 'Admin: events',
+    'admin-reports': 'Admin: reports',
     'admin-safety': 'Admin: safety',
     'admin-safety-new': 'New tip',
     'admin-safety-edit': 'Tip',
@@ -545,6 +546,7 @@ const en: Dictionary<typeof ru> = {
       event_deleted: 'Events deleted',
       event_restored: 'Events restored',
       comment_hidden: 'Messages hidden',
+      report_rejected: 'Reports rejected',
     },
   },
   export: {
@@ -610,8 +612,29 @@ const en: Dictionary<typeof ru> = {
     custom: 'Your sport',
   },
   admin: {
+    reports: {
+      columns: { event: 'Event', reason: 'Reason', reporter: 'Reported by', status: 'Status' },
+      loadFailed: 'Could not load reports.',
+      empty: 'No reports',
+      back: '← All reports',
+      pick: 'Choose a report in the list',
+      reporter: 'Reported by',
+      submitted: 'Submitted',
+      comment: 'Comment',
+      decision: 'Decision',
+      accept: 'Accept and unpublish',
+      reject: 'Reject',
+      acceptTitle: 'Accept the report and unpublish the event?',
+      acceptText:
+        'The event will disappear from the feed, the organizer and participants will see the reason. Other reports on it will be closed.',
+      rejectTitle: 'Reject the report?',
+      rejectText: 'The event stays published, the author of the report will get your answer.',
+      noteOptional: 'Answer to the author (optional)',
+      decideFailed: 'Could not save the decision.',
+    },
     title: 'Admin',
     nav: {
+      reports: 'Reports',
       label: 'Admin sections',
       overview: 'Overview',
       organizations: 'Organizations',
@@ -619,6 +642,7 @@ const en: Dictionary<typeof ru> = {
       safety: 'Safety',
     },
     dashboard: {
+      pendingReports: 'new reports',
       loadFailed: 'Could not load the summary.',
       pending: 'awaiting approval',
       approved: 'organizations approved',
@@ -974,6 +998,31 @@ const en: Dictionary<typeof ru> = {
       'The event is in {city}. The exact place and map pin are visible after signing in — this keeps meeting places away from strangers.',
     mapGuest:
       'The events map is available after signing in: exact meeting places are visible only to members.',
+  },
+  reports: {
+    open: 'Report this event',
+    title: 'Report this event',
+    text: 'An administrator will check the event. The organizer will not know who reported it.',
+    reason: 'What is wrong',
+    comment: 'Details (optional)',
+    commentRequired: 'Details',
+    commentPlaceholder: 'For example: there is construction on site, the address is outdated',
+    send: 'Send report',
+    sent: '✓ Report sent — an administrator will review it.',
+    sendFailed: 'Could not send the report.',
+    reasons: {
+      misleading: 'Wrong place or time',
+      dangerous: 'Dangerous for participants',
+      fraud: 'Fraud, asking for money',
+      offensive: 'Offensive content',
+      spam: 'Spam or advertising',
+      other: 'Other',
+    },
+    status: { pending: 'New', accepted: 'Accepted', rejected: 'Rejected' },
+    errors: {
+      reason: 'Choose what is wrong',
+      comment: 'Describe what is wrong',
+    },
   },
 }
 

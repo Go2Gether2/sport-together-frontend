@@ -88,6 +88,12 @@ const tiles = computed<Tile[]>(() => {
       to: { name: 'admin-organizations', query: { status: 'pending' } },
     },
     {
+      label: t('admin.dashboard.pendingReports'),
+      value: d.pending_reports,
+      bg: d.pending_reports ? 'bg-orange' : 'bg-card',
+      to: { name: 'admin-reports' },
+    },
+    {
       label: t('admin.dashboard.approved'),
       value: d.approved_organizations,
       bg: 'bg-card',

@@ -24,6 +24,7 @@ import {
   type ModerationRow,
   type OrganizationRow,
   type ParticipationRow,
+  type ReportRow,
   type SafetyBannerRow,
   type UserRow,
 } from './db'
@@ -47,6 +48,7 @@ import {
   toComment,
   toEventDetails,
   toEventSummary,
+  toReport,
   toOrgShort,
   toOrganization,
   toParticipant,
@@ -128,6 +130,15 @@ function login(user: UserRow, status = 200) {
 
 function me(user: UserRow): Me {
   return { user: toUser(user), organizations: ownedOrgs(user.id).map(toOrgShort) }
+}
+
+const REPORT_REASONS = ['spam', 'fraud', 'offensive', 'dangerous', 'misleading', 'other']
+
+/** Как у бэка: снятие или удаление мероприятия закрывает все его нерассмотренные жалобы как принятые. */
+function acceptReports(eventId: Id, note: string | null) {
+  for (const r of db.reports)
+    if (r.event_id === eventId && r.status === 'pending')
+      Object.assign(r, { status: 'accepted', resolution_note: note, resolved_at: nowIso() })
 }
 
 function log(
@@ -949,6 +960,117 @@ export const handlers = [
   ),
 
   // ── Admin
+  http.post(
+    url('/events/:id/reports'),
+    route(async ({ request, params }) => {
+      const user = requireUser(request)
+      const event =
+        findEvent(idParam(params, 'id')) ?? fail(404, 'NOT_FOUND', 'Мероприятие не найдено')
+      if (event.status !== 'published') unavailable(event)
+      if (isOrganizer(event, user))
+        fail(409, 'OWN_EVENT', 'Нельзя пожаловаться на своё мероприятие')
+      const body = await readJson<{ reason?: string; comment?: string }>(request)
+      if (body.reason && !REPORT_REASONS.includes(body.reason))
+        fail(400, 'BAD_REQUEST', 'Некорректный запрос')
+      const fields: Record<string, string> = {}
+      if (!body.reason) fields.reason = 'не должно быть пустым'
+      const comment = body.comment?.trim() || null
+      if (body.reason === 'other' && !comment) fields.comment = 'Опишите, что не так'
+      if (comment && comment.length > 1000) fields.comment = 'Не длиннее 1000 символов'
+      if (Object.keys(fields).length) validation(fields)
+      if (
+        db.reports.some(
+          (r) => r.event_id === event.id && r.reporter_id === user.id && r.status === 'pending',
+        )
+      )
+        fail(
+          409,
+          'ALREADY_REPORTED',
+          'Вы уже пожаловались на это мероприятие, жалоба на рассмотрении',
+        )
+      const report: ReportRow = {
+        id: newId(),
+        event_id: event.id,
+        reporter_id: user.id,
+        reason: body.reason as ReportRow['reason'],
+        comment,
+        status: 'pending',
+        resolution_note: null,
+        resolved_at: null,
+        created_at: nowIso(),
+      }
+      db.reports.push(report)
+      return HttpResponse.json(toReport(report), { status: 201 })
+    }),
+  ),
+
+  http.get(
+    url('/users/me/reports'),
+    route(({ request }) => {
+      const user = requireUser(request)
+      return db.reports
+        .filter((r) => r.reporter_id === user.id)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))
+        .map(toReport)
+    }),
+  ),
+
+  http.get(
+    url('/admin/reports'),
+    route(({ request }) => {
+      requireAdmin(request)
+      const sp = search(request)
+      const status = sp.get('status')
+      const eventId = numberParam(sp, 'event_id')
+      const items = db.reports
+        .filter((r) => !status || r.status === status)
+        .filter((r) => !eventId || r.event_id === eventId)
+        .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id)
+        .map(toReport)
+      return pageOf(items, sp)
+    }),
+  ),
+
+  http.post(
+    url('/admin/reports/:id/accept'),
+    route(async ({ request, params }) => {
+      const admin = requireAdmin(request)
+      const report =
+        db.reports.find((r) => r.id === idParam(params, 'id')) ??
+        fail(404, 'NOT_FOUND', 'Жалоба не найдена')
+      const { reason } = await readJson<{ reason?: string }>(request)
+      if (!reason?.trim()) validation({ reason: 'не должно быть пустым' })
+      if (report.status !== 'pending') fail(409, 'ALREADY_REVIEWED', 'Жалоба уже рассмотрена')
+      const event = findEvent(report.event_id)!
+      if (event.status === 'published') {
+        Object.assign(event, {
+          status: 'unpublished',
+          moderation_reason: reason!.trim(),
+          updated_at: nowIso(),
+        })
+        log(admin, 'event_unpublished', 'event', event.id, reason!.trim())
+      }
+      acceptReports(event.id, reason!.trim())
+      return toReport(report)
+    }),
+  ),
+
+  http.post(
+    url('/admin/reports/:id/reject'),
+    route(async ({ request, params }) => {
+      const admin = requireAdmin(request)
+      const report =
+        db.reports.find((r) => r.id === idParam(params, 'id')) ??
+        fail(404, 'NOT_FOUND', 'Жалоба не найдена')
+      const { reason } = await readJson<{ reason?: string }>(request)
+      if (report.status !== 'pending') fail(409, 'ALREADY_REVIEWED', 'Жалоба уже рассмотрена')
+      const note = reason?.trim() || null
+      Object.assign(report, { status: 'rejected', resolution_note: note, resolved_at: nowIso() })
+      log(admin, 'report_rejected', 'event', report.event_id, note)
+      return toReport(report)
+    }),
+  ),
+
   http.get(
     url('/admin/dashboard'),
     route(({ request }) => {
@@ -964,6 +1086,7 @@ export const handlers = [
         cancelled_events: events('cancelled'),
         hidden_comments: db.comments.filter((c) => c.is_hidden).length,
         users: db.users.length,
+        pending_reports: db.reports.filter((r) => r.status === 'pending').length,
       }
     }),
   ),
@@ -1074,6 +1197,7 @@ export const handlers = [
         updated_at: nowIso(),
       })
       log(admin, 'event_unpublished', 'event', event.id, reason!.trim())
+      acceptReports(event.id, reason!.trim())
       return toEventDetails(event, admin)
     }),
   ),
@@ -1091,6 +1215,7 @@ export const handlers = [
         updated_at: nowIso(),
       })
       log(admin, 'event_deleted', 'event', event.id, reason!.trim())
+      acceptReports(event.id, reason!.trim())
       return toEventDetails(event, admin)
     }),
   ),

@@ -9,6 +9,8 @@ import type {
   SafetyCategory,
   Sport,
   User,
+  ReportReason,
+  ReportStatus,
 } from '@/api/types'
 import { createSeed } from './seed'
 
@@ -104,9 +106,22 @@ export interface ModerationRow {
     | 'event_deleted'
     | 'event_restored'
     | 'comment_hidden'
+    | 'report_rejected'
   target_type: 'organization' | 'event' | 'comment'
   target_id: Id
   reason: string | null
+  created_at: string
+}
+
+export interface ReportRow {
+  id: Id
+  event_id: Id
+  reporter_id: Id
+  reason: ReportReason
+  comment: string | null
+  status: ReportStatus
+  resolution_note: string | null
+  resolved_at: string | null
   created_at: string
 }
 
@@ -132,6 +147,7 @@ export interface Db {
   comments: CommentRow[]
   moderation: ModerationRow[]
   safetyBanners: SafetyBannerRow[]
+  reports: ReportRow[]
   sessions: Map<string, Id>
 }
 
@@ -144,6 +160,7 @@ export const db: Db = {
   comments: [],
   moderation: [],
   safetyBanners: [],
+  reports: [],
   sessions: new Map(),
 }
 
@@ -160,6 +177,7 @@ export function resetDb(now = new Date()) {
   db.comments = seed.comments
   db.moderation = []
   db.safetyBanners = seed.safetyBanners
+  db.reports = seed.reports
   db.sessions = new Map()
   lastId = 1000
 }

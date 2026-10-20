@@ -12,6 +12,8 @@ import type {
   Organization,
   OrganizationStatus,
   Page,
+  Report,
+  ReportStatus,
   SafetyBanner,
   SafetyBannerDetails,
   SafetyBannerInput,
@@ -21,6 +23,13 @@ type PageQuery = { page?: number; size?: number }
 
 export const adminApi = {
   dashboard: () => http.get<AdminDashboard>('/admin/dashboard'),
+
+  reports: (query: { status?: ReportStatus; event_id?: Id } & PageQuery = {}) =>
+    http.get<Page<Report>>('/admin/reports', { query }),
+  acceptReport: (id: Id, reason: string) =>
+    http.post<Report>(`/admin/reports/${id}/accept`, { reason }),
+  rejectReport: (id: Id, reason?: string) =>
+    http.post<Report>(`/admin/reports/${id}/reject`, reason ? { reason } : {}),
 
   organizations: (query: { status?: OrganizationStatus; q?: string } & PageQuery = {}) =>
     http.get<Page<Organization>>('/admin/organizations', { query }),

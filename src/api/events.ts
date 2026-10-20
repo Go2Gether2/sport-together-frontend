@@ -1,5 +1,7 @@
 import { http } from './http'
 import type {
+  Report,
+  ReportInput,
   EventDetails,
   EventFilters,
   EventInput,
@@ -18,6 +20,7 @@ export const eventsApi = {
   list: (filters: EventFilters = {}) =>
     http.get<Page<EventSummary>>('/events', { query: { ...filters } }),
   get: (id: Id) => http.get<EventDetails>(`/events/${id}`),
+  report: (id: Id, body: ReportInput) => http.post<Report>(`/events/${id}/reports`, body),
   create: (body: EventInput) => http.post<EventDetails>('/events', body),
   update: (id: Id, body: EventUpdate) => http.patch<EventDetails>(`/events/${id}`, body),
   cancel: (id: Id, reason: string) => http.post<EventDetails>(`/events/${id}/cancel`, { reason }),
