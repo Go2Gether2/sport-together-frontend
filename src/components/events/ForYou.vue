@@ -59,7 +59,7 @@ onMounted(load)
 
     <ul
       v-if="state === 'loading'"
-      class="grid gap-3 md:grid-cols-2"
+      class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2"
       :aria-label="$t('common.loading')"
     >
       <li v-for="i in 2" :key="i" class="h-28 animate-pulse rounded-card bg-card" />
@@ -81,7 +81,7 @@ onMounted(load)
         {{ $t('forYou.create') }}</RouterLink
       >.
     </p>
-    <ul v-else class="grid gap-3 md:grid-cols-2">
+    <ul v-else class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
       <li v-for="{ event, reasons } in cards" :key="event.id" class="flex min-w-0 flex-col gap-1.5">
         <EventListCard :event="event" />
         <p v-if="reasons.length" class="flex flex-wrap gap-1.5 px-2 text-sm">

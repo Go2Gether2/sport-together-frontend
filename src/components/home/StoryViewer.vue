@@ -117,7 +117,10 @@ function barWidth(i: number) {
         @click="go(1)"
       />
 
-      <span aria-hidden="true" class="pointer-events-none absolute top-24 -right-6 opacity-60">
+      <span
+        aria-hidden="true"
+        class="pointer-events-none absolute top-24 -right-6 opacity-60 short:hidden"
+      >
         <SportIcon :name="story.icon" :size="220" />
       </span>
 

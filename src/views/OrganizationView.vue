@@ -80,7 +80,10 @@ const website = computed(() => safeHref(org.value?.website_url))
       <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
     </section>
 
-    <article v-else-if="org" class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <article
+      v-else-if="org"
+      class="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_360px]"
+    >
       <div class="flex min-w-0 flex-col gap-5">
         <header class="flex flex-col gap-3 rounded-card bg-accent p-6">
           <div class="flex items-center gap-3">

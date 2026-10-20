@@ -305,7 +305,7 @@ onMounted(async () => {
     <div aria-live="polite" :aria-busy="state === 'loading'">
       <ul
         v-if="state === 'loading'"
-        class="grid grid-cols-1 gap-4 md:grid-cols-2"
+        class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3"
         :aria-label="$t('common.loading')"
       >
         <li v-for="n in 4" :key="n" class="h-44 animate-pulse rounded-card bg-card" />
@@ -350,7 +350,10 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-else-if="isMap" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div
+        v-else-if="isMap"
+        class="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]"
+      >
         <div class="relative">
           <NearbyMap
             class="h-[60vh] min-h-72 xl:h-[calc(100vh-17rem)]"
@@ -404,11 +407,11 @@ onMounted(async () => {
       <template v-else>
         <div class="mb-3 flex items-center justify-between gap-3">
           <h2 class="sr-only">{{ $t('events.found_title') }}</h2>
-          <label class="ml-auto flex items-center gap-2 font-semibold">
+          <label class="ml-auto flex max-w-full min-w-0 items-center gap-2 font-semibold">
             <span class="text-ink-2">{{ $t('sort.title') }}</span>
             <select
               :value="sort"
-              class="min-h-11 cursor-pointer rounded-full bg-card px-4 font-semibold text-ink"
+              class="min-h-11 min-w-0 flex-1 cursor-pointer truncate rounded-full bg-card px-4 font-semibold text-ink"
               @change="setSort(($event.target as HTMLSelectElement).value as EventSort)"
             >
               <option v-for="o in SORT_OPTIONS" :key="o.value" :value="o.value">
@@ -417,7 +420,7 @@ onMounted(async () => {
             </select>
           </label>
         </div>
-        <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ul class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
           <li v-for="event in sorted" :key="event.id" class="rounded-card">
             <EventListCard :event="event" />
           </li>

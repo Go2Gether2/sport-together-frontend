@@ -24,11 +24,11 @@ const menuOpen = ref(false)
       <main
         id="main"
         tabindex="-1"
-        class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none lg:px-8 lg:py-8"
+        class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none lg:px-8 lg:py-8 2xl:max-w-7xl"
       >
         <RouterView />
       </main>
-      <AppFooter class="pb-24 lg:pb-0" />
+      <AppFooter class="pb-24 short:pb-16 lg:pb-0" />
     </div>
   </div>
   <AppTabBar />

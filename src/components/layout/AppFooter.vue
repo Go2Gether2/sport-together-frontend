@@ -6,7 +6,7 @@ import { APP_NAME } from '@/router/access'
 <template>
   <footer class="bg-page">
     <div
-      class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-4 text-sm text-ink-2"
+      class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-4 2xl:max-w-7xl text-sm text-ink-2"
     >
       <span>{{ $t('footer.prototype', { app: APP_NAME }) }}</span>
       <RouterLink
