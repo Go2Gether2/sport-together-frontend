@@ -17,6 +17,7 @@ import { StatusBadge, UiAvatarStack, UiBadge, UiButton, UiSeats } from '@/compon
 import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
 import { formatEventWhen } from '@/utils/datetime'
 import { toPoints, twoGisLink } from '@/features/map/geo'
+import { mapKey } from '@/features/map/mapgl'
 import { APP_NAME } from '@/router/access'
 import { intlLocale, t } from '@/i18n'
 import { guestPlaceText } from '@/features/events/place'
@@ -66,6 +67,8 @@ const when = computed(() =>
 )
 const participants = computed(() => event.value?.participants ?? [])
 const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
+// Без ключа карты блок пустой — адрес и так есть выше, поэтому раздел не показываем.
+const hasMap = !!mapKey()
 </script>
 
 <template>
@@ -221,7 +224,11 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
           <h2 id="map-title" class="text-lg font-bold">{{ $t('event.onMap') }}</h2>
           <GuestPlaceNotice :text="guestPlaceText(event.city)" />
         </section>
-        <section v-else-if="mapPoints[0]" aria-labelledby="map-title" class="flex flex-col gap-2">
+        <section
+          v-else-if="hasMap && mapPoints[0]"
+          aria-labelledby="map-title"
+          class="flex flex-col gap-2"
+        >
           <h2 id="map-title" class="text-lg font-bold">{{ $t('event.onMap') }}</h2>
           <EventsMap
             class="h-64"

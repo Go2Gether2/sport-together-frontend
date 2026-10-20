@@ -76,6 +76,22 @@ describe('EventsView', () => {
     )
   })
 
+  it('быстрые даты видны в ленте: нажатие ставит даты в адрес, повторное — снимает', async () => {
+    const { wrapper, router } = await setup()
+    await button(wrapper, 'Завтра').trigger('click')
+    await flushPromises()
+    const { date_from, date_to } = router.currentRoute.value.query
+    expect(date_from).toBeTruthy()
+    expect(date_to).toBe(date_from)
+    expect(button(wrapper, 'Завтра').attributes('aria-pressed')).toBe('true')
+    // Выбранная дата уже нажата — отдельным снимаемым чипом не дублируется.
+    expect(wrapper.find('button[aria-label^="Убрать"]').exists()).toBe(false)
+
+    await button(wrapper, 'Завтра').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query).toEqual({})
+  })
+
   it('читает фильтры из ссылки и показывает пустое состояние со сбросом', async () => {
     const { wrapper, router } = await setup('/events?q=керлинг')
     expect(wrapper.text()).toContain('Пока никто не собирается')

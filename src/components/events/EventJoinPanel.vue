@@ -171,6 +171,13 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
     <p v-else-if="action.kind === 'full'" class="font-medium">{{ $t('join.full') }}</p>
 
     <p v-if="notice" class="font-medium text-accent-ink" role="status">{{ notice }}</p>
+    <RouterLink
+      v-if="notice && (action.kind === 'confirmed' || action.kind === 'pending')"
+      :to="{ name: 'my-participations' }"
+      class="inline-flex min-h-11 w-fit items-center font-semibold text-accent-ink underline underline-offset-4"
+    >
+      {{ $t('join.toMine') }}
+    </RouterLink>
     <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
 
     <UiModal

@@ -3,7 +3,7 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, commentsApi, type Comment, type EventDetails } from '@/api'
 import { useSessionStore } from '@/stores/session'
-import { UiButton } from '@/components/ui'
+import { UiButton, UiModal } from '@/components/ui'
 import { t } from '@/i18n'
 import { buildThread } from '@/features/comments/thread'
 import CommentItem from './CommentItem.vue'
@@ -83,8 +83,19 @@ function saveComment(id: number, body: string) {
   return act(() => commentsApi.update(id, body))
 }
 
-function removeComment(id: number) {
-  return act(() => commentsApi.remove(id))
+// Удаление не вернуть — сначала спрашиваем.
+const removingId = ref<number | null>(null)
+const removeOpen = computed({
+  get: () => removingId.value !== null,
+  set: (v) => {
+    if (!v) removingId.value = null
+  },
+})
+async function confirmRemove() {
+  const id = removingId.value
+  if (id === null) return
+  await act(() => commentsApi.remove(id))
+  removingId.value = null
 }
 
 async function reply(comment: Comment) {
@@ -124,7 +135,7 @@ watch(() => props.event.id, load, { immediate: true })
             :busy="busy"
             @reply="reply(item.comment)"
             @save="(t: string) => saveComment(item.comment.id, t)"
-            @remove="removeComment(item.comment.id)"
+            @remove="removingId = item.comment.id"
           />
           <ul v-if="item.replies.length" class="ml-5 flex flex-col gap-2 pl-3">
             <li v-for="r in item.replies" :key="r.id">
@@ -135,7 +146,7 @@ watch(() => props.event.id, load, { immediate: true })
                 :busy="busy"
                 @reply="reply(item.comment)"
                 @save="(t: string) => saveComment(r.id, t)"
-                @remove="removeComment(r.id)"
+                @remove="removingId = r.id"
               />
             </li>
           </ul>
@@ -195,5 +206,16 @@ watch(() => props.event.id, load, { immediate: true })
       </p>
       <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
     </template>
+
+    <UiModal
+      v-model:open="removeOpen"
+      :title="$t('comments.removeTitle')"
+      :description="$t('comments.removeText')"
+    >
+      <template #actions>
+        <UiButton variant="ghost" @click="removeOpen = false">{{ $t('common.cancel') }}</UiButton>
+        <UiButton :loading="busy" @click="confirmRemove">{{ $t('comments.remove') }}</UiButton>
+      </template>
+    </UiModal>
   </section>
 </template>

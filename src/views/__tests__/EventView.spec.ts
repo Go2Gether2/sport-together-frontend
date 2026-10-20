@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -38,6 +38,7 @@ async function open(id: number, as?: number) {
       { path: '/events/:id/edit', name: 'event-edit', component: Stub },
       { path: '/events', name: 'events', component: Stub },
       { path: '/login', name: 'login', component: Stub },
+      { path: '/me', name: 'my-participations', component: Stub },
       { path: '/users/:id', name: 'user', component: Stub },
       { path: '/organizations/:id', name: 'organization', component: Stub },
     ],
@@ -59,6 +60,8 @@ describe('EventView', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('Вы участник')
     expect(wrapper.text()).toContain('Пётр Иванов')
+    // После записи — куда идти дальше, а не повтор «Вы участник».
+    expect(wrapper.get('a[href="/me"]').text()).toBe('Открыть «Мои записи»')
     wrapper.unmount()
   })
 
@@ -127,6 +130,15 @@ describe('EventView', () => {
     expect(user.text()).toContain('ул. Ленина')
     expect(user.text()).not.toContain('Точный адрес — после входа')
     user.unmount()
+  })
+
+  it('без ключа карты раздел «Место на карте» не показываем — адрес уже есть выше', async () => {
+    vi.stubEnv('VITE_2GIS_KEY', '')
+    const user = await open(E.football, U.petr)
+    expect(user.text()).toContain('ул. Ленина')
+    expect(user.find('#map-title').exists()).toBe(false)
+    user.unmount()
+    vi.unstubAllEnvs()
   })
 
   it('несуществующее мероприятие', async () => {

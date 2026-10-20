@@ -85,3 +85,28 @@ describe('EventComments', () => {
     expect(w.get('[role="alert"]').text()).toContain('Напишите сообщение')
   })
 })
+
+describe('EventComments: удаление', () => {
+  it('своё сообщение удаляется только после подтверждения', async () => {
+    const w = await open(E.yoga, U.petr)
+    await w.get('textarea').setValue('Во сколько сбор?')
+    await w.get('form').trigger('submit')
+    await flushPromises()
+
+    const dialog = w.get('dialog')
+    await w
+      .findAll('li button')
+      .find((b) => b.text() === 'Удалить')!
+      .trigger('click')
+    await flushPromises()
+    // Пока не подтвердили — сообщение на месте.
+    expect(w.text()).toContain('Во сколько сбор?')
+
+    await dialog
+      .findAll('button')
+      .find((b) => b.text() === 'Удалить')!
+      .trigger('click')
+    await flushPromises()
+    expect(w.text()).not.toContain('Во сколько сбор?')
+  })
+})
