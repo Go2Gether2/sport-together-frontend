@@ -98,8 +98,9 @@ export function avatarView(name: string, url: string | null | undefined): Avatar
     const preset = [...AVATAR_PRESETS, ...LEGACY].find((p) => PREFIX + p.id === value)
     if (preset) return { kind: 'preset', preset }
   }
-  // Картинки со сторонних адресов — только http(s), чтобы в src не попало что-то вроде javascript:.
-  if (/^https?:\/\//i.test(value)) return { kind: 'image', src: value }
+  // Картинка — только http(s) или data:image (фото, загруженное в моках), чтобы в src не попало javascript:.
+  if (/^(https?:\/\/|data:image\/(png|jpeg|webp);)/i.test(value))
+    return { kind: 'image', src: value }
   // Цвет от имени, а не случайный: у человека он один и тот же на всех экранах.
   let hash = 0
   for (const ch of name) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0

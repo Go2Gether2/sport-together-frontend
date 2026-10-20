@@ -744,6 +744,25 @@ const en: Dictionary<typeof ru> = {
     },
   },
   profile: {
+    photo: {
+      mine: 'My photo',
+      upload: 'Upload photo',
+      remove: 'Remove photo',
+      hint: 'JPG, PNG or WEBP up to 5 MB',
+      type: 'Please choose a JPG, PNG or WEBP photo',
+      size: 'The file is larger than {n} MB — choose a smaller one',
+      uploaded: 'Photo uploaded and set in your profile',
+      removed: 'Photo removed',
+      failed: 'Something went wrong. Please try again.',
+    },
+    sportLevels: 'Level in each sport',
+    prefs: {
+      title: 'Matching',
+      radius: 'Distance',
+      km: 'up to {n} km',
+      times: 'Preferred time',
+      age: 'Company age',
+    },
     initials: 'Initials',
     links: {
       label: 'My sections',
@@ -811,7 +830,7 @@ const en: Dictionary<typeof ru> = {
     photo: {
       title: 'Add a photo',
       text: 'This helps the organizer and the group recognize you. You can skip — we will pick an avatar for you.',
-      upload: 'Uploading your own photo is coming later — for now choose a drawing.',
+      upload: 'JPG, PNG or WEBP up to 5 MB — or choose a drawing below.',
       pick: 'Choose an avatar',
     },
     about: {

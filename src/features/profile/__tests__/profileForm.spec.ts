@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import type { User } from '@/api'
 import {
+  isPhoto,
+  photoError,
   profileFormFrom,
   toProfileInput,
   toggleSport,
@@ -13,6 +15,7 @@ const user = {
   level: null,
   bio: null,
   sport_ids: [1, 2],
+  sport_levels: { 1: 'pro' },
 } as unknown as User
 
 describe('profileForm', () => {
@@ -24,6 +27,7 @@ describe('profileForm', () => {
       level: '',
       bio: '',
       sportIds: [1, 2],
+      sportLevels: { 1: 'pro' },
       avatar: '',
     })
     form.sportIds.push(3)
@@ -51,6 +55,7 @@ describe('profileForm', () => {
       bio: '',
       level: 'amateur',
       sport_ids: [1, 2],
+      sport_levels: { 1: 'pro' },
       avatar_url: 'preset:tennis',
     })
     expect(toProfileInput(profileFormFrom(user)).level).toBeUndefined()
@@ -59,5 +64,27 @@ describe('profileForm', () => {
   it('переключает интересы', () => {
     expect(toggleSport([1, 2], 2)).toEqual([1])
     expect(toggleSport([1], 3)).toEqual([1, 3])
+  })
+
+  it('уровни уходят только для выбранных видов', () => {
+    const form = {
+      ...profileFormFrom(user),
+      sportIds: [2],
+      sportLevels: { 1: 'pro' as const, 2: 'amateur' as const },
+    }
+    expect(toProfileInput(form).sport_levels).toEqual({ 2: 'amateur' })
+  })
+
+  it('фото: тип и размер', () => {
+    const file = (type: string, size: number) => new File([new Uint8Array(size)], 'a', { type })
+    expect(photoError(file('image/png', 10))).toBeNull()
+    expect(photoError(file('image/gif', 10))).toBeTruthy()
+    expect(photoError(file('image/jpeg', 6 * 1024 * 1024))).toBeTruthy()
+  })
+
+  it('загруженное фото отличается от рисунка из набора', () => {
+    expect(isPhoto('http://localhost:8081/api/v1/avatars/a.png')).toBe(true)
+    expect(isPhoto('preset:tennis')).toBe(false)
+    expect(isPhoto(null)).toBe(false)
   })
 })

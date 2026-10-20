@@ -9,6 +9,7 @@ import type {
   OrganizationInput,
   OrganizationStatus,
   ParticipationStatus,
+  ProfileInput,
   SafetyBanner,
   SafetyBannerDetails,
   SafetyBannerInput,
@@ -286,6 +287,12 @@ export const handlers = [
         bio: null,
         level: null,
         sport_ids: [],
+        birth_year: null,
+        radius_km: null,
+        preferred_age_from: null,
+        preferred_age_to: null,
+        preferred_times: [],
+        sport_levels: {},
         is_demo: false,
         created_at: nowIso(),
         contacts: null,
@@ -346,13 +353,56 @@ export const handlers = [
     url('/users/me'),
     route(async ({ request }) => {
       const user = requireUser(request)
-      const body =
-        await readJson<
-          Pick<UserRow, 'name' | 'city' | 'bio' | 'sport_ids' | 'level' | 'avatar_url'>
-        >(request)
-      if (body.name !== undefined && !body.name.trim())
-        validation({ name: 'не должно быть пустым' })
-      Object.assign(user, body)
+      const body = await readJson<ProfileInput>(request)
+      // Как у бэка: null — «не менять», уровни — только для выбранных видов, радиус от 1 км.
+      const patch = Object.fromEntries(
+        Object.entries(body).filter(([, v]) => v !== null && v !== undefined),
+      ) as Partial<UserRow>
+      const fields: Record<string, string> = {}
+      if (patch.name !== undefined && !patch.name.trim()) fields.name = 'не должно быть пустым'
+      const sportIds = patch.sport_ids ?? user.sport_ids
+      const levels = patch.sport_levels ?? user.sport_levels
+      const extra = Object.keys(levels).filter((id) => !sportIds.includes(Number(id)))
+      if (patch.sport_levels && extra.length)
+        fields.sport_levels = `уровень можно указать только для видов из sport_ids: ${extra.join(', ')}`
+      if (patch.radius_km != null && patch.radius_km < 1)
+        fields.radius_km = 'должно быть не меньше 1'
+      const from = patch.preferred_age_from ?? user.preferred_age_from
+      const to = patch.preferred_age_to ?? user.preferred_age_to
+      if (from != null && to != null && from > to)
+        fields.preferred_age_to = 'должно быть не меньше preferred_age_from'
+      if (Object.keys(fields).length) validation(fields)
+      Object.assign(user, patch)
+      user.sport_levels = Object.fromEntries(
+        Object.entries(user.sport_levels).filter(([id]) => user.sport_ids.includes(Number(id))),
+      )
+      return toUser(user)
+    }),
+  ),
+
+  http.post(
+    url('/users/me/avatar'),
+    route(async ({ request }) => {
+      const user = requireUser(request)
+      const entry = (await request.formData()).get('file')
+      const file = entry instanceof File ? entry : fail(400, 'BAD_REQUEST', 'Некорректный запрос')
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
+        fail(415, 'UNSUPPORTED_MEDIA_TYPE', 'Поддерживаются только JPG, PNG и WEBP')
+      if (file.size > 5 * 1024 * 1024) fail(413, 'PAYLOAD_TOO_LARGE', 'Файл больше 5 МБ')
+      // Файлового хранилища у моков нет — держим картинку в памяти как data URL.
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      let binary = ''
+      for (const b of bytes) binary += String.fromCharCode(b)
+      user.avatar_url = `data:${file.type};base64,${btoa(binary)}`
+      return toUser(user)
+    }),
+  ),
+
+  http.delete(
+    url('/users/me/avatar'),
+    route(({ request }) => {
+      const user = requireUser(request)
+      user.avatar_url = null
       return toUser(user)
     }),
   ),

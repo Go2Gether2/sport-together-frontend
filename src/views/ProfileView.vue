@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, useId } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { ApiError, sportsApi, usersApi, type Sport } from '@/api'
 import NavIcon from '@/components/layout/NavIcon.vue'
@@ -16,8 +16,12 @@ import {
 import { LEVEL_LABELS } from '@/features/events/filters'
 import { t } from '@/i18n'
 import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
+import { TIME_SLOTS } from '@/features/onboarding/onboarding'
 import {
   BIO_MAX,
+  PHOTO_TYPES,
+  isPhoto,
+  photoError,
   profileFormFrom,
   toProfileInput,
   toggleSport,
@@ -41,11 +45,83 @@ const saved = ref(false)
 
 const user = computed(() => session.user)
 const mySports = computed(() => sports.value.filter((s) => user.value?.sport_ids.includes(s.id)))
-// Подписи пересчитываются при смене языка.
+// Подписи пересчитываются при смене языка. Загруженное фото — отдельным вариантом в начале.
 const avatarOptions = computed(() => [
+  ...(isPhoto(user.value?.avatar_url)
+    ? [{ value: user.value!.avatar_url!, label: t('profile.photo.mine') }]
+    : []),
   { value: '', label: t('profile.initials') },
   ...AVATAR_PRESETS.map((p) => ({ value: presetAvatarUrl(p.id), label: p.label })),
 ])
+
+const formSports = computed(() => sports.value.filter((s) => form.value?.sportIds.includes(s.id)))
+
+// Сводка подбора: заполняется в онбординге («Настроить подбор»).
+const prefs = computed(() => {
+  const u = user.value
+  if (!u) return []
+  const rows: { key: string; value: string }[] = []
+  if (u.radius_km) rows.push({ key: 'radius', value: t('profile.prefs.km', { n: u.radius_km }) })
+  if (u.preferred_times.length)
+    rows.push({
+      key: 'times',
+      value: TIME_SLOTS.filter((s) => u.preferred_times.includes(s.id))
+        .map((s) => s.label)
+        .join(', '),
+    })
+  if (u.preferred_age_from || u.preferred_age_to)
+    rows.push({
+      key: 'age',
+      value: [u.preferred_age_from ?? '…', u.preferred_age_to ?? '…'].join('–'),
+    })
+  return rows
+})
+
+const photoInputId = useId()
+const photoBusy = ref(false)
+const photoNotice = ref('')
+
+async function uploadPhoto(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file || !form.value) return
+  photoNotice.value = photoError(file) ?? ''
+  if (photoNotice.value) return
+  photoBusy.value = true
+  try {
+    const updated = await usersApi.uploadAvatar(file)
+    await session.refresh()
+    form.value.avatar = updated.avatar_url ?? ''
+    photoNotice.value = t('profile.photo.uploaded')
+  } catch (err) {
+    photoNotice.value = err instanceof ApiError ? err.message : t('profile.photo.failed')
+  } finally {
+    photoBusy.value = false
+  }
+}
+
+async function removePhoto() {
+  if (!form.value) return
+  photoBusy.value = true
+  try {
+    await usersApi.deleteAvatar()
+    await session.refresh()
+    form.value.avatar = ''
+    photoNotice.value = t('profile.photo.removed')
+  } catch (err) {
+    photoNotice.value = err instanceof ApiError ? err.message : t('profile.photo.failed')
+  } finally {
+    photoBusy.value = false
+  }
+}
+
+function toggleFormSport(id: number) {
+  if (!form.value) return
+  form.value.sportIds = toggleSport(form.value.sportIds, id)
+  if (form.value.sportIds.includes(id) && !form.value.sportLevels[id])
+    form.value.sportLevels[id] = form.value.level || 'beginner'
+}
 const levels = computed(() =>
   Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label })),
 )
@@ -73,6 +149,7 @@ function startEdit() {
   form.value = profileFormFrom(user.value)
   errors.value = {}
   formError.value = ''
+  photoNotice.value = ''
   saved.value = false
   editing.value = true
 }
@@ -188,6 +265,34 @@ async function logout() {
             <span class="text-xs font-medium">{{ option.label }}</span>
           </label>
         </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <label
+            :for="photoInputId"
+            class="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-field px-5 font-semibold hover:bg-mute has-focus-visible:outline-3 has-focus-visible:outline-accent-ink"
+            :class="{ 'pointer-events-none opacity-60': photoBusy }"
+          >
+            {{ photoBusy ? $t('ui.wait') : $t('profile.photo.upload') }}
+            <input
+              :id="photoInputId"
+              type="file"
+              :accept="PHOTO_TYPES.join(',')"
+              class="sr-only"
+              :disabled="photoBusy"
+              @change="uploadPhoto"
+            />
+          </label>
+          <button
+            v-if="isPhoto(user.avatar_url)"
+            type="button"
+            class="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4"
+            :disabled="photoBusy"
+            @click="removePhoto"
+          >
+            {{ $t('profile.photo.remove') }}
+          </button>
+          <span class="text-sm text-ink-2">{{ $t('profile.photo.hint') }}</span>
+        </div>
+        <p v-if="photoNotice" class="text-sm font-semibold" role="status">{{ photoNotice }}</p>
       </fieldset>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UiTextField
@@ -209,10 +314,25 @@ async function logout() {
             v-for="s in sports"
             :key="s.id"
             :pressed="form.sportIds.includes(s.id)"
-            @click="form.sportIds = toggleSport(form.sportIds, s.id)"
+            @click="toggleFormSport(s.id)"
           >
             {{ s.name }}
           </UiChip>
+        </div>
+      </fieldset>
+      <fieldset v-if="formSports.length" class="flex flex-col gap-2">
+        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">
+          {{ $t('profile.sportLevels') }}
+        </legend>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <UiSelect
+            v-for="s in formSports"
+            :key="s.id"
+            v-model="form.sportLevels[s.id]"
+            :label="s.name"
+            :options="levels"
+            :placeholder="$t('profile.levelNone')"
+          />
         </div>
       </fieldset>
       <UiTextArea
@@ -242,7 +362,10 @@ async function logout() {
               :key="s.id"
               class="rounded-full bg-field px-4 py-2 font-semibold"
             >
-              {{ s.name }}
+              {{ s.name
+              }}<template v-if="user.sport_levels[s.id]">
+                · {{ LEVEL_LABELS[user.sport_levels[s.id]!] }}</template
+              >
             </span>
           </div>
           <p v-else-if="sportsFailed && user.sport_ids.length" class="text-ink-2" role="alert">
@@ -256,6 +379,15 @@ async function logout() {
             </button>
           </p>
           <p v-else class="text-ink-2">{{ $t('profile.interestsNone') }}</p>
+        </div>
+        <div v-if="prefs.length" class="flex flex-col gap-2">
+          <h2 class="font-bold">{{ $t('profile.prefs.title') }}</h2>
+          <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1">
+            <template v-for="p in prefs" :key="p.key">
+              <dt class="text-ink-2">{{ $t(`profile.prefs.${p.key}`) }}</dt>
+              <dd>{{ p.value }}</dd>
+            </template>
+          </dl>
         </div>
         <RouterLink
           :to="{ name: 'user', params: { id: user.id } }"
