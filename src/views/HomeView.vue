@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
 import ForYou from '@/components/events/ForYou.vue'
-import PromoBanners from '@/components/home/PromoBanners.vue'
+import HomeCarousel from '@/components/home/HomeCarousel.vue'
+import StoriesRow from '@/components/home/StoriesRow.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { useSessionStore } from '@/stores/session'
 
@@ -17,26 +17,9 @@ const sports = [
 
 <template>
   <section class="flex flex-col gap-4 py-2">
-    <div class="relative flex flex-col gap-4 overflow-hidden rounded-card bg-accent p-6 sm:p-8">
-      <p class="font-hand text-2xl text-accent-ink">спорт — это когда вместе</p>
-      <h1 class="max-w-md text-3xl leading-tight font-bold sm:text-4xl">
-        Найдите компанию для спорта
-      </h1>
-      <RouterLink
-        :to="{ name: 'events' }"
-        class="inline-flex min-h-13 w-fit items-center rounded-full bg-ink px-7 font-bold tracking-wide text-white no-underline hover:bg-ink/85"
-      >
-        Смотреть мероприятия
-      </RouterLink>
-      <span
-        aria-hidden="true"
-        class="pointer-events-none absolute -right-4 -bottom-6 hidden opacity-90 sm:block"
-      >
-        <SportIcon name="running" :size="180" />
-      </span>
-    </div>
+    <StoriesRow />
 
-    <PromoBanners />
+    <HomeCarousel />
 
     <ForYou v-if="session.user && !session.isAdmin" />
 
