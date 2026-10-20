@@ -117,7 +117,7 @@ const optionId = (i: number) => `${id}-opt-${i}`
           :key="c.name + c.region"
           role="option"
           :aria-selected="i === active ? 'true' : 'false'"
-          class="flex cursor-pointer flex-col rounded-2xl px-3.5 py-2"
+          class="flex cursor-pointer flex-col rounded-md px-3.5 py-2"
           :class="i === active ? 'bg-accent-soft' : ''"
           @mousedown.prevent="choose(i)"
           @mousemove="active = i"

@@ -47,7 +47,7 @@ const sections = computed(() =>
 
 <template>
   <section class="flex flex-col gap-4" aria-live="polite">
-    <h1 class="text-3xl font-bold">Мои мероприятия</h1>
+    <h1 class="text-[30px] lg:text-[42px]">Мои мероприятия</h1>
 
     <div v-if="state === 'loading'" class="flex flex-col gap-3" aria-label="Загрузка">
       <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-card bg-card" />
@@ -87,14 +87,14 @@ const sections = computed(() =>
           <li
             v-for="{ event, pending_count } in section.list"
             :key="event.id"
-            class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
+            class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:shadow-raised"
           >
             <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
               <SportIcon :name="sportIconName(event.sport)" :size="40" />
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-0.5">
               <p class="font-semibold text-accent-ink">{{ formatEventWhen(event.starts_at) }}</p>
-              <h3 class="line-clamp-2 text-lg leading-snug font-bold">
+              <h3 class="line-clamp-2 font-display text-xl leading-tight font-extrabold">
                 <RouterLink
                   :to="{ name: 'event-manage', params: { id: event.id } }"
                   class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"

@@ -232,14 +232,14 @@ onMounted(async () => {
 
       <div class="flex flex-1 flex-col gap-4 lg:flex-row">
         <section
-          class="relative flex min-w-0 flex-col justify-between gap-4 overflow-hidden rounded-[32px] p-4 lg:flex-[1_1_400px] lg:p-8"
+          class="relative flex min-w-0 flex-col justify-between gap-4 overflow-hidden rounded-2xl p-4 lg:flex-[1_1_400px] lg:p-8"
           :class="[art.bg, art.art === 'interests' && 'min-h-[380px] lg:min-h-[560px]']"
           aria-hidden="true"
         >
           <!-- Командное фото занимает всю панель, подпись лежит поверх (макет «Чем любите заниматься?»). -->
           <TeamPhotoArt v-if="art.art === 'interests'" class="absolute inset-0" />
           <p
-            class="relative max-w-xs -rotate-3 self-start rounded-xl bg-cream px-3.5 py-1 font-hand text-2xl leading-tight font-bold"
+            class="relative max-w-xs -rotate-3 self-start rounded-sm bg-cream px-3.5 py-1 font-hand text-2xl leading-tight font-bold"
           >
             {{
               step === 'done'
@@ -256,7 +256,7 @@ onMounted(async () => {
         </section>
 
         <section
-          class="flex min-w-0 flex-col gap-5 rounded-[32px] bg-card p-6 lg:flex-[1.25_1_480px] lg:p-9"
+          class="flex min-w-0 flex-col gap-5 rounded-2xl bg-card p-6 lg:flex-[1.25_1_480px] lg:p-9"
           :aria-labelledby="`onb-title`"
         >
           <!-- 1. Фото -->

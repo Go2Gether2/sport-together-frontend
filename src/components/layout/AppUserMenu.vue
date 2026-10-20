@@ -74,7 +74,7 @@ async function logout() {
     <div
       v-show="open"
       :id="menuId"
-      class="absolute top-[calc(100%+8px)] right-0 z-30 flex w-72 flex-col gap-1 rounded-[24px] bg-card p-2 shadow-[0_12px_32px_rgb(0_0_0/0.18)]"
+      class="absolute top-[calc(100%+8px)] right-0 z-30 flex w-72 flex-col gap-1 rounded-xl bg-card p-2 shadow-[0_12px_32px_rgb(0_0_0/0.18)]"
     >
       <p class="flex items-center gap-3 px-3 py-2">
         <UiAvatar :name="session.user.name" :url="session.user.avatar_url" />

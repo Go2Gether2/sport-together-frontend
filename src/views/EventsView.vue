@@ -194,13 +194,13 @@ onMounted(async () => {
   <section class="flex flex-col gap-4">
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="font-display text-2xl font-bold">{{ $t('nav.events') }}</h1>
+        <h1 class="text-[30px] lg:text-[42px]">{{ $t('nav.events') }}</h1>
         <p v-if="state === 'ready'" class="text-ink-2" role="status">{{ foundText }}</p>
       </div>
       <RouterLink
         v-if="!session.isAdmin"
         :to="{ name: 'event-create' }"
-        class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
+        class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-field md:inline-block"
       >
         {{ $t('events.createOwn') }}
       </RouterLink>
@@ -257,7 +257,7 @@ onMounted(async () => {
             ] as const"
             :key="v.key"
             type="button"
-            class="min-h-10 rounded-full px-2.5 text-[15px] font-semibold max-[359px]:px-1.5 sm:px-4 sm:text-base"
+            class="min-h-11 rounded-full px-2.5 text-[15px] font-semibold max-[359px]:px-1.5 sm:px-4 sm:text-base"
             :class="view === v.key ? 'bg-ink text-white' : 'text-ink hover:bg-field'"
             :aria-pressed="view === v.key"
             @click="setView(v.key)"
@@ -275,7 +275,7 @@ onMounted(async () => {
         <li v-for="c in chips" :key="c.key" class="shrink-0">
           <button
             type="button"
-            class="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-accent-soft px-4 font-semibold text-accent-ink"
+            class="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent-soft px-4 font-semibold text-accent-ink"
             :aria-label="$t('filters.remove', { name: c.label })"
             @click="removeChip(c.key)"
           >
@@ -285,7 +285,7 @@ onMounted(async () => {
         <li v-if="chips.length > 1" class="shrink-0">
           <button
             type="button"
-            class="inline-flex min-h-10 items-center px-2 font-semibold underline underline-offset-4"
+            class="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4"
             @click="reset"
           >
             {{ $t('filters.resetAll') }}

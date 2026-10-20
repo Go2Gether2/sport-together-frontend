@@ -110,7 +110,7 @@ const tiles = computed<Tile[]>(() => {
 
 <template>
   <section class="flex flex-col gap-5" aria-live="polite">
-    <h1 class="text-3xl font-bold">{{ $t('admin.title') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">{{ $t('admin.title') }}</h1>
     <AdminNav />
 
     <div v-if="state === 'loading'" class="grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -172,25 +172,35 @@ const tiles = computed<Tile[]>(() => {
     </div>
     <div v-else class="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
       <UiCard as="section" class="gap-4 p-5 lg:col-span-2" aria-labelledby="st-weeks">
-        <h3 id="st-weeks" class="text-lg font-bold">{{ $t('admin.dashboard.byWeek') }}</h3>
+        <h3 id="st-weeks" class="font-display text-lg font-extrabold">
+          {{ $t('admin.dashboard.byWeek') }}
+        </h3>
         <WeekColumns :weeks="weeks" />
       </UiCard>
       <UiCard v-if="data" as="section" class="gap-4 p-5" aria-labelledby="st-status">
-        <h3 id="st-status" class="text-lg font-bold">{{ $t('admin.dashboard.byStatus') }}</h3>
+        <h3 id="st-status" class="font-display text-lg font-extrabold">
+          {{ $t('admin.dashboard.byStatus') }}
+        </h3>
         <StatDonut :items="statuses" :caption="$t('admin.dashboard.total')" />
       </UiCard>
       <UiCard as="section" class="gap-4 p-5" aria-labelledby="st-sports">
-        <h3 id="st-sports" class="text-lg font-bold">{{ $t('admin.dashboard.sports') }}</h3>
+        <h3 id="st-sports" class="font-display text-lg font-extrabold">
+          {{ $t('admin.dashboard.sports') }}
+        </h3>
         <StatBars v-if="sports.length" :items="sports" />
         <p v-else class="text-ink-2">{{ $t('admin.dashboard.noEvents') }}</p>
       </UiCard>
       <UiCard as="section" class="gap-4 p-5" aria-labelledby="st-cities">
-        <h3 id="st-cities" class="text-lg font-bold">{{ $t('admin.dashboard.cities') }}</h3>
+        <h3 id="st-cities" class="font-display text-lg font-extrabold">
+          {{ $t('admin.dashboard.cities') }}
+        </h3>
         <StatBars v-if="cities.length" :items="cities" />
         <p v-else class="text-ink-2">{{ $t('admin.dashboard.noEvents') }}</p>
       </UiCard>
       <UiCard as="section" class="gap-4 p-5" aria-labelledby="st-moderation">
-        <h3 id="st-moderation" class="text-lg font-bold">{{ $t('admin.dashboard.moderation') }}</h3>
+        <h3 id="st-moderation" class="font-display text-lg font-extrabold">
+          {{ $t('admin.dashboard.moderation') }}
+        </h3>
         <StatBars v-if="moderation.length" :items="moderation" />
         <p v-else class="text-ink-2">{{ $t('admin.dashboard.noDecisions') }}</p>
       </UiCard>

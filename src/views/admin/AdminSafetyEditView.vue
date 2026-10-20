@@ -133,7 +133,9 @@ async function submit() {
 
 <template>
   <section class="flex flex-col gap-5">
-    <h1 class="text-3xl font-bold">{{ id ? $t('safety.editTitle') : $t('safety.newTitle') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">
+      {{ id ? $t('safety.editTitle') : $t('safety.newTitle') }}
+    </h1>
     <AdminNav />
 
     <div v-if="state === 'loading'" class="h-96 animate-pulse rounded-card bg-card" />

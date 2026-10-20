@@ -53,11 +53,11 @@ async function submit() {
   >
     <!-- Как в макете онбординга: слева — зачем регистрироваться, справа — форма. -->
     <aside
-      class="relative hidden flex-col gap-4 overflow-hidden rounded-[32px] bg-orange p-8 xl:flex"
+      class="relative hidden flex-col gap-4 overflow-hidden rounded-2xl bg-orange p-8 xl:flex"
       aria-hidden="true"
     >
       <p
-        class="max-w-xs -rotate-3 self-start rounded-xl bg-card px-3.5 py-1 font-hand text-2xl font-bold"
+        class="max-w-xs -rotate-3 self-start rounded-sm bg-cream px-3.5 py-1 font-hand text-2xl font-bold"
       >
         спорт — это когда вместе
       </p>
@@ -72,7 +72,7 @@ async function submit() {
     <div class="flex flex-col gap-4">
       <header class="flex flex-col gap-1 rounded-card bg-accent p-6">
         <p class="font-hand text-2xl text-accent-ink xl:hidden">спорт — это когда вместе</p>
-        <h1 class="text-3xl font-bold">Создайте аккаунт</h1>
+        <h1 class="text-[30px] lg:text-[42px]">Создайте аккаунт</h1>
         <p class="text-accent-ink">
           Дальше — пять коротких вопросов, и лента «Для вас» подстроится под вас.
         </p>

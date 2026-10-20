@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 
 <template>
   <section class="mx-auto flex max-w-md flex-col items-center gap-3 py-10 text-center">
-    <h1 class="font-display text-2xl font-bold">{{ $t('forbidden.title') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">{{ $t('forbidden.title') }}</h1>
     <p class="text-ink-2">{{ $t('forbidden.text') }}</p>
     <RouterLink
       :to="{ name: 'home' }"

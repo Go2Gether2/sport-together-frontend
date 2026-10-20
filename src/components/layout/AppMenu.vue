@@ -66,9 +66,7 @@ async function logout() {
       </ul>
     </nav>
 
-    <div
-      class="mt-4 flex items-center justify-between gap-3 rounded-[24px] bg-field py-2 pr-2 pl-4"
-    >
+    <div class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-field py-2 pr-2 pl-4">
       <span class="font-semibold">{{ $t('locale.title') }}</span>
       <LocaleSwitch class="[&>div]:bg-card" />
     </div>

@@ -64,7 +64,7 @@ const website = computed(() => safeHref(org.value?.website_url))
       v-else-if="state === 'not-found'"
       class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-card bg-card p-8 text-center"
     >
-      <h1 class="text-2xl font-bold">Страница не найдена</h1>
+      <h1 class="text-[30px] lg:text-[42px]">Страница не найдена</h1>
       <p class="text-ink-2">Организации нет или она ещё не прошла проверку.</p>
       <RouterLink :to="{ name: 'organizations' }" class="font-bold underline underline-offset-4">
         Все организации
@@ -94,7 +94,7 @@ const website = computed(() => safeHref(org.value?.website_url))
               {{ ORG_TYPE_LABELS[org.type] }}<template v-if="org.city"> · {{ org.city }}</template>
             </p>
           </div>
-          <h1 class="text-3xl leading-tight font-bold">{{ org.name }}</h1>
+          <h1 class="text-[30px] lg:text-[42px]">{{ org.name }}</h1>
           <StatusBadge
             v-if="org.status !== 'approved'"
             :of="{ kind: 'organization', status: org.status }"

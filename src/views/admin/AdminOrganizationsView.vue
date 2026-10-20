@@ -164,7 +164,7 @@ const shortDate = computed(
 
 <template>
   <section class="flex flex-col gap-5">
-    <h1 class="text-3xl font-bold">{{ $t('admin.nav.organizations') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">{{ $t('admin.nav.organizations') }}</h1>
     <AdminNav />
 
     <div
@@ -265,7 +265,9 @@ const shortDate = computed(
         >
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <h2 class="text-xl leading-tight font-bold">{{ details.organization.name }}</h2>
+              <h2 class="text-xl leading-tight font-extrabold normal-case">
+                {{ details.organization.name }}
+              </h2>
               <p class="text-accent-ink">
                 {{ ORG_TYPE_LABELS[details.organization.type] }}
                 <template v-if="details.organization.city">
@@ -284,7 +286,7 @@ const shortDate = computed(
           </p>
 
           <dl
-            class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-[22px] bg-card p-4 text-[15px]"
+            class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-lg bg-card p-4 text-[15px]"
           >
             <dt class="text-ink-2">{{ $t('admin.orgs.owner') }}</dt>
             <dd class="min-w-0">
@@ -310,7 +312,7 @@ const shortDate = computed(
 
           <p
             v-if="details.organization.status === 'rejected' && details.organization.reject_reason"
-            class="rounded-[22px] bg-card p-4"
+            class="rounded-lg bg-card p-4"
           >
             <b>{{ $t('admin.orgs.rejectReason') }}</b> {{ details.organization.reject_reason }}
           </p>
@@ -332,7 +334,7 @@ const shortDate = computed(
               <li v-for="e in details.events" :key="e.id">
                 <RouterLink
                   :to="{ name: 'event', params: { id: e.id } }"
-                  class="flex flex-col rounded-[18px] bg-card px-4 py-2.5 text-ink no-underline hover:bg-accent-soft"
+                  class="flex flex-col rounded-md bg-card px-4 py-2.5 text-ink no-underline hover:shadow-raised"
                 >
                   <span class="font-semibold">{{ e.title }}</span>
                   <span class="text-sm text-ink-2">{{ formatEventWhen(e.starts_at) }}</span>

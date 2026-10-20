@@ -79,7 +79,7 @@ onMounted(loadAccounts)
   <section class="mx-auto flex max-w-md flex-col gap-6">
     <header class="flex flex-col gap-1 rounded-card bg-accent p-6">
       <p class="font-hand text-2xl text-accent-ink">{{ $t('home.slogan') }}</p>
-      <h1 class="text-3xl font-bold">
+      <h1 class="text-[30px] lg:text-[42px]">
         {{ session.user ? $t('common.switchRole') : $t('login.title') }}
       </h1>
       <p v-if="session.user" class="text-accent-ink">

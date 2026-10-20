@@ -102,7 +102,7 @@ async function submit(form: OrgFormState) {
 <template>
   <section class="mx-auto flex max-w-3xl flex-col gap-4" aria-live="polite">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-3xl font-bold">Моя организация</h1>
+      <h1 class="text-[30px] lg:text-[42px]">Моя организация</h1>
       <UiButton
         v-if="state === 'ready' && orgs.length && editing === null"
         variant="ghost"
@@ -165,7 +165,7 @@ async function submit(form: OrgFormState) {
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="text-xl leading-tight font-bold">{{ org.name }}</h2>
+                <h2 class="text-xl leading-tight font-extrabold normal-case">{{ org.name }}</h2>
                 <p class="text-ink-2">
                   {{ ORG_TYPE_LABELS[org.type]
                   }}<template v-if="org.city"> · {{ org.city }}</template>
@@ -179,13 +179,13 @@ async function submit(form: OrgFormState) {
 
             <p
               v-if="org.status === 'pending'"
-              class="rounded-[22px] bg-warning-bg p-4 font-medium text-warning-fg"
+              class="rounded-lg bg-warning-bg p-4 font-medium text-warning-fg"
             >
               Заявка на проверке. Публиковать от имени организации можно после допуска.
             </p>
 
             <template v-else-if="org.status === 'rejected'">
-              <p class="rounded-[22px] bg-field p-4">
+              <p class="rounded-lg bg-field p-4">
                 <b>Отклонена.</b>
                 {{ org.reject_reason ? `Причина: ${org.reject_reason}` : '' }}
               </p>
@@ -203,7 +203,7 @@ async function submit(form: OrgFormState) {
               </RouterLink>
               <RouterLink
                 :to="{ name: 'organization', params: { id: org.id } }"
-                class="rounded-full bg-card px-5 py-3 font-bold text-ink no-underline hover:bg-accent-soft"
+                class="rounded-full bg-card px-5 py-3 font-bold text-ink no-underline hover:shadow-raised"
               >
                 Страница организации
               </RouterLink>

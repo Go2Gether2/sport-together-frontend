@@ -96,7 +96,7 @@ const sports = [
   <main class="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10">
     <header>
       <p class="font-hand text-2xl text-accent-ink">витрина компонентов</p>
-      <h1 class="font-display text-3xl font-bold">UI-кит</h1>
+      <h1 class="text-[30px] lg:text-[42px]">UI-кит</h1>
     </header>
 
     <section class="flex flex-col gap-3">
@@ -238,7 +238,7 @@ const sports = [
         <div
           v-for="s in sports"
           :key="s.name"
-          class="flex flex-col items-center gap-1 rounded-[18px] bg-card p-2.5 text-sm font-medium"
+          class="flex flex-col items-center gap-1 rounded-md bg-card p-2.5 text-sm font-medium"
           :class="{ ' text-accent-ink': !s.icon }"
         >
           <SportIcon :name="s.icon" />

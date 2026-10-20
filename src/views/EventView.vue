@@ -75,7 +75,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       class="mx-auto flex max-w-xl flex-col gap-3 rounded-card bg-card p-5"
     >
       <UiBadge tone="off">{{ $t('event.closed') }}</UiBadge>
-      <h1 class="font-display text-2xl font-bold">{{ $t('event.unavailable') }}</h1>
+      <h1 class="text-[30px] lg:text-[42px]">{{ $t('event.unavailable') }}</h1>
       <p role="alert">{{ message }}</p>
       <p class="text-ink-2">
         {{ $t('event.goneText') }}
@@ -92,7 +92,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       v-else-if="state === 'not-found'"
       class="mx-auto flex max-w-md flex-col gap-3 py-8 text-center"
     >
-      <h1 class="font-display text-2xl font-bold">{{ $t('event.notFound') }}</h1>
+      <h1 class="text-[30px] lg:text-[42px]">{{ $t('event.notFound') }}</h1>
       <p class="text-ink-2">{{ $t('event.badLink') }}</p>
       <RouterLink
         :to="{ name: 'events' }"
@@ -144,7 +144,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
             {{ event.sport.name }}
           </p>
           <p class="text-xl font-bold text-accent-ink">{{ when }}</p>
-          <h1 class="text-2xl leading-tight font-bold md:text-3xl">
+          <h1 class="text-[30px] lg:text-[42px]">
             {{ event.title }}
           </h1>
           <div class="flex flex-wrap gap-2">

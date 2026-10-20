@@ -47,7 +47,7 @@ watch(id, load, { immediate: true })
       v-else-if="state === 'not-found'"
       class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-card bg-card p-8 text-center"
     >
-      <h1 class="text-2xl font-bold">Пользователь не найден</h1>
+      <h1 class="text-[30px] lg:text-[42px]">Пользователь не найден</h1>
       <RouterLink :to="{ name: 'events' }" class="font-bold underline underline-offset-4">
         К мероприятиям
       </RouterLink>
@@ -66,7 +66,7 @@ watch(id, load, { immediate: true })
       <header class="flex flex-col gap-4 rounded-card bg-accent p-6 sm:flex-row sm:items-center">
         <UiAvatar :name="person.name" :url="person.avatar_url" size="xl" />
         <div class="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 class="text-3xl leading-tight font-bold">{{ person.name }}</h1>
+          <h1 class="text-[30px] lg:text-[42px]">{{ person.name }}</h1>
           <p class="text-accent-ink">
             {{ person.city || 'Город не указан' }}
             <template v-if="person.level"> · {{ LEVEL_LABELS[person.level] }}</template>
