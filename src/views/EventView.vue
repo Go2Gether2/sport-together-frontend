@@ -8,6 +8,7 @@ import EventSafety from '@/components/events/EventSafety.vue'
 import EventShare from '@/components/events/EventShare.vue'
 import EventSimilar from '@/components/events/EventSimilar.vue'
 import EventsMap from '@/components/map/EventsMap.vue'
+import GuestPlaceNotice from '@/components/events/GuestPlaceNotice.vue'
 import { organizerLink, organizerName } from '@/components/events/organizer'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { sportIconName } from '@/components/illustrations/sportIcon'
@@ -17,8 +18,11 @@ import { formatEventWhen } from '@/utils/datetime'
 import { toPoints, twoGisLink } from '@/features/map/geo'
 import { APP_NAME } from '@/router/access'
 import { intlLocale, t } from '@/i18n'
+import { guestPlaceText } from '@/features/events/place'
+import { useSessionStore } from '@/stores/session'
 
 const route = useRoute()
+const session = useSessionStore()
 const id = computed(() => Number(route.params.id))
 
 const event = ref<EventDetails | null>(null)
@@ -183,11 +187,15 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
           </template>
 
           <dt class="font-bold">{{ $t('event.place') }}</dt>
-          <dd>
+          <dd v-if="session.isAuthenticated">
             {{ event.address }}
             <span v-if="event.location_note" class="block text-ink-2">{{
               event.location_note
             }}</span>
+          </dd>
+          <dd v-else>
+            {{ event.city || $t('place.hidden') }}
+            <span class="block text-ink-2">{{ $t('place.afterLogin') }}</span>
           </dd>
 
           <dt class="font-bold">{{ $t('filters.level') }}</dt>
@@ -204,7 +212,15 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
           </template>
         </dl>
 
-        <section v-if="mapPoints[0]" aria-labelledby="map-title" class="flex flex-col gap-2">
+        <section
+          v-if="!session.isAuthenticated"
+          aria-labelledby="map-title"
+          class="flex flex-col gap-2"
+        >
+          <h2 id="map-title" class="text-lg font-bold">{{ $t('event.onMap') }}</h2>
+          <GuestPlaceNotice :text="guestPlaceText(event.city)" />
+        </section>
+        <section v-else-if="mapPoints[0]" aria-labelledby="map-title" class="flex flex-col gap-2">
           <h2 id="map-title" class="text-lg font-bold">{{ $t('event.onMap') }}</h2>
           <EventsMap
             class="h-64"

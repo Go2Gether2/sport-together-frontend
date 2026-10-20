@@ -6,6 +6,8 @@ import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { sportIconName } from '@/components/illustrations/sportIcon'
 import { seatsShort } from '@/components/ui'
 import { LEVEL_LABELS } from '@/features/events/filters'
+import { visiblePlace } from '@/features/events/place'
+import { useSessionStore } from '@/stores/session'
 import { formatEventWhen } from '@/utils/datetime'
 
 const props = defineProps<{ event: EventSummary; reasons?: string[] }>()
@@ -14,7 +16,8 @@ const uid = useId()
 const when = computed(() => formatEventWhen(props.event.starts_at))
 const seats = computed(() => seatsShort(props.event.confirmed_count, props.event.capacity))
 const icon = computed(() => sportIconName(props.event.sport))
-const place = computed(() => props.event.address || props.event.city)
+const session = useSessionStore()
+const place = computed(() => visiblePlace(props.event, session.isAuthenticated))
 
 // Обложка — бренд-цвет по виду спорта, как в карточке события дизайн-системы.
 const COVERS: Record<string, string> = {

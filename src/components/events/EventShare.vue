@@ -2,10 +2,12 @@
 import { computed, ref } from 'vue'
 import type { EventDetails } from '@/api'
 import { UiButton } from '@/components/ui'
+import { useSessionStore } from '@/stores/session'
 import { t } from '@/i18n'
 import { buildIcs, canAddToCalendar, eventPlace, icsFileName } from '@/features/events/share'
 import { formatEventWhen } from '@/utils/datetime'
 
+const session = useSessionStore()
 const props = defineProps<{ event: EventDetails }>()
 
 const notice = ref('')
@@ -15,7 +17,10 @@ const calendar = computed(() => canAddToCalendar(props.event))
 
 async function share() {
   notice.value = ''
-  const text = `${props.event.title} — ${formatEventWhen(props.event.starts_at)}, ${eventPlace(props.event)}`
+  const place = session.isAuthenticated ? eventPlace(props.event) : props.event.city
+  const text = [`${props.event.title} — ${formatEventWhen(props.event.starts_at)}`, place]
+    .filter(Boolean)
+    .join(', ')
   if (navigator.share) {
     try {
       await navigator.share({ title: props.event.title, text, url: url.value })

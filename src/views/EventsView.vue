@@ -5,6 +5,7 @@ import { sportsApi, type EventFilters } from '@/api'
 import EventFiltersSheet from '@/components/events/EventFiltersSheet.vue'
 import EventListCard from '@/components/events/EventListCard.vue'
 import NearbyMap from '@/components/map/NearbyMap.vue'
+import GuestPlaceNotice from '@/components/events/GuestPlaceNotice.vue'
 import { UiButton, UiTextField, type UiOption } from '@/components/ui'
 import { t } from '@/i18n'
 import {
@@ -113,7 +114,11 @@ const foundText = computed(() => t('events.found', { events: t('events.count', t
 // Карта: точки мероприятий, «Где я» и список того, что сейчас видно на карте, — ближайшие первыми.
 const hasMap = !!mapKey()
 const isMap = computed(() => view.value === 'map')
-const { coords } = useEventCoords(items, isMap)
+// Гостю карту не показываем — и координаты не догружаем.
+const { coords } = useEventCoords(
+  items,
+  computed(() => isMap.value && session.isAuthenticated),
+)
 const points = computed<MapPoint[]>(() =>
   items.value.flatMap((e) => {
     const c = coords.value.get(e.id)
@@ -350,6 +355,10 @@ onMounted(async () => {
         </div>
       </div>
 
+      <GuestPlaceNotice
+        v-else-if="isMap && !session.isAuthenticated"
+        :text="$t('place.mapGuest')"
+      />
       <div
         v-else-if="isMap"
         class="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_340px]"
