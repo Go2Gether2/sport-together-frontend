@@ -200,7 +200,7 @@ onMounted(async () => {
 <template>
   <!-- Онбординг перекрывает меню приложения: на эти минуты человеку нужен только он. -->
   <div class="fixed inset-0 z-50 overflow-y-auto bg-page">
-    <div class="mx-auto flex min-h-full max-w-6xl flex-col gap-4 p-4">
+    <div class="flex min-h-full flex-col gap-4 p-4 lg:px-6 2xl:px-10">
       <header
         class="flex flex-wrap items-center justify-between gap-x-2 gap-y-3 rounded-card bg-card p-3"
       >
