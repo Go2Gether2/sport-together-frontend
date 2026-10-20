@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ApiError, eventsApi, sportsApi } from '@/api'
 import { UiButton, UiCombobox, UiSelect, UiTextField, type UiOption } from '@/components/ui'
 import UiTextArea from '@/components/ui/UiTextArea.vue'
+import LocationPicker from '@/components/map/LocationPicker.vue'
 import { LEVEL_LABELS } from '@/features/events/filters'
 import { useSessionStore } from '@/stores/session'
 import {
@@ -301,6 +302,7 @@ async function submit() {
           placeholder="Корт 3, вход со стороны парковки"
           :error="errors.locationNote"
         />
+        <LocationPicker v-model="form.point" :address="form.address" :city="form.city" />
       </div>
 
       <div class="flex flex-col gap-4 rounded-card bg-card p-5">

@@ -104,3 +104,21 @@ describe('repeatFormFrom', () => {
     expect(repeatFormFrom(event, []).organizationId).toBeNull()
   })
 })
+
+describe('точка на карте', () => {
+  it('новая точка уходит в PATCH, без изменений — нет', () => {
+    expect(toEventUpdate(...edited({ point: { lat: 56.01, lng: 92.85 } }))).toEqual({
+      lat: 56.01,
+      lng: 92.85,
+    })
+    expect(toEventUpdate(...edited({}))).toEqual({})
+  })
+
+  it('точка из карточки мероприятия', () => {
+    expect(eventFormFrom({ ...event, lat: 56, lng: 92 } as EventDetails).point).toEqual({
+      lat: 56,
+      lng: 92,
+    })
+    expect(eventFormFrom(event).point).toBeNull()
+  })
+})

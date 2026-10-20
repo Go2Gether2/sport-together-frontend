@@ -20,6 +20,8 @@ export interface EventFormState {
   requirements: string
   equipment: string
   organizationId: Id | null
+  /** Точка на карте; без неё мероприятие не видно на карте. */
+  point: { lat: number; lng: number } | null
 }
 
 export type EventFormErrors = Partial<Record<keyof EventFormState, string>>
@@ -41,6 +43,7 @@ export function emptyEventForm(): EventFormState {
     requirements: '',
     equipment: '',
     organizationId: null,
+    point: null,
   }
 }
 
@@ -110,6 +113,8 @@ export function toEventInput(form: EventFormState): EventInput {
     join_mode: form.joinMode as JoinMode,
     capacity: capacityText(form) ? Number(capacityText(form)) : undefined,
     organization_id: form.organizationId ?? undefined,
+    lat: form.point?.lat,
+    lng: form.point?.lng,
   }
   if (sport.startsWith(NEW_SPORT_PREFIX)) input.sport_name = sport.slice(NEW_SPORT_PREFIX.length)
   else input.sport_id = Number(sport)
@@ -185,6 +190,10 @@ export function eventFormFrom(event: EventDetails): EventFormState {
     requirements: event.requirements ?? '',
     equipment: event.equipment ?? '',
     organizationId: event.organizer.type === 'organization' ? event.organizer.id : null,
+    point:
+      typeof event.lat === 'number' && typeof event.lng === 'number'
+        ? { lat: event.lat, lng: event.lng }
+        : null,
   }
 }
 
@@ -234,6 +243,13 @@ export function toEventUpdate(form: EventFormState, original: EventFormState): E
   if (form.joinMode && form.joinMode !== original.joinMode) update.join_mode = form.joinMode
   const capacity = capacityText(form)
   if (capacity && capacity !== original.capacity) update.capacity = Number(capacity)
+  if (
+    form.point &&
+    (form.point.lat !== original.point?.lat || form.point.lng !== original.point?.lng)
+  ) {
+    update.lat = form.point.lat
+    update.lng = form.point.lng
+  }
   return update
 }
 

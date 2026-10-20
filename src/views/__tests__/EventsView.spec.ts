@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -12,10 +12,15 @@ const server = setupServer(...handlers)
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
+  // Тест проверяет сборку без ключа карты — локальный ключ из .env.local не должен на него влиять.
+  vi.stubEnv('VITE_2GIS_KEY', '')
   resetDb()
   setActivePinia(createPinia())
 })
-afterEach(() => server.resetHandlers())
+afterEach(() => {
+  server.resetHandlers()
+  vi.unstubAllEnvs()
+})
 afterAll(() => server.close())
 
 async function setup(path = '/events') {
