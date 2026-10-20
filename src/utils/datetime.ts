@@ -1,3 +1,5 @@
+import { intlLocale, t } from '@/i18n'
+
 const DAY = 24 * 60 * 60 * 1000
 
 /** Дата в формате YYYY-MM-DD по местному времени пользователя. */
@@ -12,15 +14,18 @@ function startOfDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
-const time = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
-const dayMonth = new Intl.DateTimeFormat('ru-RU', {
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-})
-
 export function formatTime(iso: string) {
-  return time.format(new Date(iso))
+  return new Intl.DateTimeFormat(intlLocale(), { hour: '2-digit', minute: '2-digit' }).format(
+    new Date(iso),
+  )
+}
+
+function dayMonth(d: Date) {
+  return new Intl.DateTimeFormat(intlLocale(), {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(d)
 }
 
 /** «Сегодня · 19:00», «Завтра · 07:30», «сб, 24 окт. · 10:00». */
@@ -29,10 +34,10 @@ export function formatEventWhen(startsAt: string, endsAt: string | null = null, 
   const diff = Math.round((startOfDay(start).getTime() - startOfDay(now).getTime()) / DAY)
   const day =
     diff === 0
-      ? 'Сегодня'
+      ? t('quickDate.today')
       : diff === 1
-        ? 'Завтра'
-        : dayMonth.format(start).replace(/^./, (c) => c.toUpperCase())
+        ? t('quickDate.tomorrow')
+        : dayMonth(start).replace(/^./, (c) => c.toUpperCase())
   const range = endsAt ? `${formatTime(startsAt)}–${formatTime(endsAt)}` : formatTime(startsAt)
   return `${day} · ${range}`
 }

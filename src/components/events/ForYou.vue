@@ -58,13 +58,13 @@ onMounted(load)
   <section class="flex flex-col gap-3" aria-labelledby="for-you-title" aria-live="polite">
     <div class="flex flex-wrap items-baseline justify-between gap-2">
       <h2 id="for-you-title" class="text-2xl font-bold">
-        {{ emptyProfile ? 'Популярное' : 'Для вас' }}
+        {{ emptyProfile ? $t('forYou.popular') : $t('forYou.title') }}
       </h2>
       <RouterLink
         :to="{ name: 'events' }"
         class="inline-flex min-h-8 items-center font-semibold underline underline-offset-4"
       >
-        Все мероприятия
+        {{ $t('forYou.all') }}
       </RouterLink>
     </div>
 
@@ -73,11 +73,15 @@ onMounted(load)
       :to="{ name: 'profile' }"
       class="flex items-center justify-between gap-3 rounded-card bg-lilac p-4 font-semibold text-ink no-underline"
     >
-      Расскажите о себе — подберём точнее
+      {{ $t('forYou.fillProfile') }}
       <span aria-hidden="true">→</span>
     </RouterLink>
 
-    <ul v-if="state === 'loading'" class="grid gap-3 md:grid-cols-2" aria-label="Загрузка">
+    <ul
+      v-if="state === 'loading'"
+      class="grid gap-3 md:grid-cols-2"
+      :aria-label="$t('common.loading')"
+    >
       <li v-for="i in 2" :key="i" class="h-28 animate-pulse rounded-card bg-card" />
     </ul>
     <div
@@ -85,16 +89,16 @@ onMounted(load)
       class="flex flex-col items-start gap-2 rounded-card bg-card p-4"
       role="alert"
     >
-      <p class="font-semibold">Не получилось подобрать мероприятия.</p>
-      <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
+      <p class="font-semibold">{{ $t('forYou.error') }}</p>
+      <UiButton variant="ghost" class="!w-auto" @click="load">{{ $t('common.retry') }}</UiButton>
     </div>
     <p v-else-if="!cards.length" class="rounded-card bg-card p-4 text-ink-2">
-      Ближайший месяц подходящих мероприятий нет —
+      {{ $t('forYou.empty') }}
       <RouterLink
         :to="{ name: 'event-create' }"
         class="font-semibold text-ink underline underline-offset-4"
       >
-        создайте своё</RouterLink
+        {{ $t('forYou.create') }}</RouterLink
       >.
     </p>
     <ul v-else class="grid gap-3 md:grid-cols-2">

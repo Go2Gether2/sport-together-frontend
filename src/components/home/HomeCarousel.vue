@@ -17,7 +17,7 @@ function scrollBy(direction: 1 | -1) {
 </script>
 
 <template>
-  <section class="relative" aria-label="Главное">
+  <section class="relative" :aria-label="$t('home.main')">
     <ul
       ref="track"
       class="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:scroll-px-0 lg:px-0"
@@ -25,15 +25,15 @@ function scrollBy(direction: 1 | -1) {
       <li
         class="relative flex w-[85%] flex-none snap-start flex-col gap-3 overflow-hidden rounded-card bg-accent p-5 sm:w-[calc(50%-6px)] sm:p-6"
       >
-        <p class="font-hand text-xl text-accent-ink sm:text-2xl">спорт — это когда вместе</p>
+        <p class="font-hand text-xl text-accent-ink sm:text-2xl">{{ $t('home.slogan') }}</p>
         <h1 class="text-2xl leading-tight font-bold sm:max-w-[85%] sm:text-3xl">
-          Найдите компанию для спорта
+          {{ $t('home.title') }}
         </h1>
         <RouterLink
           :to="{ name: 'events' }"
           class="mt-auto inline-flex min-h-11 w-fit items-center rounded-full bg-ink px-5 font-bold text-white no-underline hover:bg-ink/85"
         >
-          Смотреть мероприятия
+          {{ $t('home.cta') }}
         </RouterLink>
         <span
           aria-hidden="true"
@@ -72,7 +72,7 @@ function scrollBy(direction: 1 | -1) {
       <button
         type="button"
         class="absolute top-1/2 -left-3 hidden size-11 -translate-y-1/2 place-items-center rounded-full bg-card text-xl shadow-md hover:bg-mute sm:grid"
-        aria-label="Назад"
+        :aria-label="$t('common.back')"
         @click="scrollBy(-1)"
       >
         ←
@@ -80,7 +80,7 @@ function scrollBy(direction: 1 | -1) {
       <button
         type="button"
         class="absolute top-1/2 -right-3 hidden size-11 -translate-y-1/2 place-items-center rounded-full bg-card text-xl shadow-md hover:bg-mute sm:grid"
-        aria-label="Дальше"
+        :aria-label="$t('common.next')"
         @click="scrollBy(1)"
       >
         →

@@ -1,6 +1,13 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { watch } from 'vue'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalizedLoaded,
+  type RouteRecordRaw,
+} from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import HomeView from '@/views/HomeView.vue'
+import { i18n, t } from '@/i18n'
 import { documentTitle, resolveAccess } from './access'
 
 const routes: RouteRecordRaw[] = [
@@ -152,8 +159,19 @@ router.beforeEach(async (to) => {
   return resolveAccess(to, { isAuthenticated: session.isAuthenticated, isAdmin: session.isAdmin })
 })
 
-router.afterEach((to) => {
-  document.title = documentTitle(to.meta.title)
+// Заголовок вкладки — из словаря по имени маршрута; meta.title остаётся запасным.
+function setTitle(to: RouteLocationNormalizedLoaded) {
+  const key = `routes.${String(to.name)}`
+  document.title = documentTitle(i18n.global.te(key) ? t(key) : to.meta.title)
+}
+
+router.afterEach(setTitle)
+
+// Сменили язык — переводим и заголовок. Страницы с названием из данных (мероприятие, организация,
+// профиль) ставят его сами и на смену языка не реагируют.
+watch(i18n.global.locale, () => {
+  const to = router.currentRoute.value
+  if (!['event', 'organization', 'user'].includes(String(to.name))) setTitle(to)
 })
 
 export default router

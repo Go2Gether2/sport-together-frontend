@@ -1,4 +1,5 @@
 import type { load } from '@2gis/mapgl'
+import { t } from '@/i18n'
 
 export type MapglApi = Awaited<ReturnType<typeof load>>
 
@@ -28,9 +29,15 @@ export function loadMapgl(): Promise<MapglApi> {
   return loading
 }
 
+// Геттеры: текст берётся из словаря в момент показа, на текущем языке.
 export const UNAVAILABLE_TEXT: Record<MapUnavailableError['reason'], string> = {
-  'no-key': 'Карта не подключена в этой сборке. Мероприятия доступны списком.',
-  unsupported: 'Ваш браузер не умеет показывать карту. Мероприятия доступны списком.',
-  'load-failed':
-    'Не получилось загрузить карту. Проверьте интернет или посмотрите мероприятия списком.',
+  get 'no-key'() {
+    return t('map.noKey')
+  },
+  get unsupported() {
+    return t('map.unsupported')
+  },
+  get 'load-failed'() {
+    return t('map.loadFailed')
+  },
 }

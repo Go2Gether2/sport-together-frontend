@@ -2,10 +2,10 @@ import { ref, watch } from 'vue'
 
 export type ThemeChoice = 'light' | 'dark' | 'system'
 
-export const THEME_OPTIONS: { value: ThemeChoice; label: string }[] = [
-  { value: 'light', label: 'Светлая' },
-  { value: 'dark', label: 'Тёмная' },
-  { value: 'system', label: 'Как в системе' },
+export const THEME_OPTIONS: { value: ThemeChoice }[] = [
+  { value: 'light' },
+  { value: 'dark' },
+  { value: 'system' },
 ]
 
 // Тема — строго необходимая настройка интерфейса: храним в браузере без согласия на cookie (см. политику).

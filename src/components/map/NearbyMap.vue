@@ -105,13 +105,13 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative overflow-hidden rounded-card bg-field">
-    <div ref="container" role="region" aria-label="Карта рядом со мной" class="h-full w-full" />
+    <div ref="container" role="region" :aria-label="$t('map.nearbyLabel')" class="h-full w-full" />
     <p
       v-if="state !== 'ready'"
       class="absolute inset-0 grid place-items-center p-6 text-center text-ink-2"
       role="status"
     >
-      {{ state === 'loading' ? 'Загружаем карту…' : message }}
+      {{ state === 'loading' ? $t('map.loading') : message }}
     </p>
   </div>
 </template>

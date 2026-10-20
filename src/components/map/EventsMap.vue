@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
       class="absolute inset-0 grid place-items-center text-ink-2"
       role="status"
     >
-      Загружаем карту…
+      {{ $t('map.loading') }}
     </p>
     <p
       v-else-if="state === 'unavailable'"

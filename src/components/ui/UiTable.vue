@@ -23,7 +23,7 @@ const props = withDefaults(
     selectedKey: null,
     clickable: false,
     loading: false,
-    emptyText: 'Здесь пока пусто',
+    emptyText: undefined,
     cardAside: 'status',
   },
 )
@@ -61,7 +61,7 @@ function pick(row: T) {
       />
     </template>
     <li v-else-if="rows.length === 0" class="rounded-card bg-card px-4 py-8 text-center text-ink-2">
-      <slot name="empty">{{ emptyText }}</slot>
+      <slot name="empty">{{ emptyText ?? $t('ui.empty') }}</slot>
     </li>
     <template v-else>
       <li
@@ -141,7 +141,7 @@ function pick(row: T) {
             :colspan="columns.length"
             class="rounded-card bg-field px-4 py-8 text-center text-ink-2"
           >
-            <slot name="empty">{{ emptyText }}</slot>
+            <slot name="empty">{{ emptyText ?? $t('ui.empty') }}</slot>
           </td>
         </tr>
         <template v-else>

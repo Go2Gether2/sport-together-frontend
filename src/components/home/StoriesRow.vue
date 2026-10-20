@@ -23,14 +23,14 @@ function onSeen(id: string) {
 </script>
 
 <template>
-  <section aria-label="Сторис">
+  <section :aria-label="$t('stories.title')">
     <ul class="-mx-4 flex gap-3 overflow-x-auto px-4 py-2 [scrollbar-width:none] lg:mx-0 lg:px-2">
       <li v-for="(s, i) in stories" :key="s.id" class="flex-none">
         <button
           type="button"
           class="relative flex size-32 flex-col justify-end overflow-hidden rounded-[22px] p-3 text-left ring-offset-2 ring-offset-page sm:size-36"
           :class="[s.bg, seen.has(s.id) ? '' : 'ring-3 ring-accent-strong']"
-          :aria-label="`${s.label}${seen.has(s.id) ? '' : ', новое'}`"
+          :aria-label="seen.has(s.id) ? s.label : $t('stories.unseen', { name: s.label })"
           @click="position = { story: i, slide: 0 }"
         >
           <span aria-hidden="true" class="pointer-events-none absolute -top-2 -right-2 opacity-70">

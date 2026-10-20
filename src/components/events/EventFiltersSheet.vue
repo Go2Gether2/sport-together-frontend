@@ -2,7 +2,8 @@
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import { eventsApi, type EventFilters, type JoinMode, type Level } from '@/api'
 import EventsCalendar from '@/components/events/EventsCalendar.vue'
-import { UiButton, UiChip, UiSelect, UiTextField, plural, type UiOption } from '@/components/ui'
+import { UiButton, UiChip, UiSelect, UiTextField, type UiOption } from '@/components/ui'
+import { t } from '@/i18n'
 import {
   JOIN_MODE_LABELS,
   LEVEL_LABELS,
@@ -24,15 +25,10 @@ const count = ref<number | null>(null)
 const counting = ref(false)
 let skipCount = false
 
-const QUICK: { kind: QuickDate; label: string }[] = [
-  { kind: 'today', label: 'Сегодня' },
-  { kind: 'tomorrow', label: 'Завтра' },
-  { kind: 'weekend', label: 'На выходных' },
-]
-const levelOptions: UiOption[] = (Object.keys(LEVEL_LABELS) as Level[]).map((value) => ({
-  value,
-  label: LEVEL_LABELS[value],
-}))
+const QUICK: QuickDate[] = ['today', 'tomorrow', 'weekend']
+const levelOptions = computed<UiOption[]>(() =>
+  (Object.keys(LEVEL_LABELS) as Level[]).map((value) => ({ value, label: LEVEL_LABELS[value] })),
+)
 const JOIN_MODES: (JoinMode | undefined)[] = [undefined, 'open', 'approval']
 
 watch(
@@ -123,14 +119,12 @@ function apply() {
 }
 
 const applyText = computed(() => {
-  if (count.value === null) return 'Показать'
-  if (count.value === 0) return 'Ничего не найдено'
-  return `Показать ${count.value}`
+  if (count.value === null) return t('filters.show')
+  if (count.value === 0) return t('filters.nothing')
+  return t('filters.showN', { n: count.value })
 })
 const applyLabel = computed(() =>
-  count.value
-    ? `Показать ${count.value} ${plural(count.value, ['мероприятие', 'мероприятия', 'мероприятий'])}`
-    : undefined,
+  count.value ? t('filters.showEvents', { events: t('events.count', count.value) }) : undefined,
 )
 
 function onBackdrop(e: MouseEvent) {
@@ -149,10 +143,10 @@ function onBackdrop(e: MouseEvent) {
   >
     <div v-if="open" class="flex max-h-[92dvh] flex-col md:h-dvh md:max-h-dvh">
       <header class="flex items-center justify-between gap-3 px-5 pt-5 pb-3">
-        <h2 :id="`${id}-title`" class="text-xl font-bold">Фильтры</h2>
+        <h2 :id="`${id}-title`" class="text-xl font-bold">{{ $t('filters.title') }}</h2>
         <button
           type="button"
-          aria-label="Закрыть"
+          :aria-label="$t('common.close')"
           class="grid size-11 flex-none place-items-center rounded-full bg-field hover:bg-mute"
           @click="open = false"
         >
@@ -162,15 +156,10 @@ function onBackdrop(e: MouseEvent) {
 
       <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-5 pb-4">
         <fieldset class="flex flex-col gap-3">
-          <legend class="mb-2 font-bold">Когда</legend>
+          <legend class="mb-2 font-bold">{{ $t('filters.when') }}</legend>
           <div class="flex flex-wrap gap-2">
-            <UiChip
-              v-for="q in QUICK"
-              :key="q.kind"
-              :pressed="quick === q.kind"
-              @click="toggleQuick(q.kind)"
-            >
-              {{ q.label }}
+            <UiChip v-for="q in QUICK" :key="q" :pressed="quick === q" @click="toggleQuick(q)">
+              {{ $t(`quickDate.${q}`) }}
             </UiChip>
           </div>
           <EventsCalendar
@@ -180,21 +169,30 @@ function onBackdrop(e: MouseEvent) {
             @select="(d) => setDates(d ?? undefined, d ?? undefined)"
           />
           <p class="text-sm text-ink-2" aria-live="polite">
-            {{ dateText ? `Выбрано: ${dateText}` : 'Любые даты' }}
+            {{ dateText ? $t('filters.selected', { date: dateText }) : $t('filters.anyDate') }}
           </p>
         </fieldset>
 
-        <UiTextField v-model="city" label="Город" placeholder="Любой" />
+        <UiTextField
+          v-model="city"
+          :label="$t('filters.city')"
+          :placeholder="$t('filters.anyCity')"
+        />
         <UiSelect
           v-model="sport"
-          label="Направление"
+          :label="$t('filters.sport')"
           :options="sportOptions"
-          placeholder="Все направления"
+          :placeholder="$t('filters.allSports')"
         />
-        <UiSelect v-model="level" label="Уровень" :options="levelOptions" placeholder="Любой" />
+        <UiSelect
+          v-model="level"
+          :label="$t('filters.level')"
+          :options="levelOptions"
+          :placeholder="$t('filters.anyLevel')"
+        />
 
         <fieldset class="flex flex-col gap-2">
-          <legend class="mb-2 font-bold">Запись</legend>
+          <legend class="mb-2 font-bold">{{ $t('filters.joinMode') }}</legend>
           <div class="flex flex-wrap gap-2">
             <UiChip
               v-for="mode in JOIN_MODES"
@@ -202,7 +200,7 @@ function onBackdrop(e: MouseEvent) {
               :pressed="draft.join_mode === mode"
               @click="draft = { ...draft, join_mode: mode }"
             >
-              {{ mode ? JOIN_MODE_LABELS[mode] : 'Любая' }}
+              {{ mode ? JOIN_MODE_LABELS[mode] : $t('filters.anyJoin') }}
             </UiChip>
           </div>
         </fieldset>
@@ -211,7 +209,9 @@ function onBackdrop(e: MouseEvent) {
       <footer
         class="flex gap-2 border-t border-mute bg-card px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
       >
-        <UiButton variant="ghost" class="!w-auto !px-4" @click="clear">Сбросить</UiButton>
+        <UiButton variant="ghost" class="!w-auto !px-4" @click="clear">{{
+          $t('filters.reset')
+        }}</UiButton>
         <UiButton
           class="flex-1 !px-3"
           :loading="counting"

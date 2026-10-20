@@ -47,7 +47,7 @@ function onBackdrop(e: MouseEvent) {
         </h2>
         <button
           type="button"
-          aria-label="Закрыть"
+          :aria-label="$t('common.close')"
           class="grid size-11 flex-none place-items-center rounded-full bg-field hover:bg-mute"
           @click="open = false"
         >

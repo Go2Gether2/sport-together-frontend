@@ -14,6 +14,7 @@ import { JOIN_MODE_LABELS, LEVEL_LABELS } from '@/features/events/filters'
 import { formatEventWhen } from '@/utils/datetime'
 import { toPoints, twoGisLink } from '@/features/map/geo'
 import { APP_NAME } from '@/router/access'
+import { intlLocale, t } from '@/i18n'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
@@ -31,7 +32,7 @@ async function load({ quiet = false } = {}) {
     document.title = `${details.title} — ${APP_NAME}`
   } catch (e) {
     event.value = null
-    message.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятие.'
+    message.value = e instanceof ApiError ? e.message : t('event.loadError')
     state.value =
       !Number.isInteger(id.value) || (e instanceof ApiError && e.status === 404)
         ? 'not-found'
@@ -45,7 +46,7 @@ watch(id, () => load(), { immediate: true })
 
 const editedAt = computed(() =>
   event.value?.updated_at
-    ? new Intl.DateTimeFormat('ru-RU', {
+    ? new Intl.DateTimeFormat(intlLocale(), {
         day: 'numeric',
         month: 'long',
         hour: '2-digit',
@@ -62,7 +63,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
 
 <template>
   <div aria-live="polite" :aria-busy="state === 'loading'">
-    <div v-if="state === 'loading'" class="flex flex-col gap-4" aria-label="Загрузка">
+    <div v-if="state === 'loading'" class="flex flex-col gap-4" :aria-label="$t('common.loading')">
       <div class="h-10 w-2/3 animate-pulse rounded-field bg-mute" />
       <div class="h-56 animate-pulse rounded-card bg-card" />
     </div>
@@ -71,17 +72,17 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       v-else-if="state === 'gone'"
       class="mx-auto flex max-w-xl flex-col gap-3 rounded-card bg-card p-5"
     >
-      <UiBadge tone="off">Запись закрыта</UiBadge>
-      <h1 class="font-display text-2xl font-bold">Мероприятие недоступно</h1>
+      <UiBadge tone="off">{{ $t('event.closed') }}</UiBadge>
+      <h1 class="font-display text-2xl font-bold">{{ $t('event.unavailable') }}</h1>
       <p role="alert">{{ message }}</p>
       <p class="text-ink-2">
-        Записаться на него нельзя. Если вы были записаны, запись сохранена в истории.
+        {{ $t('event.goneText') }}
       </p>
       <RouterLink
         :to="{ name: 'events' }"
         class="font-bold text-accent-ink underline underline-offset-4"
       >
-        Найти другие мероприятия
+        {{ $t('event.findOther') }}
       </RouterLink>
     </section>
 
@@ -89,13 +90,13 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       v-else-if="state === 'not-found'"
       class="mx-auto flex max-w-md flex-col gap-3 py-8 text-center"
     >
-      <h1 class="font-display text-2xl font-bold">Мероприятие не найдено</h1>
-      <p class="text-ink-2">Возможно, ссылка с ошибкой.</p>
+      <h1 class="font-display text-2xl font-bold">{{ $t('event.notFound') }}</h1>
+      <p class="text-ink-2">{{ $t('event.badLink') }}</p>
       <RouterLink
         :to="{ name: 'events' }"
         class="font-bold text-accent-ink underline underline-offset-4"
       >
-        К мероприятиям
+        {{ $t('notFound.cta') }}
       </RouterLink>
     </section>
 
@@ -104,9 +105,9 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-card p-6 text-center"
       role="alert"
     >
-      <p class="text-lg font-bold">Не получилось загрузить мероприятие</p>
+      <p class="text-lg font-bold">{{ $t('event.loadError') }}</p>
       <p class="text-ink-2">{{ message }}</p>
-      <UiButton variant="ghost" class="!w-auto" @click="load()">Повторить</UiButton>
+      <UiButton variant="ghost" class="!w-auto" @click="load()">{{ $t('common.retry') }}</UiButton>
     </section>
 
     <article v-else-if="event" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -120,13 +121,13 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
           <p class="font-medium">
             {{
               event.status === 'cancelled'
-                ? 'Организатор отменил мероприятие'
-                : 'Мероприятие недоступно'
+                ? $t('event.cancelledByOrganizer')
+                : $t('event.unavailable')
             }}<template v-if="event.unavailable_reason">: {{ event.unavailable_reason }}</template
             >.
           </p>
           <p class="text-ink-2">
-            Записаться на него нельзя. Вы видите страницу, потому что связаны с этим мероприятием.
+            {{ $t('event.involvedText') }}
           </p>
         </div>
 
@@ -148,9 +149,9 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
             <UiBadge
               v-if="event.is_edited"
               class="!bg-card !text-ink"
-              :title="`Изменено ${editedAt}`"
+              :title="$t('event.editedAt', { date: editedAt })"
             >
-              ✎ Изменено
+              {{ $t('event.edited') }}
             </UiBadge>
           </div>
         </header>
@@ -158,7 +159,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
         <p v-if="event.description" class="text-lg whitespace-pre-line">{{ event.description }}</p>
 
         <dl class="grid gap-3 rounded-card bg-card p-4 sm:grid-cols-[auto_1fr] sm:gap-x-6">
-          <dt class="font-bold">Организатор</dt>
+          <dt class="font-bold">{{ $t('event.organizer') }}</dt>
           <dd>
             <RouterLink
               :to="organizerLink(event.organizer)"
@@ -167,16 +168,16 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
               {{ organizerName(event.organizer) }}
             </RouterLink>
             <span v-if="event.organizer.type === 'organization'" class="text-ink-2">
-              · организация</span
+              · {{ $t('event.organization') }}</span
             >
           </dd>
 
           <template v-if="event.organizer_contacts">
-            <dt class="font-bold">Контакты</dt>
+            <dt class="font-bold">{{ $t('event.contacts') }}</dt>
             <dd>{{ event.organizer_contacts }}</dd>
           </template>
 
-          <dt class="font-bold">Место</dt>
+          <dt class="font-bold">{{ $t('event.place') }}</dt>
           <dd>
             {{ event.address }}
             <span v-if="event.location_note" class="block text-ink-2">{{
@@ -184,27 +185,27 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
             }}</span>
           </dd>
 
-          <dt class="font-bold">Уровень</dt>
-          <dd>{{ event.level ? LEVEL_LABELS[event.level] : 'Любой' }}</dd>
+          <dt class="font-bold">{{ $t('filters.level') }}</dt>
+          <dd>{{ event.level ? LEVEL_LABELS[event.level] : $t('filters.anyLevel') }}</dd>
 
           <template v-if="event.requirements">
-            <dt class="font-bold">Требования</dt>
+            <dt class="font-bold">{{ $t('event.requirements') }}</dt>
             <dd>{{ event.requirements }}</dd>
           </template>
 
           <template v-if="event.equipment">
-            <dt class="font-bold">Инвентарь</dt>
+            <dt class="font-bold">{{ $t('event.equipment') }}</dt>
             <dd>{{ event.equipment }}</dd>
           </template>
         </dl>
 
         <section v-if="mapPoints[0]" aria-labelledby="map-title" class="flex flex-col gap-2">
-          <h2 id="map-title" class="text-lg font-bold">Место на карте</h2>
+          <h2 id="map-title" class="text-lg font-bold">{{ $t('event.onMap') }}</h2>
           <EventsMap
             class="h-64"
             :points="mapPoints"
             :zoom="15"
-            :label="`Место проведения: ${event.address}`"
+            :label="$t('event.venue', { address: event.address })"
           />
           <a
             :href="twoGisLink(mapPoints[0].coordinates)"
@@ -212,15 +213,15 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
             rel="noopener noreferrer"
             class="inline-flex min-h-8 w-fit items-center font-semibold text-accent-ink underline underline-offset-4"
           >
-            Открыть в 2ГИС и построить маршрут
+            {{ $t('event.route') }}
           </a>
         </section>
 
         <section aria-labelledby="people-title" class="flex flex-col gap-2">
-          <h2 id="people-title" class="text-lg font-bold">Участники</h2>
+          <h2 id="people-title" class="text-lg font-bold">{{ $t('event.participants') }}</h2>
           <UiSeats :taken="event.confirmed_count" :capacity="event.capacity">
             <UiAvatarStack v-if="participants.length" :users="participants" :max="5" />
-            <span v-else class="text-ink-2">Пока никого — будьте первым</span>
+            <span v-else class="text-ink-2">{{ $t('event.beFirst') }}</span>
           </UiSeats>
           <p v-if="participants.length" class="text-ink-2">
             {{ participants.map((p) => p.name).join(', ') }}

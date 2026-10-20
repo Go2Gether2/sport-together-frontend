@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { eventsApi, type EventFilters } from '@/api'
-import { UiIconButton, plural } from '@/components/ui'
+import { UiIconButton } from '@/components/ui'
+import { intlLocale, t } from '@/i18n'
 import {
-  WEEKDAYS,
+  weekdays,
   countByDay,
   formatMonth,
   monthGrid,
@@ -23,6 +24,7 @@ const today = localDate(new Date())
 
 const weeks = computed(() => monthGrid(month.value))
 const title = computed(() => formatMonth(month.value))
+const weekdayNames = computed(() => weekdays())
 
 // Отметки дней — по тем же фильтрам, что и лента, но за весь месяц.
 const monthFilters = computed(() => {
@@ -50,14 +52,12 @@ function pick(date: string) {
   emit('select', props.selected === date ? null : date)
 }
 
-const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
-
 function dayLabel(date: string) {
   const n = counts.value[date] ?? 0
-  const when = dayMonth.format(new Date(`${date}T00:00:00`))
-  return n
-    ? `${when}: ${n} ${plural(n, ['мероприятие', 'мероприятия', 'мероприятий'])}`
-    : `${when}: нет мероприятий`
+  const when = new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long' }).format(
+    new Date(`${date}T00:00:00`),
+  )
+  return n ? `${when}: ${t('events.count', n)}` : t('calendar.none', { date: when })
 }
 </script>
 
@@ -67,9 +67,13 @@ function dayLabel(date: string) {
     aria-labelledby="calendar-title"
   >
     <div class="flex items-center justify-between gap-2">
-      <UiIconButton label="Предыдущий месяц" @click="month = shiftMonth(month, -1)">‹</UiIconButton>
+      <UiIconButton :label="$t('calendar.prev')" @click="month = shiftMonth(month, -1)"
+        >‹</UiIconButton
+      >
       <h2 id="calendar-title" class="text-lg font-bold" aria-live="polite">{{ title }}</h2>
-      <UiIconButton label="Следующий месяц" @click="month = shiftMonth(month, 1)">›</UiIconButton>
+      <UiIconButton :label="$t('calendar.next')" @click="month = shiftMonth(month, 1)"
+        >›</UiIconButton
+      >
     </div>
 
     <table
@@ -79,7 +83,7 @@ function dayLabel(date: string) {
       <thead>
         <tr>
           <th
-            v-for="d in WEEKDAYS"
+            v-for="d in weekdayNames"
             :key="d"
             scope="col"
             class="text-xs font-bold tracking-wider text-ink-2 uppercase"
@@ -121,11 +125,11 @@ function dayLabel(date: string) {
     </table>
 
     <p v-if="state === 'error'" class="text-sm text-ink-2" role="alert">
-      Не получилось отметить дни с мероприятиями — выбрать дату всё равно можно.
+      {{ $t('calendar.error') }}
     </p>
     <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-ink-2">
       <span class="flex items-center gap-2">
-        <span class="size-4 rounded-full bg-accent" aria-hidden="true" /> есть мероприятия
+        <span class="size-4 rounded-full bg-accent" aria-hidden="true" /> {{ $t('calendar.has') }}
       </span>
       <button
         v-if="selected"
@@ -133,7 +137,7 @@ function dayLabel(date: string) {
         class="inline-flex min-h-8 items-center font-semibold text-ink underline underline-offset-4"
         @click="emit('select', null)"
       >
-        Все даты
+        {{ $t('filters.anyDate') }}
       </button>
     </div>
   </section>

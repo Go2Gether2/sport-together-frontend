@@ -20,10 +20,10 @@ const session = useSessionStore()
           :to="{ name: 'login' }"
           class="font-bold text-ink underline underline-offset-4 hover:text-accent-ink"
         >
-          Войти
+          {{ $t('common.login') }}
         </RouterLink>
 
-        <UiIconButton label="Все разделы" @click="$emit('openMenu')">
+        <UiIconButton :label="$t('nav.allSections')" @click="$emit('openMenu')">
           <svg
             viewBox="0 0 24 24"
             width="22"

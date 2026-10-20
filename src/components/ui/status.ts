@@ -1,4 +1,5 @@
 import type { EventStatus, OrganizationStatus, ParticipationStatus } from '@/api/types'
+import { t } from '@/i18n'
 
 // Статусы различаются формой и значком, а не цветом (ADR 0002): так их читают и при нарушении цветовосприятия.
 export type StatusTone = 'ok' | 'wait' | 'no' | 'off'
@@ -8,25 +9,33 @@ export interface StatusView {
   label: string
 }
 
+// Подпись — геттер: читается при отрисовке, поэтому меняется вместе с языком.
+const sv = (tone: StatusTone, key: string): StatusView => ({
+  tone,
+  get label() {
+    return t(`status.${key}`)
+  },
+})
+
 const participation: Record<ParticipationStatus, StatusView> = {
-  confirmed: { tone: 'ok', label: 'Вы участник' },
-  pending: { tone: 'wait', label: 'Ждёт решения' },
-  waitlist: { tone: 'wait', label: 'В листе ожидания' },
-  rejected: { tone: 'no', label: 'Заявка отклонена' },
-  cancelled: { tone: 'off', label: 'Запись отменена' },
+  confirmed: sv('ok', 'participation.confirmed'),
+  pending: sv('wait', 'participation.pending'),
+  waitlist: sv('wait', 'participation.waitlist'),
+  rejected: sv('no', 'participation.rejected'),
+  cancelled: sv('off', 'participation.cancelled'),
 }
 
 const event: Record<EventStatus, StatusView> = {
-  published: { tone: 'ok', label: 'Опубликовано' },
-  unpublished: { tone: 'off', label: 'Снято с публикации' },
-  deleted: { tone: 'off', label: 'Удалено' },
-  cancelled: { tone: 'off', label: 'Отменено организатором' },
+  published: sv('ok', 'event.published'),
+  unpublished: sv('off', 'event.unpublished'),
+  deleted: sv('off', 'event.deleted'),
+  cancelled: sv('off', 'event.cancelled'),
 }
 
 const organization: Record<OrganizationStatus, StatusView> = {
-  approved: { tone: 'ok', label: 'Допущена' },
-  pending: { tone: 'wait', label: 'На рассмотрении' },
-  rejected: { tone: 'no', label: 'Отклонена' },
+  approved: sv('ok', 'organization.approved'),
+  pending: sv('wait', 'organization.pending'),
+  rejected: sv('no', 'organization.rejected'),
 }
 
 export type StatusOf =

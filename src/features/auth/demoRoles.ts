@@ -1,4 +1,5 @@
 import type { DemoAccount } from '@/api'
+import { t } from '@/i18n'
 
 export type DemoGroupKey = 'users' | 'organizations' | 'admin'
 
@@ -8,40 +9,35 @@ export interface DemoGroup {
   accounts: (DemoAccount & { scenarios: string | null })[]
 }
 
-const GROUP_TITLES: Record<DemoGroupKey, string> = {
-  users: 'Пользователи',
-  organizations: 'Организации',
-  admin: 'Администратор',
-}
-
 // Почты демо-аккаунтов одинаковы в моках и на бэке; роль организации API не отдаёт, поэтому группу берём отсюда.
+// scenarios — ключ подсказки в словаре (login.scenarios.*).
 const KNOWN: Record<string, { group: DemoGroupKey; scenarios: string }> = {
   'user@demo.local': {
     group: 'users',
-    scenarios: 'С1, С4, С5 — создать мероприятие, принять заявку',
+    scenarios: 'user',
   },
   'user2@demo.local': {
     group: 'users',
-    scenarios: 'С3, С4, С5 — записаться, задать вопрос',
+    scenarios: 'user2',
   },
   'org@demo.local': {
     group: 'organizations',
-    scenarios: 'С2 — опубликовать от организации',
+    scenarios: 'org',
   },
   'org2@demo.local': {
     group: 'organizations',
-    scenarios: 'С2 — заявка на допуске, публиковать нельзя',
+    scenarios: 'org2',
   },
   'admin@demo.local': {
     group: 'admin',
-    scenarios: 'С2, С6 — допуск и модерация',
+    scenarios: 'admin',
   },
 }
 
 export function groupDemoAccounts(accounts: DemoAccount[]): DemoGroup[] {
   const groups: DemoGroup[] = (['users', 'organizations', 'admin'] as const).map((key) => ({
     key,
-    title: GROUP_TITLES[key],
+    title: t(`login.groups.${key}`),
     accounts: [],
   }))
   for (const account of accounts) {
@@ -49,7 +45,10 @@ export function groupDemoAccounts(accounts: DemoAccount[]): DemoGroup[] {
     const key = known?.group ?? (account.role === 'admin' ? 'admin' : 'users')
     groups
       .find((g) => g.key === key)!
-      .accounts.push({ ...account, scenarios: known?.scenarios ?? null })
+      .accounts.push({
+        ...account,
+        scenarios: known ? t(`login.scenarios.${known.scenarios}`) : null,
+      })
   }
   return groups.filter((g) => g.accounts.length)
 }

@@ -1,5 +1,6 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { SportIconName } from '@/components/illustrations/SportIcon.vue'
+import { t } from '@/i18n'
 
 // Сторис будут приходить с бэка (данные в БД); пока набор задан здесь — заменить источник, форма та же.
 export interface StorySlide {
@@ -19,84 +20,45 @@ export interface Story {
 /** Сколько показывается один слайд, мс. */
 export const SLIDE_MS = 6000
 
+// Тексты — в словарях (stories.<id>: label и слайды s0, s1…), здесь только оформление и ссылки.
+function story(
+  id: string,
+  icon: SportIconName,
+  bg: string,
+  links: (RouteLocationRaw | null)[],
+): Story {
+  return {
+    id,
+    icon,
+    bg,
+    get label() {
+      return t(`stories.${id}.label`)
+    },
+    slides: links.map((to, i) => ({
+      get title() {
+        return t(`stories.${id}.s${i}.title`)
+      },
+      get text() {
+        return t(`stories.${id}.s${i}.text`)
+      },
+      cta: to
+        ? {
+            get label() {
+              return t(`stories.${id}.s${i}.cta`)
+            },
+            to,
+          }
+        : undefined,
+    })),
+  }
+}
+
 export const STORIES: Story[] = [
-  {
-    id: 'start',
-    label: 'Как начать за 3 шага',
-    icon: 'custom',
-    bg: 'bg-accent',
-    slides: [
-      {
-        title: 'Найдите мероприятие',
-        text: 'В каталоге — встречи по видам спорта, городу, дате и уровню.',
-        cta: { label: 'Открыть каталог', to: { name: 'events' } },
-      },
-      {
-        title: 'Запишитесь',
-        text: 'На открытые встречи — сразу, на остальные — заявкой, организатор ответит.',
-      },
-      {
-        title: 'Договоритесь в обсуждении',
-        text: 'У каждого мероприятия есть чат: спросите, что взять с собой и где встречаемся.',
-      },
-    ],
-  },
-  {
-    id: 'clubs',
-    label: 'Битва клубов: кто кого',
-    icon: 'football',
-    bg: 'bg-orange',
-    slides: [
-      {
-        title: 'Клубы соревнуются',
-        text: 'Кто за осень проведёт больше встреч и соберёт больше участников.',
-      },
-      {
-        title: 'Поддержите свой клуб',
-        text: 'Записывайтесь на встречи клуба — каждая запись идёт в общий счёт.',
-        cta: { label: 'Смотреть клубы', to: { name: 'organizations' } },
-      },
-    ],
-  },
-  {
-    id: 'running',
-    label: 'Пробежки по выходным',
-    icon: 'running',
-    bg: 'bg-accent-soft',
-    slides: [
-      {
-        title: 'Пробежки по выходным',
-        text: 'Группы для любого темпа — от первых 3 км до подготовки к полумарафону.',
-        cta: { label: 'Найти пробежку', to: { name: 'events', query: { q: 'бег' } } },
-      },
-    ],
-  },
-  {
-    id: 'chess',
-    label: 'Неделя шахмат',
-    icon: 'chess',
-    bg: 'bg-lilac',
-    slides: [
-      {
-        title: 'Неделя шахмат',
-        text: 'Партии в парках и клубах. Новичкам покажут, как ходят фигуры.',
-        cta: { label: 'Найти партию', to: { name: 'events', query: { q: 'шахмат' } } },
-      },
-    ],
-  },
-  {
-    id: 'organize',
-    label: 'Своя встреча за минуту',
-    icon: 'tennis',
-    bg: 'bg-card',
-    slides: [
-      {
-        title: 'Не нашли компанию?',
-        text: 'Создайте мероприятие сами: время, место, сколько нужно людей — и ждите участников.',
-        cta: { label: 'Создать мероприятие', to: { name: 'event-create' } },
-      },
-    ],
-  },
+  story('start', 'custom', 'bg-accent', [{ name: 'events' }, null, null]),
+  story('clubs', 'football', 'bg-orange', [null, { name: 'organizations' }]),
+  story('running', 'running', 'bg-accent-soft', [{ name: 'events', query: { q: 'бег' } }]),
+  story('chess', 'chess', 'bg-lilac', [{ name: 'events', query: { q: 'шахмат' } }]),
+  story('organize', 'tennis', 'bg-card', [{ name: 'event-create' }]),
 ]
 
 export interface StoryPosition {

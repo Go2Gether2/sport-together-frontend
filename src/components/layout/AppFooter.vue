@@ -8,16 +8,14 @@ import { APP_NAME } from '@/router/access'
     <div
       class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-4 text-sm text-ink-2"
     >
-      <span>«{{ APP_NAME }}» — учебный прототип</span>
+      <span>{{ $t('footer.prototype', { app: APP_NAME }) }}</span>
       <RouterLink
         :to="{ name: 'privacy' }"
         class="inline-flex min-h-8 items-center text-ink underline underline-offset-4"
       >
-        Политика обработки персональных данных
+        {{ $t('footer.privacy') }}
       </RouterLink>
-      <span aria-label="Возрастное ограничение 12 плюс" class="ml-auto font-bold text-ink"
-        >12+</span
-      >
+      <span :aria-label="$t('footer.age')" class="ml-auto font-bold text-ink">12+</span>
     </div>
   </footer>
 </template>

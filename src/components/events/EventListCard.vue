@@ -32,6 +32,8 @@ const seats = computed(() => seatsShort(props.event.confirmed_count, props.event
       </h3>
       <p class="truncate text-ink-2">{{ event.sport.name }} · {{ seats }}</p>
     </div>
-    <UiBadge v-if="event.join_mode === 'approval'" class="self-start">По заявке</UiBadge>
+    <UiBadge v-if="event.join_mode === 'approval'" class="self-start">{{
+      $t('joinMode.approval')
+    }}</UiBadge>
   </article>
 </template>

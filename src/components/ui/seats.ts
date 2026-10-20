@@ -1,15 +1,18 @@
+import { t } from '@/i18n'
+
 export function seatsPercent(taken: number, capacity: number | null): number {
   if (!capacity || capacity <= 0) return 0
   return Math.min(100, Math.max(0, Math.round((taken / capacity) * 100)))
 }
 
 export function seatsLabel(taken: number, capacity: number | null): string {
-  if (!capacity) return `${taken} ${plural(taken, ['участник', 'участника', 'участников'])}`
+  if (!capacity) return t('seats.participants', taken)
   const left = Math.max(0, capacity - taken)
-  if (left === 0) return `${taken} из ${capacity} · мест нет`
-  return `${taken} из ${capacity} · осталось ${left} ${plural(left, ['место', 'места', 'мест'])}`
+  if (left === 0) return t('seats.ofFull', { taken, capacity })
+  return t('seats.ofLeft', { taken, capacity, left: t('seats.places', left) })
 }
 
+/** Русские формы слова по числу. Для переводимых текстов — t('…', n) из словаря. */
 export function plural(n: number, forms: [string, string, string]): string {
   const m10 = n % 10
   const m100 = n % 100
@@ -20,7 +23,7 @@ export function plural(n: number, forms: [string, string, string]): string {
 
 /** Короткая подпись для карточки в списке: только то, что важно для решения. */
 export function seatsShort(taken: number, capacity: number | null): string {
-  if (!capacity) return `${taken} ${plural(taken, ['участник', 'участника', 'участников'])}`
+  if (!capacity) return t('seats.participants', taken)
   const left = Math.max(0, capacity - taken)
-  return left === 0 ? 'мест нет' : `ещё ${left} ${plural(left, ['место', 'места', 'мест'])}`
+  return left === 0 ? t('seats.full') : t('seats.more', { left: t('seats.places', left) })
 }

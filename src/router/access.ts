@@ -1,4 +1,5 @@
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router'
+import { t } from '@/i18n'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -40,5 +41,5 @@ export function resolveAccess(
 export const APP_NAME = 'Вместе'
 
 export function documentTitle(title?: string) {
-  return title ? `${title} — ${APP_NAME}` : `${APP_NAME} — найдите компанию для спорта`
+  return title ? `${title} — ${APP_NAME}` : `${APP_NAME} — ${t('home.tagline')}`
 }

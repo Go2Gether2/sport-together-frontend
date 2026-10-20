@@ -1,5 +1,6 @@
 import { ref, type Ref } from 'vue'
 import { ApiError, eventsApi, type EventFilters, type EventSummary } from '@/api'
+import { t } from '@/i18n'
 
 export type ListState = 'loading' | 'ready' | 'error'
 
@@ -28,7 +29,7 @@ export function useEventList(filters: Ref<EventFilters>) {
       state.value = 'ready'
     } catch (e) {
       if (id !== requestId) return
-      error.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятия.'
+      error.value = e instanceof ApiError ? e.message : t('events.loadError')
       state.value = 'error'
     }
   }
@@ -45,7 +46,7 @@ export function useEventList(filters: Ref<EventFilters>) {
       total.value = result.total
       totalPages.value = result.total_pages
     } catch (e) {
-      error.value = e instanceof ApiError ? e.message : 'Не получилось загрузить ещё.'
+      error.value = e instanceof ApiError ? e.message : t('events.moreError')
     } finally {
       loadingMore.value = false
     }

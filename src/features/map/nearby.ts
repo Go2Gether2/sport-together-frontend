@@ -1,4 +1,5 @@
 import type { LngLat } from './geo'
+import { intlLocale, t } from '@/i18n'
 
 export interface Bounds {
   southWest: LngLat
@@ -22,9 +23,9 @@ export function distanceKm([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
 
 /** «350 м», «1,2 км», «15 км». */
 export function formatDistance(km: number): string {
-  if (km < 1) return `${Math.max(10, Math.round((km * 1000) / 10) * 10)} м`
-  if (km < 10) return `${km.toFixed(1).replace('.', ',')} км`
-  return `${Math.round(km)} км`
+  if (km < 1) return t('map.m', { n: Math.max(10, Math.round((km * 1000) / 10) * 10) })
+  const n = new Intl.NumberFormat(intlLocale(), { maximumFractionDigits: km < 10 ? 1 : 0 })
+  return t('map.km', { n: n.format(km) })
 }
 
 /** Мероприятия в видимой части карты — ближайшие к точке отсчёта первыми. */
