@@ -393,7 +393,7 @@ onMounted(async () => {
           <p v-if="hasMap && !visible.length" class="rounded-card bg-card p-4 text-ink-2">
             {{ $t('map.emptyArea') }}
           </p>
-          <ul class="flex flex-col gap-3">
+          <ul class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 xl:grid-cols-1">
             <li
               v-for="{ event, distance } in visible"
               :id="`event-${event.id}`"

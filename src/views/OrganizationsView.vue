@@ -72,7 +72,7 @@ watch([query, sport, city], () => {
       </RouterLink>
     </div>
 
-    <div class="flex flex-col gap-3 lg:rounded-card lg:bg-card lg:p-4" role="search">
+    <div class="flex flex-col gap-3 rounded-card bg-card p-4" role="search">
       <UiTextField
         v-model="query"
         label="Поиск организаций"

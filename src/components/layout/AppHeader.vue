@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import { UiIconButton } from '@/components/ui'
 import AppLogo from './AppLogo.vue'
@@ -13,6 +13,8 @@ defineEmits<{ openMenu: [] }>()
 
 const session = useSessionStore()
 const items = computed(() => headerItems(session.isAdmin))
+const route = useRoute()
+const onAuthPage = computed(() => route.name === 'login' || route.name === 'register')
 </script>
 
 <template>
@@ -48,11 +50,11 @@ const items = computed(() => headerItems(session.isAdmin))
           <span aria-hidden="true" class="text-xl leading-none">+</span>
           {{ CREATE_ITEM.label }}
         </RouterLink>
-        <AppUserMenu class="hidden lg:flex" />
+        <AppUserMenu v-if="session.user" class="hidden lg:flex" />
         <RouterLink
-          v-if="!session.user"
+          v-else-if="!onAuthPage"
           :to="{ name: 'login' }"
-          class="font-bold text-ink underline underline-offset-4 lg:hidden"
+          class="inline-flex min-h-[42px] flex-none items-center rounded-full bg-ink px-4 font-bold text-white no-underline sm:px-5"
         >
           {{ $t('common.login') }}
         </RouterLink>
