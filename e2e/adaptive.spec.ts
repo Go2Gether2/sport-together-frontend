@@ -58,3 +58,19 @@ for (const vp of VIEWPORTS) {
     expect(wide).toEqual([])
   })
 }
+
+// На узком ноутбуке нет ни меню, ни нижней панели — все разделы должны остаться в шапке.
+for (const locale of ['ru', 'en']) {
+  test(`шапка 1024, ${locale}: видны все разделы`, async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    await page.addInitScript((l) => localStorage.setItem('locale', l), locale)
+    await start(page)
+    const nav = page.locator('header nav')
+    const links = ['/events', '/me', '/organizations']
+    for (const href of links) await expect(nav.locator(`a[href="${href}"]`)).toBeVisible()
+
+    await loginAs(page, ANNA, locale === 'en' ? 'Sign in as' : undefined)
+    for (const href of links) await expect(nav.locator(`a[href="${href}"]`)).toBeVisible()
+    expect(await overflow(page)).toBe(0)
+  })
+}
