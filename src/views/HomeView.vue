@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import ForYou from '@/components/events/ForYou.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
+import { useSessionStore } from '@/stores/session'
+
+const session = useSessionStore()
 
 const sports = [
   { icon: 'football', label: 'Футбол', bg: 'bg-orange' },
@@ -30,6 +34,8 @@ const sports = [
         <SportIcon name="running" :size="180" />
       </span>
     </div>
+
+    <ForYou v-if="session.user && !session.isAdmin" />
 
     <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Популярные направления">
       <li
