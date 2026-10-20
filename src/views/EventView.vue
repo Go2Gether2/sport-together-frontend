@@ -5,6 +5,7 @@ import { ApiError, eventsApi, type EventDetails } from '@/api'
 import EventComments from '@/components/comments/EventComments.vue'
 import EventJoinPanel from '@/components/events/EventJoinPanel.vue'
 import EventShare from '@/components/events/EventShare.vue'
+import EventSimilar from '@/components/events/EventSimilar.vue'
 import EventsMap from '@/components/map/EventsMap.vue'
 import { organizerLink, organizerName } from '@/components/events/organizer'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
@@ -235,6 +236,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       </aside>
 
       <EventComments :event="event" class="lg:col-start-1" />
+      <EventSimilar :event-id="event.id" class="lg:col-start-1" />
     </article>
   </div>
 </template>

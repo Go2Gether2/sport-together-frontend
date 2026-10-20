@@ -27,11 +27,12 @@ describe('validateRegisterForm', () => {
 })
 
 describe('toRegisterInput', () => {
-  it('нормализует почту и не отправляет согласие как поле', () => {
+  it('нормализует почту и отправляет согласие — бэк хранит его факт и время', () => {
     expect(toRegisterInput(ok)).toEqual({
       name: 'Анна',
       email: 'anna@mail.ru',
       password: 'qwerty12',
+      consent: true,
     })
   })
 })

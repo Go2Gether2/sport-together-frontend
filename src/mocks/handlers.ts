@@ -254,13 +254,20 @@ export const handlers = [
   http.post(
     url('/auth/register'),
     route(async ({ request }) => {
-      const body = await readJson<{ name: string; email: string; password: string }>(request)
+      const body = await readJson<{
+        name: string
+        email: string
+        password: string
+        consent?: boolean
+      }>(request)
       const fields: Record<string, string> = {}
       const email = body.email?.trim().toLowerCase() ?? ''
       if (!body.name?.trim()) fields.name = 'не должно быть пустым'
       if (!/^\S+@\S+\.\S+$/.test(email))
         fields.email = 'должно иметь формат адреса электронной почты'
       if (!body.password || body.password.length < 6) fields.password = 'Не короче 6 символов'
+      if (body.consent !== true)
+        fields.consent = 'Необходимо согласие на обработку персональных данных'
       if (Object.keys(fields).length) validation(fields)
       if (db.users.some((u) => u.email === email))
         fail(409, 'EMAIL_TAKEN', 'Этот email уже зарегистрирован')
@@ -1080,6 +1087,67 @@ export const handlers = [
           created_at: m.created_at,
         }))
       return pageOf(items, sp)
+    }),
+  ),
+
+  // Упрощённая копия RecommendationEngine бэка: те же коды причин, грубые веса.
+  http.get(
+    url('/recommendations/events'),
+    route(({ request }) => {
+      const user = currentUser(request)
+      const limit = Math.min(Math.max(numberParam(search(request), 'limit') ?? 10, 1), 50)
+      const now = Date.now()
+      const horizon = now + 60 * 24 * 60 * 60 * 1000
+      const joined = new Set(
+        db.participations.filter((p) => p.user_id === user?.id).map((p) => p.event_id),
+      )
+      const mine = new Set(user ? ownedOrgs(user.id).map((o) => o.id) : [])
+      return db.events
+        .filter((e) => e.status === 'published' && !isPast(e))
+        .filter((e) => new Date(e.starts_at).getTime() <= horizon)
+        .filter((e) => !user || (!isOrganizer(e, user) && !mine.has(e.organizer_org_id ?? -1)))
+        .filter((e) => !joined.has(e.id))
+        .map((e) => {
+          const reasons: string[] = []
+          if (user?.sport_ids.includes(e.sport_id)) reasons.push('interest')
+          if (user?.city && e.city === user.city) reasons.push('same_city')
+          if (user?.level && e.level === user.level) reasons.push('level_match')
+          if (confirmedCount(e.id) >= 10) reasons.push('popular')
+          if (new Date(e.starts_at).getTime() - now < 3 * 24 * 60 * 60 * 1000) reasons.push('soon')
+          return { e, reasons, score: reasons.length }
+        })
+        .sort((a, b) => b.score - a.score || a.e.starts_at.localeCompare(b.e.starts_at))
+        .slice(0, limit)
+        .map(({ e, reasons, score }) => ({ event: toEventSummary(e), score, reasons }))
+    }),
+  ),
+
+  http.get(
+    url('/events/:id/similar'),
+    route(({ request, params }) => {
+      const base = findEvent(idParam(params, 'id'))
+      if (base.status !== 'published') unavailable(base)
+      const limit = Math.min(Math.max(numberParam(search(request), 'limit') ?? 10, 1), 50)
+      return db.events
+        .filter((e) => e.id !== base.id && e.status === 'published' && !isPast(e))
+        .map((e) => {
+          const reasons: string[] = []
+          if (e.sport_id === base.sport_id) reasons.push('same_sport')
+          if (e.city && e.city === base.city) reasons.push('same_city')
+          if (e.level && e.level === base.level) reasons.push('level_match')
+          const sameOrganizer =
+            e.organizer_type === base.organizer_type &&
+            (e.organizer_type === 'organization'
+              ? e.organizer_org_id === base.organizer_org_id
+              : e.organizer_user_id === base.organizer_user_id)
+          if (sameOrganizer) reasons.push('same_organizer')
+          const score = (reasons.includes('same_sport') ? 4 : 0) + reasons.length
+          return { e, reasons, score }
+        })
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score || a.e.starts_at.localeCompare(b.e.starts_at))
+        .slice(0, limit)
+        .map(({ e, reasons, score }) => ({ event: toEventSummary(e), score, reasons }))
     }),
   ),
 ]

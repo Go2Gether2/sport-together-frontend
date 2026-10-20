@@ -2,8 +2,8 @@ import { ref, watch, type Ref } from 'vue'
 import { eventsApi, type EventSummary } from '@/api'
 import type { LngLat } from './geo'
 
-// В ответе списка (EventShortResponse) у бэка нет координат — берём их из карточек, с кэшем.
-// Когда бэк добавит lat/lng в список, этот шаг станет не нужен.
+// Координаты приходят в списке (EventShortResponse); карточку запрашиваем, только если их там нет
+// (старые сборки бэка, моки без точек), — с кэшем.
 const cache = new Map<number, LngLat | null>()
 
 export function useEventCoords(events: Ref<EventSummary[]>, enabled: Ref<boolean>) {
@@ -12,7 +12,11 @@ export function useEventCoords(events: Ref<EventSummary[]>, enabled: Ref<boolean
 
   async function fill() {
     if (!enabled.value) return
-    const missing = events.value.filter((e) => !cache.has(e.id))
+    for (const e of events.value)
+      if (typeof e.lat === 'number' && typeof e.lng === 'number') cache.set(e.id, [e.lng, e.lat])
+    const missing = events.value.filter(
+      (e) => !cache.has(e.id) && (e as { lat?: unknown }).lat === undefined,
+    )
     if (missing.length) {
       loading.value = true
       await Promise.all(

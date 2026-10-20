@@ -228,6 +228,8 @@ export function toEventSummary(e: EventRow): EventSummary {
     status: e.status,
     is_past: isPast(e),
     is_edited: e.updated_at !== e.created_at,
+    lat: e.lat,
+    lng: e.lng,
   }
 }
 

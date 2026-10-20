@@ -1,50 +1,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { eventsApi, usersApi, type EventSummary, type MyParticipation } from '@/api'
+import { recommendationsApi, type Recommendation } from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
 import { UiButton } from '@/components/ui'
-import { popular, recommend } from '@/features/events/recommendations'
+import { reasonLabels } from '@/features/events/recommendations'
 import { useSessionStore } from '@/stores/session'
-import { localDate } from '@/utils/datetime'
 
 const LIMIT = 4
 
 const session = useSessionStore()
-const events = ref<EventSummary[]>([])
-const participations = ref<MyParticipation[]>([])
+const items = ref<Recommendation[]>([])
 const state = ref<'loading' | 'ready' | 'error'>('loading')
 
+// Подбирает бэк: интересы, история записей, город, уровень, знакомые организаторы и люди.
+// Пока в профиле нет интересов — честно называем подборку «Популярное» и просим рассказать о себе.
 const emptyProfile = computed(() => !session.user?.sport_ids.length)
 
-const cards = computed(() => {
-  const user = session.user
-  if (!user) return []
-  const profile = {
-    userId: user.id,
-    sportIds: user.sport_ids,
-    level: user.level ?? null,
-    city: user.city ?? null,
-    organizationIds: session.organizations.map((o) => o.id),
-  }
-  if (emptyProfile.value)
-    return popular(events.value, profile, participations.value)
-      .slice(0, LIMIT)
-      .map((event) => ({ event, reasons: [] as string[] }))
-  return recommend(events.value, profile, participations.value).slice(0, LIMIT)
-})
+const cards = computed(() =>
+  items.value.map((r) => ({ event: r.event, reasons: reasonLabels(r.reasons) })),
+)
 
 async function load() {
   state.value = 'loading'
-  const now = new Date()
-  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30)
   try {
-    const [page, mine] = await Promise.all([
-      eventsApi.list({ date_from: localDate(now), date_to: localDate(to), size: 100 }),
-      usersApi.myParticipations(),
-    ])
-    events.value = page.items
-    participations.value = mine
+    items.value = await recommendationsApi.events({ limit: LIMIT })
     state.value = 'ready'
   } catch {
     state.value = 'error'

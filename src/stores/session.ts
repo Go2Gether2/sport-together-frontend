@@ -41,7 +41,12 @@ export const useSessionStore = defineStore('session', () => {
     await refresh()
   }
 
-  async function register(input: { name: string; email: string; password: string }) {
+  async function register(input: {
+    name: string
+    email: string
+    password: string
+    consent: boolean
+  }) {
     await authApi.register(input)
     await refresh()
   }
