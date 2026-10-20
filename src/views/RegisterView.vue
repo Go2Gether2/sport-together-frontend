@@ -11,7 +11,6 @@ import {
   validateRegisterForm,
   type RegisterFormErrors,
 } from '@/features/auth/registerForm'
-import { safeRedirect } from '@/router/redirect'
 import { useSessionStore } from '@/stores/session'
 
 const session = useSessionStore()
@@ -34,7 +33,8 @@ async function submit() {
   busy.value = true
   try {
     await session.register(toRegisterInput(form))
-    await router.replace(safeRedirect(route.query.redirect))
+    // После регистрации — короткая настройка подбора; куда человек шёл, туда и вернём после неё.
+    await router.replace({ name: 'onboarding', query: { redirect: route.query.redirect } })
   } catch (e) {
     if (e instanceof ApiError && e.status === 409) errors.value = { email: e.message }
     else if (e instanceof ApiError && Object.keys(e.fields).length)

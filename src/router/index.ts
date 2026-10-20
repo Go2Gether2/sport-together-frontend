@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Мои записи', requiresAuth: true },
   },
   {
+    path: '/onboarding',
+    name: 'onboarding',
+    component: () => import('@/views/OnboardingView.vue'),
+    meta: { title: 'Настройка подбора', requiresAuth: true, noAdmin: true },
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),

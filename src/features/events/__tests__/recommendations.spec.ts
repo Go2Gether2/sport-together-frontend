@@ -116,3 +116,16 @@ describe('popular', () => {
     expect(list.map((e) => e.id)).toEqual([2, 1])
   })
 })
+
+describe('ответы онбординга в подборке', () => {
+  it('уровень по виду спорта важнее общего, удобное время — тоже причина', () => {
+    const list = recommend(
+      [ev(1, { level: 'pro', starts_at: new Date('2026-10-25T08:00:00').toISOString() })],
+      { ...anna, sportLevels: { 1: 'pro' }, times: ['weekend'] },
+      [],
+      now,
+    )
+    expect(list[0]!.reasons).toEqual(['Вы любите: бег', 'Подходит вашему уровню'])
+    expect(list[0]!.score).toBe(30 + 20 + 10 + 5)
+  })
+})

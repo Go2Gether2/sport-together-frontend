@@ -1,4 +1,5 @@
 import type { EventSummary, Id, Level, MyParticipation } from '@/api'
+import { inTimes, type TimeSlot } from '@/features/onboarding/onboarding'
 import { t } from '@/i18n'
 
 export interface RecommendationProfile {
@@ -7,6 +8,10 @@ export interface RecommendationProfile {
   level: Level | null
   city: string | null
   organizationIds: Id[]
+  /** Уровень по каждому виду из онбординга; без него — общий уровень профиля. */
+  sportLevels?: Record<Id, Level>
+  /** Удобное время из онбординга. */
+  times?: TimeSlot[]
 }
 
 export interface Recommendation {
@@ -22,7 +27,7 @@ const ACTIVE = new Set(['confirmed', 'pending', 'waitlist'])
 
 // Веса — по правилам подборки из концепции (BR-REC-02); друзей, свайпов и погоды у нас нет,
 // а «рядом» без координат профиля считаем по совпадению города.
-const WEIGHTS = { sport: 30, level: 20, organizer: 10, city: 10, seats: 5 } as const
+const WEIGHTS = { sport: 30, level: 20, organizer: 10, city: 10, time: 10, seats: 5 } as const
 
 function organizerKey(o: EventSummary['organizer']): string {
   return `${o.type}:${o.id}`
@@ -87,8 +92,11 @@ export function recommend(
           weight: WEIGHTS.sport,
           reason: t('forYou.reasons.sport', { sport: event.sport.name.toLowerCase() }),
         })
-      if (profile.level && event.level === profile.level)
+      const level = profile.sportLevels?.[event.sport.id] ?? profile.level
+      if (level && event.level === level)
         signals.push({ weight: WEIGHTS.level, reason: t('forYou.reasons.level') })
+      if (profile.times && inTimes(event.starts_at, profile.times))
+        signals.push({ weight: WEIGHTS.time, reason: t('forYou.reasons.time') })
       if (visited.has(organizerKey(event.organizer)))
         signals.push({ weight: WEIGHTS.organizer, reason: t('forYou.reasons.organizer') })
       if (city && event.city?.trim().toLowerCase() === city)
