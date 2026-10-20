@@ -337,15 +337,15 @@ defineProps<{ name: OnboardingArtName }>()
       >
         <g transform="translate(70 312)">
           <rect x="-52" y="-20" width="104" height="30" rx="15" fill="#FFF7EC" />
-          <text y="2">новичок</text>
+          <text y="2">{{ $t('onboarding.art.beginner') }}</text>
         </g>
         <g transform="translate(212 312)">
           <rect x="-54" y="-20" width="108" height="30" rx="15" fill="#FFF7EC" />
-          <text y="2">любитель</text>
+          <text y="2">{{ $t('onboarding.art.amateur') }}</text>
         </g>
         <g transform="translate(372 312)">
           <rect x="-45" y="-20" width="90" height="30" rx="15" fill="#FFF7EC" />
-          <text y="2">профи</text>
+          <text y="2">{{ $t('onboarding.art.pro') }}</text>
         </g>
       </g>
     </svg>
@@ -453,7 +453,7 @@ defineProps<{ name: OnboardingArtName }>()
           font-size="14"
           fill="#111"
         >
-          футбол · 900 м
+          {{ $t('onboarding.art.football') }}
         </text>
       </g>
       <g transform="translate(38 46)">
@@ -479,7 +479,7 @@ defineProps<{ name: OnboardingArtName }>()
           font-size="14"
           fill="#111"
         >
-          бег · 1,2 км
+          {{ $t('onboarding.art.running') }}
         </text>
       </g>
     </svg>

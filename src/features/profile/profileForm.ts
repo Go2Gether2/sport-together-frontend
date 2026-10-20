@@ -1,4 +1,5 @@
 import type { Id, Level, ProfileInput, User } from '@/api'
+import { t } from '@/i18n'
 
 export interface ProfileFormState {
   name: string
@@ -27,9 +28,9 @@ export function profileFormFrom(user: User): ProfileFormState {
 export function validateProfileForm(form: ProfileFormState): ProfileFormErrors {
   const errors: ProfileFormErrors = {}
   const name = form.name.trim()
-  if (!name) errors.name = 'Как к вам обращаться?'
-  else if (name.length > 60) errors.name = 'Не длиннее 60 символов'
-  if (form.bio.trim().length > BIO_MAX) errors.bio = `Не длиннее ${BIO_MAX} символов`
+  if (!name) errors.name = t('profile.errors.name')
+  else if (name.length > 60) errors.name = t('common.maxLength', { n: 60 })
+  if (form.bio.trim().length > BIO_MAX) errors.bio = t('common.maxLength', { n: BIO_MAX })
   return errors
 }
 

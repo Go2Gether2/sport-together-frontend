@@ -13,7 +13,6 @@ import {
   UiTable,
   UiTextArea,
   UiTextField,
-  plural,
 } from '@/components/ui'
 import {
   EVENT_STATUS_FILTERS,
@@ -24,6 +23,7 @@ import {
   replaceEventStatus,
   type EventStatusFilter,
 } from '@/features/admin/events'
+import { intlLocale, t } from '@/i18n'
 import { formatEventWhen } from '@/utils/datetime'
 
 const route = useRoute()
@@ -55,32 +55,18 @@ const dialogOpen = computed({
 const reason = ref('')
 const reasonError = ref<string | null>(null)
 
-const columns = [
-  { key: 'title', label: 'Мероприятие' },
-  { key: 'organizer', label: 'Организатор' },
-  { key: 'when', label: 'Когда' },
-  { key: 'status', label: 'Статус' },
-]
+const columns = computed(() =>
+  (['title', 'organizer', 'when', 'status'] as const).map((key) => ({
+    key,
+    label: t(`admin.events.columns.${key}`),
+  })),
+)
 
-const DIALOG_TEXT = {
-  unpublish: {
-    title: 'Снять с публикации?',
-    text: 'Мероприятие пропадёт из поиска, записаться будет нельзя даже по ссылке. Организатор и участники увидят причину. Вернуть можно.',
-    button: 'Снять',
-  },
-  delete: {
-    title: 'Удалить мероприятие?',
-    text: 'Оно пропадёт из поиска, записи закроются. Организатор и участники увидят причину. Вернуть нельзя.',
-    button: 'Удалить',
-  },
-  hide: {
-    title: 'Скрыть сообщение?',
-    text: 'Вместо текста все увидят «Сообщение скрыто» и причину.',
-    button: 'Скрыть',
-  },
-} as const
-
-const dialogText = computed(() => (dialog.value ? DIALOG_TEXT[dialog.value.kind] : null))
+const dialogText = computed(() => {
+  if (!dialog.value) return null
+  const k = `admin.events.dialogs.${dialog.value.kind}` as const
+  return { title: t(`${k}.title`), text: t(`${k}.text`), button: t(`${k}.button`) }
+})
 const actions = computed(() => (details.value ? moderationActions(details.value.event.status) : []))
 
 function setQuery(patch: Record<string, string | undefined>) {
@@ -105,7 +91,7 @@ async function loadList() {
     total.value = page.total
     listState.value = 'ready'
   } catch (e) {
-    listError.value = e instanceof ApiError ? e.message : 'Не получилось загрузить мероприятия.'
+    listError.value = e instanceof ApiError ? e.message : t('admin.events.loadFailed')
     listState.value = 'error'
   }
 }
@@ -166,7 +152,7 @@ async function restore() {
     rows.value = replaceEventStatus(rows.value, id, event.status)
     await loadDetails(id)
   } catch (e) {
-    actionError.value = e instanceof ApiError ? e.message : 'Не получилось вернуть.'
+    actionError.value = e instanceof ApiError ? e.message : t('admin.events.restoreFailed')
   } finally {
     busy.value = false
   }
@@ -197,7 +183,7 @@ async function confirm() {
     if (e instanceof ApiError && e.fields.reason) reasonError.value = e.fields.reason
     else {
       dialog.value = null
-      actionError.value = e instanceof ApiError ? e.message : 'Не получилось. Попробуйте ещё раз.'
+      actionError.value = e instanceof ApiError ? e.message : t('admin.events.failed')
     }
   } finally {
     busy.value = false
@@ -207,17 +193,20 @@ async function confirm() {
 const confirmedCount = computed(
   () => details.value?.participations.filter((p) => p.status === 'confirmed').length ?? 0,
 )
-const shortDate = new Intl.DateTimeFormat('ru-RU', {
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+const shortDate = computed(
+  () =>
+    new Intl.DateTimeFormat(intlLocale(), {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+)
 </script>
 
 <template>
   <section class="flex flex-col gap-5">
-    <h1 class="text-3xl font-bold">Мероприятия</h1>
+    <h1 class="text-3xl font-bold">{{ $t('admin.nav.events') }}</h1>
     <AdminNav />
 
     <div
@@ -226,13 +215,13 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
     >
       <UiTextField
         v-model="query"
-        label="Поиск"
+        :label="$t('admin.search')"
         hide-label
         type="search"
-        placeholder="Название мероприятия"
+        :placeholder="$t('admin.events.searchPlaceholder')"
         class="lg:w-80"
       />
-      <div class="flex gap-2 overflow-x-auto" role="group" aria-label="Статус">
+      <div class="flex gap-2 overflow-x-auto" role="group" :aria-label="$t('admin.filters.status')">
         <UiChip
           v-for="f in EVENT_STATUS_FILTERS"
           :key="f.value"
@@ -256,18 +245,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           role="alert"
         >
           <p class="font-bold">{{ listError }}</p>
-          <UiButton variant="ghost" class="!w-auto" @click="loadList">Повторить</UiButton>
+          <UiButton variant="ghost" class="!w-auto" @click="loadList">{{
+            $t('common.retry')
+          }}</UiButton>
         </div>
         <template v-else>
           <UiTable
-            caption="Мероприятия"
+            :caption="$t('admin.nav.events')"
             :columns="columns"
             :rows="rows"
             :row-key="(e) => String(e.id)"
             :selected-key="selectedId ? String(selectedId) : null"
             :loading="listState === 'loading'"
             clickable
-            empty-text="Здесь пусто"
+            :empty-text="$t('admin.empty')"
             @select="select"
           >
             <template #cell-title="{ row }">
@@ -281,7 +272,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
             </template>
           </UiTable>
           <p v-if="listState === 'ready' && total > rows.length" class="px-2 text-sm text-ink-2">
-            Показаны первые {{ rows.length }} из {{ total }} — уточните поиск.
+            {{ $t('admin.firstOf', { shown: rows.length, total }) }}
           </p>
         </template>
       </div>
@@ -293,20 +284,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           class="inline-flex min-h-8 w-fit items-center font-semibold underline underline-offset-4 xl:hidden"
           @click="setQuery({ id: undefined })"
         >
-          ← Все мероприятия
+          {{ $t('admin.events.back') }}
         </button>
         <p
           v-if="detailsState === 'idle'"
           class="hidden rounded-card bg-card p-6 text-center text-ink-2 xl:block"
         >
-          Выберите мероприятие в таблице
+          {{ $t('admin.events.pick') }}
         </p>
         <div
           v-else-if="detailsState === 'loading'"
           class="h-64 animate-pulse rounded-card bg-card"
         />
         <p v-else-if="detailsState === 'error'" class="rounded-card bg-card p-6" role="alert">
-          Не получилось открыть мероприятие.
+          {{ $t('admin.events.openFailed') }}
         </p>
 
         <div v-else-if="details" class="flex flex-col gap-4">
@@ -327,7 +318,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
             <dl
               class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-[22px] bg-card p-4 text-[15px]"
             >
-              <dt class="text-ink-2">Организатор</dt>
+              <dt class="text-ink-2">{{ $t('admin.events.organizer') }}</dt>
               <dd>
                 <RouterLink
                   :to="organizerLink(details.event.organizer)"
@@ -336,12 +327,11 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                   {{ organizerName(details.event.organizer) }}
                 </RouterLink>
               </dd>
-              <dt class="text-ink-2">Участники</dt>
+              <dt class="text-ink-2">{{ $t('admin.events.participants') }}</dt>
               <dd>
-                {{ confirmedCount }}
-                {{ plural(confirmedCount, ['человек', 'человека', 'человек']) }}
+                {{ $t('admin.events.people', confirmedCount) }}
               </dd>
-              <dt class="text-ink-2">Место</dt>
+              <dt class="text-ink-2">{{ $t('admin.events.place') }}</dt>
               <dd>{{ details.event.address }}</dd>
             </dl>
 
@@ -349,7 +339,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
               v-if="details.event.status !== 'published' && details.event.unavailable_reason"
               class="rounded-[22px] bg-card p-4"
             >
-              <b>Причина:</b> {{ details.event.unavailable_reason }}
+              <b>{{ $t('admin.events.reason') }}</b> {{ details.event.unavailable_reason }}
               <span v-if="details.moderated_by" class="block text-sm text-ink-2">
                 {{ details.moderated_by.name }}
                 <template v-if="details.moderated_at">
@@ -365,7 +355,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                 :loading="busy"
                 @click="restore"
               >
-                Вернуть
+                {{ $t('admin.events.restore') }}
               </UiButton>
               <UiButton
                 v-if="actions.includes('unpublish')"
@@ -373,7 +363,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                 :disabled="busy"
                 @click="open('unpublish')"
               >
-                Снять
+                {{ $t('admin.events.unpublish') }}
               </UiButton>
               <UiButton
                 v-if="actions.includes('delete')"
@@ -382,7 +372,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                 :disabled="busy"
                 @click="open('delete')"
               >
-                Удалить
+                {{ $t('admin.events.delete') }}
               </UiButton>
             </div>
             <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
@@ -392,13 +382,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
               :to="{ name: 'event', params: { id: details.event.id } }"
               class="w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
             >
-              Открыть страницу мероприятия
+              {{ $t('admin.events.openPage') }}
             </RouterLink>
           </article>
 
-          <section class="flex flex-col gap-2 rounded-card bg-card p-4" aria-label="Обсуждение">
-            <h3 class="font-bold">Обсуждение · {{ details.comments.length }}</h3>
-            <p v-if="!details.comments.length" class="text-ink-2">Сообщений нет</p>
+          <section
+            class="flex flex-col gap-2 rounded-card bg-card p-4"
+            :aria-label="$t('admin.events.discussion')"
+          >
+            <h3 class="font-bold">
+              {{ $t('admin.events.discussionCount', { n: details.comments.length }) }}
+            </h3>
+            <p v-if="!details.comments.length" class="text-ink-2">
+              {{ $t('admin.events.noComments') }}
+            </p>
             <ul v-else class="flex flex-col gap-2">
               <li
                 v-for="c in details.comments"
@@ -415,7 +412,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                 <div class="flex items-center gap-2 text-sm">
                   <b class="truncate">{{ c.as_organization?.name ?? c.author.name }}</b>
                   <UiBadge v-if="c.is_organizer" tone="accent" class="!px-2 !py-0 !text-xs">
-                    Организатор
+                    {{ $t('admin.events.organizerBadge') }}
                   </UiBadge>
                   <span class="ml-auto text-ink-2">{{
                     shortDate.format(new Date(c.created_at))
@@ -423,7 +420,8 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                 </div>
                 <template v-if="c.is_hidden">
                   <p class="italic">
-                    Сообщение скрыто{{ c.hidden_reason ? `: ${c.hidden_reason}` : '' }}
+                    {{ $t('admin.events.hidden')
+                    }}{{ c.hidden_reason ? `: ${c.hidden_reason}` : '' }}
                   </p>
                   <p v-if="c.text" class="text-sm line-through">{{ c.text }}</p>
                 </template>
@@ -434,7 +432,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
                     class="w-fit text-sm font-semibold underline underline-offset-4"
                     @click="openHide(c)"
                   >
-                    Скрыть
+                    {{ $t('admin.events.hide') }}
                   </button>
                 </template>
               </li>
@@ -454,13 +452,13 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
       </p>
       <UiTextArea
         v-model="reason"
-        label="Причина"
+        :label="$t('admin.reason.label')"
         :rows="3"
         :maxlength="500"
         :error="reasonError ?? undefined"
       />
       <template #actions>
-        <UiButton variant="ghost" @click="dialogOpen = false">Отмена</UiButton>
+        <UiButton variant="ghost" @click="dialogOpen = false">{{ $t('common.cancel') }}</UiButton>
         <UiButton :loading="busy" @click="confirm">{{ dialogText?.button }}</UiButton>
       </template>
     </UiModal>

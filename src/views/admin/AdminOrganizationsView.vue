@@ -21,6 +21,7 @@ import {
   replaceOrganization,
   type StatusFilter,
 } from '@/features/admin/organizations'
+import { intlLocale, t } from '@/i18n'
 import { formatEventWhen } from '@/utils/datetime'
 
 const route = useRoute()
@@ -44,12 +45,12 @@ const rejectOpen = ref(false)
 const reason = ref('')
 const reasonError = ref<string | null>(null)
 
-const columns = [
-  { key: 'name', label: 'Организация' },
-  { key: 'type', label: 'Тип' },
-  { key: 'owner', label: 'Владелец' },
-  { key: 'status', label: 'Статус' },
-]
+const columns = computed(() =>
+  (['name', 'type', 'owner', 'status'] as const).map((key) => ({
+    key,
+    label: t(`admin.orgs.columns.${key}`),
+  })),
+)
 
 function setQuery(patch: Record<string, string | undefined>) {
   router.replace({ query: { ...route.query, ...patch } })
@@ -67,7 +68,7 @@ async function loadList() {
     total.value = page.total
     listState.value = 'ready'
   } catch (e) {
-    listError.value = e instanceof ApiError ? e.message : 'Не получилось загрузить организации.'
+    listError.value = e instanceof ApiError ? e.message : t('admin.orgs.loadFailed')
     listState.value = 'error'
   }
 }
@@ -125,7 +126,7 @@ async function approve() {
   try {
     applyResult(await adminApi.approveOrganization(org.id))
   } catch (e) {
-    actionError.value = e instanceof ApiError ? e.message : 'Не получилось допустить.'
+    actionError.value = e instanceof ApiError ? e.message : t('admin.orgs.approveFailed')
   } finally {
     busy.value = false
   }
@@ -149,19 +150,21 @@ async function reject() {
     if (e instanceof ApiError && e.fields.reason) reasonError.value = e.fields.reason
     else {
       rejectOpen.value = false
-      actionError.value = e instanceof ApiError ? e.message : 'Не получилось отклонить.'
+      actionError.value = e instanceof ApiError ? e.message : t('admin.orgs.rejectFailed')
     }
   } finally {
     busy.value = false
   }
 }
 
-const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+const shortDate = computed(
+  () => new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long' }),
+)
 </script>
 
 <template>
   <section class="flex flex-col gap-5">
-    <h1 class="text-3xl font-bold">Организации</h1>
+    <h1 class="text-3xl font-bold">{{ $t('admin.nav.organizations') }}</h1>
     <AdminNav />
 
     <div
@@ -170,13 +173,13 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
     >
       <UiTextField
         v-model="query"
-        label="Поиск"
+        :label="$t('admin.search')"
         hide-label
         type="search"
-        placeholder="Название организации"
+        :placeholder="$t('admin.orgs.searchPlaceholder')"
         class="lg:w-80"
       />
-      <div class="flex gap-2 overflow-x-auto" role="group" aria-label="Статус">
+      <div class="flex gap-2 overflow-x-auto" role="group" :aria-label="$t('admin.filters.status')">
         <UiChip
           v-for="f in STATUS_FILTERS"
           :key="f.value"
@@ -200,18 +203,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
           role="alert"
         >
           <p class="font-bold">{{ listError }}</p>
-          <UiButton variant="ghost" class="!w-auto" @click="loadList">Повторить</UiButton>
+          <UiButton variant="ghost" class="!w-auto" @click="loadList">{{
+            $t('common.retry')
+          }}</UiButton>
         </div>
         <template v-else>
           <UiTable
-            caption="Организации"
+            :caption="$t('admin.nav.organizations')"
             :columns="columns"
             :rows="rows"
             :row-key="(o) => String(o.id)"
             :selected-key="selectedId ? String(selectedId) : null"
             :loading="listState === 'loading'"
             clickable
-            empty-text="Здесь пусто"
+            :empty-text="$t('admin.empty')"
             @select="select"
           >
             <template #cell-name="{ row }">
@@ -225,7 +230,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
             </template>
           </UiTable>
           <p v-if="listState === 'ready' && total > rows.length" class="px-2 text-sm text-ink-2">
-            Показаны первые {{ rows.length }} из {{ total }} — уточните поиск.
+            {{ $t('admin.firstOf', { shown: rows.length, total }) }}
           </p>
         </template>
       </div>
@@ -237,20 +242,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
           class="inline-flex min-h-8 w-fit items-center font-semibold underline underline-offset-4 xl:hidden"
           @click="setQuery({ id: undefined })"
         >
-          ← Все организации
+          {{ $t('admin.orgs.back') }}
         </button>
         <p
           v-if="detailsState === 'idle'"
           class="hidden rounded-card bg-card p-6 text-center text-ink-2 xl:block"
         >
-          Выберите организацию в таблице
+          {{ $t('admin.orgs.pick') }}
         </p>
         <div
           v-else-if="detailsState === 'loading'"
           class="h-64 animate-pulse rounded-card bg-card"
         />
         <p v-else-if="detailsState === 'error'" class="rounded-card bg-card p-6" role="alert">
-          Не получилось открыть организацию.
+          {{ $t('admin.orgs.openFailed') }}
         </p>
 
         <article
@@ -281,7 +286,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
           <dl
             class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-[22px] bg-card p-4 text-[15px]"
           >
-            <dt class="text-ink-2">Владелец</dt>
+            <dt class="text-ink-2">{{ $t('admin.orgs.owner') }}</dt>
             <dd class="min-w-0">
               <RouterLink
                 :to="{ name: 'user', params: { id: details.owner.id } }"
@@ -292,14 +297,14 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
               <span class="block truncate text-ink-2">{{ details.owner.email }}</span>
             </dd>
             <template v-if="details.organization.sports_description">
-              <dt class="text-ink-2">Направления</dt>
+              <dt class="text-ink-2">{{ $t('admin.orgs.sports') }}</dt>
               <dd>{{ details.organization.sports_description }}</dd>
             </template>
             <template v-if="details.organization.contacts">
-              <dt class="text-ink-2">Контакты</dt>
+              <dt class="text-ink-2">{{ $t('admin.orgs.contacts') }}</dt>
               <dd class="break-words">{{ details.organization.contacts }}</dd>
             </template>
-            <dt class="text-ink-2">Подана</dt>
+            <dt class="text-ink-2">{{ $t('admin.orgs.submitted') }}</dt>
             <dd>{{ shortDate.format(new Date(details.organization.created_at)) }}</dd>
           </dl>
 
@@ -307,13 +312,13 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
             v-if="details.organization.status === 'rejected' && details.organization.reject_reason"
             class="rounded-[22px] bg-card p-4"
           >
-            <b>Причина отказа:</b> {{ details.organization.reject_reason }}
+            <b>{{ $t('admin.orgs.rejectReason') }}</b> {{ details.organization.reject_reason }}
           </p>
 
           <div v-if="details.organization.status === 'pending'" class="flex gap-2">
-            <UiButton :loading="busy" @click="approve">Допустить</UiButton>
+            <UiButton :loading="busy" @click="approve">{{ $t('admin.orgs.approve') }}</UiButton>
             <UiButton variant="ghost" class="!bg-card" :disabled="busy" @click="openReject">
-              Отклонить
+              {{ $t('admin.orgs.reject') }}
             </UiButton>
           </div>
           <p v-if="actionError" class="font-semibold text-orange-ink" role="alert">
@@ -321,8 +326,8 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
           </p>
 
           <div class="flex flex-col gap-2">
-            <h3 class="font-bold">Мероприятия · {{ details.events.length }}</h3>
-            <p v-if="!details.events.length" class="text-accent-ink">Пока нет</p>
+            <h3 class="font-bold">{{ $t('admin.orgs.events', { n: details.events.length }) }}</h3>
+            <p v-if="!details.events.length" class="text-accent-ink">{{ $t('admin.orgs.none') }}</p>
             <ul v-else class="flex flex-col gap-1.5">
               <li v-for="e in details.events" :key="e.id">
                 <RouterLink
@@ -341,20 +346,20 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'lon
 
     <UiModal
       v-model:open="rejectOpen"
-      :title="`Отклонить «${details?.organization.name ?? ''}»?`"
-      description="Организация увидит причину и сможет исправить заявку."
+      :title="$t('admin.orgs.rejectTitle', { name: details?.organization.name ?? '' })"
+      :description="$t('admin.orgs.rejectText')"
     >
       <UiTextArea
         v-model="reason"
-        label="Причина"
+        :label="$t('admin.reason.label')"
         :rows="3"
         :maxlength="REJECT_REASON_MAX"
-        placeholder="Добавьте адрес занятий и контакты"
+        :placeholder="$t('admin.orgs.reasonPlaceholder')"
         :error="reasonError ?? undefined"
       />
       <template #actions>
-        <UiButton variant="ghost" @click="rejectOpen = false">Отмена</UiButton>
-        <UiButton :loading="busy" @click="reject">Отклонить</UiButton>
+        <UiButton variant="ghost" @click="rejectOpen = false">{{ $t('common.cancel') }}</UiButton>
+        <UiButton :loading="busy" @click="reject">{{ $t('admin.orgs.reject') }}</UiButton>
       </template>
     </UiModal>
   </section>

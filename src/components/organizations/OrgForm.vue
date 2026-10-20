@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { OrganizationType } from '@/api'
 import { UiButton, UiCheckbox, UiChip, UiTextArea, UiTextField } from '@/components/ui'
@@ -17,7 +17,7 @@ const props = defineProps<{
 const emit = defineEmits<{ submit: [form: OrgFormState]; cancel: [] }>()
 
 const form = reactive<OrgFormState>({ ...props.initial })
-const types = Object.entries(ORG_TYPE_LABELS) as [OrganizationType, string][]
+const types = computed(() => Object.entries(ORG_TYPE_LABELS) as [OrganizationType, string][])
 </script>
 
 <template>

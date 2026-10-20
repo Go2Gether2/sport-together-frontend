@@ -14,6 +14,7 @@ import {
   UiTextField,
 } from '@/components/ui'
 import { LEVEL_LABELS } from '@/features/events/filters'
+import { t } from '@/i18n'
 import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
 import {
   BIO_MAX,
@@ -40,16 +41,19 @@ const saved = ref(false)
 
 const user = computed(() => session.user)
 const mySports = computed(() => sports.value.filter((s) => user.value?.sport_ids.includes(s.id)))
-const avatarOptions = [
-  { value: '', label: 'Инициалы' },
+// Подписи пересчитываются при смене языка.
+const avatarOptions = computed(() => [
+  { value: '', label: t('profile.initials') },
   ...AVATAR_PRESETS.map((p) => ({ value: presetAvatarUrl(p.id), label: p.label })),
-]
-const levels = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }))
+])
+const levels = computed(() =>
+  Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label })),
+)
 
-const links: { label: string; to: { name: string }; icon: NavIconName }[] = [
-  { label: 'Мои записи', to: { name: 'my-participations' }, icon: 'calendar' },
-  { label: 'Мои мероприятия', to: { name: 'my-events' }, icon: 'flag' },
-  { label: 'Моя организация', to: { name: 'my-organization' }, icon: 'building' },
+const links: { key: string; to: { name: string }; icon: NavIconName }[] = [
+  { key: 'participations', to: { name: 'my-participations' }, icon: 'calendar' },
+  { key: 'events', to: { name: 'my-events' }, icon: 'flag' },
+  { key: 'organization', to: { name: 'my-organization' }, icon: 'building' },
 ]
 
 async function loadSports() {
@@ -90,7 +94,7 @@ async function save() {
     saved.value = true
   } catch (e) {
     if (e instanceof ApiError && e.fields.name) errors.value = { name: e.fields.name }
-    formError.value = e instanceof ApiError ? e.message : 'Не получилось сохранить.'
+    formError.value = e instanceof ApiError ? e.message : t('profile.saveFailed')
   } finally {
     busy.value = false
   }
@@ -109,7 +113,7 @@ function openDelete() {
 
 async function deleteAccount() {
   if (!deletePassword.value) {
-    deleteError.value = 'Введите пароль, чтобы подтвердить удаление.'
+    deleteError.value = t('profile.passwordRequired')
     return
   }
   deleting.value = true
@@ -122,11 +126,11 @@ async function deleteAccount() {
   } catch (e) {
     // Демо-аккаунты бэк защищает от удаления — объясняем это без технических слов.
     deleteError.value =
-      e instanceof ApiError && /демо/i.test(e.message)
-        ? 'Демо-аккаунт удалить нельзя — он нужен для проверки. Зарегистрируйте свой, чтобы попробовать удаление.'
+      e instanceof ApiError && /демо|demo/i.test(e.message)
+        ? t('profile.demoCantDelete')
         : e instanceof ApiError
           ? e.message
-          : 'Не получилось удалить аккаунт.'
+          : t('profile.deleteFailed')
   } finally {
     deleting.value = false
   }
@@ -145,17 +149,17 @@ async function logout() {
       <div class="flex min-w-0 flex-1 flex-col gap-1">
         <h1 class="text-3xl leading-tight font-bold">{{ user.name }}</h1>
         <p class="text-accent-ink">
-          {{ user.city || 'Город не указан' }}
+          {{ user.city || $t('profile.noCity') }}
           <template v-if="user.level"> · {{ LEVEL_LABELS[user.level] }}</template>
         </p>
       </div>
       <UiButton v-if="!editing" class="!w-auto self-start sm:self-center" @click="startEdit">
-        Изменить
+        {{ $t('common.edit') }}
       </UiButton>
     </header>
 
     <p v-if="saved" class="rounded-card bg-accent-soft p-4 font-semibold" role="status">
-      ✓ Профиль сохранён
+      {{ $t('profile.saved') }}
     </p>
 
     <form
@@ -164,9 +168,9 @@ async function logout() {
       novalidate
       @submit.prevent="save"
     >
-      <UiTextField v-model="form.name" label="Имя" required :error="errors.name" />
+      <UiTextField v-model="form.name" :label="$t('profile.name')" required :error="errors.name" />
       <fieldset class="flex flex-col gap-2">
-        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">Аватарка</legend>
+        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">{{ $t('profile.avatar') }}</legend>
         <div class="flex flex-wrap gap-2">
           <label
             v-for="option in avatarOptions"
@@ -186,11 +190,20 @@ async function logout() {
         </div>
       </fieldset>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <UiTextField v-model="form.city" label="Город" placeholder="Красноярск" />
-        <UiSelect v-model="form.level" label="Уровень" :options="levels" placeholder="Не указан" />
+        <UiTextField
+          v-model="form.city"
+          :label="$t('profile.city')"
+          :placeholder="$t('profile.cityPlaceholder')"
+        />
+        <UiSelect
+          v-model="form.level"
+          :label="$t('profile.level')"
+          :options="levels"
+          :placeholder="$t('profile.levelNone')"
+        />
       </div>
       <fieldset class="flex flex-col gap-2">
-        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">Интересы</legend>
+        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">{{ $t('profile.interests') }}</legend>
         <div class="flex flex-wrap gap-2">
           <UiChip
             v-for="s in sports"
@@ -204,25 +217,25 @@ async function logout() {
       </fieldset>
       <UiTextArea
         v-model="form.bio"
-        label="О себе"
+        :label="$t('profile.bio')"
         :rows="3"
         :maxlength="BIO_MAX"
-        placeholder="Чем занимаетесь, с кем хотите тренироваться"
+        :placeholder="$t('profile.bioPlaceholder')"
         :error="errors.bio"
       />
       <p v-if="formError" class="font-semibold text-orange-ink" role="alert">✕ {{ formError }}</p>
       <div class="flex flex-col-reverse gap-2 sm:flex-row">
-        <UiButton variant="ghost" @click="editing = false">Отмена</UiButton>
-        <UiButton type="submit" :loading="busy">Сохранить</UiButton>
+        <UiButton variant="ghost" @click="editing = false">{{ $t('common.cancel') }}</UiButton>
+        <UiButton type="submit" :loading="busy">{{ $t('common.save') }}</UiButton>
       </div>
     </form>
 
     <template v-else>
       <section class="flex flex-col gap-3 rounded-card bg-card p-5">
         <p v-if="user.bio" class="whitespace-pre-line">{{ user.bio }}</p>
-        <p v-else class="text-ink-2">Расскажите о себе — организаторам проще знакомиться.</p>
+        <p v-else class="text-ink-2">{{ $t('profile.bioEmpty') }}</p>
         <div class="flex flex-col gap-2">
-          <h2 class="font-bold">Интересы</h2>
+          <h2 class="font-bold">{{ $t('profile.interests') }}</h2>
           <div v-if="mySports.length" class="flex flex-wrap gap-2">
             <span
               v-for="s in mySports"
@@ -233,34 +246,34 @@ async function logout() {
             </span>
           </div>
           <p v-else-if="sportsFailed && user.sport_ids.length" class="text-ink-2" role="alert">
-            Не получилось загрузить интересы.
+            {{ $t('profile.interestsFailed') }}
             <button
               type="button"
               class="inline-flex min-h-8 items-center font-semibold text-ink underline underline-offset-4"
               @click="loadSports"
             >
-              Повторить
+              {{ $t('common.retry') }}
             </button>
           </p>
-          <p v-else class="text-ink-2">Не выбраны</p>
+          <p v-else class="text-ink-2">{{ $t('profile.interestsNone') }}</p>
         </div>
         <RouterLink
           :to="{ name: 'user', params: { id: user.id } }"
           class="inline-flex min-h-8 items-center w-fit text-sm font-semibold text-accent-ink underline underline-offset-4"
         >
-          Как меня видят другие
+          {{ $t('profile.publicView') }}
         </RouterLink>
       </section>
 
-      <nav aria-label="Мои разделы" class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <nav :aria-label="$t('profile.links.label')" class="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <RouterLink
           v-for="l in links"
-          :key="l.label"
+          :key="l.key"
           :to="l.to"
           class="flex items-center gap-3 rounded-card bg-card p-4 font-semibold text-ink no-underline hover:bg-accent-soft"
         >
           <NavIcon :name="l.icon" />
-          {{ l.label }}
+          {{ $t(`profile.links.${l.key}`) }}
         </RouterLink>
       </nav>
 
@@ -270,20 +283,20 @@ async function logout() {
           :to="{ name: 'onboarding' }"
           class="rounded-full bg-field px-5 py-3 font-semibold text-ink no-underline hover:bg-mute"
         >
-          Настроить подбор
+          {{ $t('profile.setup') }}
         </RouterLink>
         <RouterLink
           :to="{ name: 'login' }"
           class="rounded-full bg-field px-5 py-3 font-semibold text-ink no-underline hover:bg-mute"
         >
-          Сменить роль
+          {{ $t('common.switchRole') }}
         </RouterLink>
         <button
           type="button"
           class="rounded-full bg-field px-5 py-3 font-semibold hover:bg-mute"
           @click="logout"
         >
-          Выйти
+          {{ $t('common.logout') }}
         </button>
       </div>
       <button
@@ -291,20 +304,20 @@ async function logout() {
         class="inline-flex min-h-8 items-center w-fit px-1 text-sm font-semibold text-ink-2 underline underline-offset-4 hover:text-ink"
         @click="openDelete"
       >
-        Удалить аккаунт и данные
+        {{ $t('profile.deleteAccount') }}
       </button>
     </template>
 
     <UiModal
       v-model:open="deleteOpen"
-      title="Удалить аккаунт?"
-      description="Удалим имя, почту, город, интересы и «о себе», отменим ваши записи и мероприятия. В обсуждениях останется «Удалённый пользователь». Вернуть нельзя."
+      :title="$t('profile.deleteTitle')"
+      :description="$t('profile.deleteText')"
     >
       <UiTextField
         v-model="deletePassword"
-        label="Пароль от аккаунта"
+        :label="$t('profile.password')"
         type="password"
-        hint="Чтобы никто, кроме вас, не удалил аккаунт."
+        :hint="$t('profile.passwordHint')"
       />
       <p
         v-if="deleteError"
@@ -314,8 +327,10 @@ async function logout() {
         {{ deleteError }}
       </p>
       <template #actions>
-        <UiButton variant="ghost" @click="deleteOpen = false">Отмена</UiButton>
-        <UiButton :loading="deleting" @click="deleteAccount">Удалить навсегда</UiButton>
+        <UiButton variant="ghost" @click="deleteOpen = false">{{ $t('common.cancel') }}</UiButton>
+        <UiButton :loading="deleting" @click="deleteAccount">{{
+          $t('profile.deleteForever')
+        }}</UiButton>
       </template>
     </UiModal>
   </section>

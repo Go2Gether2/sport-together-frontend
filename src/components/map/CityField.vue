@@ -139,7 +139,7 @@ const optionId = (i: number) => `${id}-opt-${i}`
       {{ props.hint }}
     </p>
     <p class="sr-only" aria-live="polite">
-      {{ loading ? '' : open && items.length ? `Подсказок: ${items.length}` : '' }}
+      {{ loading ? '' : open && items.length ? $t('cityField.count', { n: items.length }) : '' }}
     </p>
   </div>
 </template>

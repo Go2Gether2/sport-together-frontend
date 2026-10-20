@@ -1,20 +1,32 @@
 import type { Organization, OrganizationStatus, OrganizationType } from '@/api'
+import { t } from '@/i18n'
 
+// Подписи — геттеры: текст берётся на языке интерфейса в момент показа.
 export const ORG_TYPE_LABELS: Record<OrganizationType, string> = {
-  club: 'Клуб',
-  community: 'Сообщество',
-  federation: 'Федерация',
-  company: 'Компания',
+  get club() {
+    return t('admin.orgTypes.club')
+  },
+  get community() {
+    return t('admin.orgTypes.community')
+  },
+  get federation() {
+    return t('admin.orgTypes.federation')
+  },
+  get company() {
+    return t('admin.orgTypes.company')
+  },
 }
 
 export type StatusFilter = OrganizationStatus | 'all'
 
-export const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: 'pending', label: 'Ждут решения' },
-  { value: 'approved', label: 'Допущены' },
-  { value: 'rejected', label: 'Отклонены' },
-  { value: 'all', label: 'Все' },
-]
+export const STATUS_FILTERS: { value: StatusFilter; label: string }[] = (
+  ['pending', 'approved', 'rejected', 'all'] as const
+).map((value) => ({
+  value,
+  get label() {
+    return t(`admin.filters.${value}`)
+  },
+}))
 
 export function parseStatusFilter(value: unknown): StatusFilter {
   return STATUS_FILTERS.some((f) => f.value === value) ? (value as StatusFilter) : 'pending'
@@ -29,9 +41,9 @@ export const REJECT_REASON_MAX = 500
 
 /** Причину отказа организация увидит у себя, поэтому она обязательна и осмысленна. */
 export function rejectReasonError(text: string): string | null {
-  const t = text.trim()
-  if (!t) return 'Напишите причину — организация её увидит'
-  if (t.length < 5) return 'Слишком коротко — объясните, что исправить'
-  if (t.length > REJECT_REASON_MAX) return `Не длиннее ${REJECT_REASON_MAX} символов`
+  const v = text.trim()
+  if (!v) return t('admin.reason.orgEmpty')
+  if (v.length < 5) return t('admin.reason.orgShort')
+  if (v.length > REJECT_REASON_MAX) return t('common.maxLength', { n: REJECT_REASON_MAX })
   return null
 }
