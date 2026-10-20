@@ -7,6 +7,8 @@ export interface StorySlide {
   title: string
   text: string
   cta?: { label: string; to: RouteLocationRaw }
+  /** Мелкая оговорка под текстом (у памяток по безопасности — «не заменяет врача»). */
+  note?: string
 }
 
 export interface Story {
@@ -14,6 +16,8 @@ export interface Story {
   label: string
   icon: SportIconName
   bg: string
+  /** Подпись над названием на карточке, например категория памятки. */
+  badge?: string
   slides: StorySlide[]
 }
 

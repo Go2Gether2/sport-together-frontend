@@ -12,6 +12,9 @@ import type {
   Organization,
   OrganizationStatus,
   Page,
+  SafetyBanner,
+  SafetyBannerDetails,
+  SafetyBannerInput,
 } from './types'
 
 type PageQuery = { page?: number; size?: number }
@@ -41,4 +44,15 @@ export const adminApi = {
 
   auditLog: (query: { target_type?: 'organization' | 'event' | 'comment' } & PageQuery = {}) =>
     http.get<Page<ModerationLog>>('/admin/audit-log', { query }),
+
+  safetyBanners: () => http.get<SafetyBanner[]>('/admin/safety/banners'),
+  safetyBanner: (id: Id) => http.get<SafetyBannerDetails>(`/admin/safety/banners/${id}`),
+  createSafetyBanner: (body: SafetyBannerInput) =>
+    http.post<SafetyBannerDetails>('/admin/safety/banners', body),
+  updateSafetyBanner: (id: Id, body: SafetyBannerInput) =>
+    http.put<SafetyBannerDetails>(`/admin/safety/banners/${id}`, body),
+  deleteSafetyBanner: (id: Id) => http.delete<void>(`/admin/safety/banners/${id}`),
+  publishSafetyBanner: (id: Id) => http.post<SafetyBanner>(`/admin/safety/banners/${id}/publish`),
+  unpublishSafetyBanner: (id: Id) =>
+    http.post<SafetyBanner>(`/admin/safety/banners/${id}/unpublish`),
 }

@@ -85,7 +85,12 @@ function barWidth(i: number) {
         <span class="grid size-11 place-items-center rounded-full bg-card">
           <SportIcon :name="story.icon" :size="30" />
         </span>
-        <b class="flex-1 truncate">{{ story.label }}</b>
+        <span class="flex min-w-0 flex-1 flex-col">
+          <span v-if="story.badge" class="truncate text-xs font-bold tracking-wider uppercase">
+            {{ story.badge }}
+          </span>
+          <b class="truncate">{{ story.label }}</b>
+        </span>
         <button
           type="button"
           class="grid size-11 place-items-center rounded-full bg-card/70 font-bold hover:bg-card"
@@ -132,6 +137,7 @@ function barWidth(i: number) {
       >
         <h2 class="text-3xl leading-tight font-bold">{{ slide.title }}</h2>
         <p class="text-lg">{{ slide.text }}</p>
+        <p v-if="slide.note" class="text-sm opacity-80">{{ slide.note }}</p>
         <RouterLink
           v-if="slide.cta"
           :to="slide.cta.to"
