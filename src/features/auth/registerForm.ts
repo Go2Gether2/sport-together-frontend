@@ -27,11 +27,17 @@ export function validateRegisterForm(form: RegisterFormState): RegisterFormError
   return errors
 }
 
+// Бэк хранит факт и время согласия (152-ФЗ), поэтому согласие уходит вместе с регистрацией.
 export function toRegisterInput(form: RegisterFormState) {
-  return { name: form.name.trim(), email: form.email.trim().toLowerCase(), password: form.password }
+  return {
+    name: form.name.trim(),
+    email: form.email.trim().toLowerCase(),
+    password: form.password,
+    consent: form.consent,
+  }
 }
 
-const KNOWN: (keyof RegisterFormState)[] = ['name', 'email', 'password']
+const KNOWN: (keyof RegisterFormState)[] = ['name', 'email', 'password', 'consent']
 
 export function mapRegisterServerErrors(fields: Record<string, string>): RegisterFormErrors {
   const errors: RegisterFormErrors = {}

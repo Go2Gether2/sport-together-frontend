@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { ApiError, eventsApi, sportsApi, usersApi, type Sport } from '@/api'
+import {
+  ApiError,
+  recommendationsApi,
+  sportsApi,
+  usersApi,
+  type EventSummary,
+  type Sport,
+} from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
 import CityField from '@/components/map/CityField.vue'
 import AppLogo from '@/components/layout/AppLogo.vue'
 import OnboardingArt, { type OnboardingArtName } from '@/components/illustrations/OnboardingArt.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { UiAvatar, UiButton, UiChip, UiTextField } from '@/components/ui'
-import { recommend, type Recommendation } from '@/features/events/recommendations'
+import { reasonLabels } from '@/features/events/recommendations'
 import { LEVEL_LABELS } from '@/features/events/filters'
 import {
   AGE_PRESETS,
@@ -31,7 +38,6 @@ import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
 import { safeRedirect } from '@/router/redirect'
 import { useSessionStore } from '@/stores/session'
 import { t } from '@/i18n'
-import { localDate } from '@/utils/datetime'
 import type { Level } from '@/api'
 
 const session = useSessionStore()
@@ -128,32 +134,14 @@ function setAgePreset(id: string) {
   answers.value.ageTo = p.to
 }
 
-// Итог: та же подборка, что «Для вас», с учётом уровней по видам и удобного времени.
-const picked = ref<Recommendation[]>([])
+// Итог: подборка бэка по только что сохранённому профилю (интересы, город, уровень) и истории записей.
+const picked = ref<{ event: EventSummary; reasons: string[] }[]>([])
 const pickedState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
 async function loadPicked() {
   pickedState.value = 'loading'
-  const now = new Date()
-  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30)
   try {
-    const [page, mine] = await Promise.all([
-      eventsApi.list({ date_from: localDate(now), date_to: localDate(to), size: 100 }),
-      usersApi.myParticipations(),
-    ])
-    const u = session.user ?? user
-    picked.value = recommend(
-      page.items,
-      {
-        userId: u.id,
-        sportIds: u.sport_ids,
-        level: u.level ?? null,
-        city: u.city ?? null,
-        organizationIds: session.organizations.map((o) => o.id),
-        sportLevels: answers.value.sports,
-        times: answers.value.times,
-      },
-      mine,
-    )
+    const list = await recommendationsApi.events({ limit: 50 })
+    picked.value = list.map((r) => ({ event: r.event, reasons: reasonLabels(r.reasons) }))
     pickedState.value = 'ready'
   } catch {
     pickedState.value = 'error'

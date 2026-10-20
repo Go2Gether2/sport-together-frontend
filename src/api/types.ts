@@ -36,7 +36,7 @@ type EventShared = 'ends_at' | 'city' | 'level' | 'capacity'
 
 export type EventSummary = Model<
   Omit<S['EventShortResponse'], 'sport' | 'organizer'> & { sport: Sport; organizer: Organizer },
-  EventShared
+  EventShared | 'lat' | 'lng'
 >
 
 export type PublicUser = Model<
@@ -178,4 +178,13 @@ export interface ApiErrorBody {
     message: string
     fields?: Record<string, string> | null
   }
+}
+
+export type RecommendationReason = NonNullable<S['RecommendationResponse']['reasons']>[number]
+
+export type Recommendation = {
+  event: EventSummary
+  score: number
+  /** По убыванию вклада; неизвестные коды фронт пропускает. */
+  reasons: RecommendationReason[]
 }

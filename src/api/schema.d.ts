@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+  '/api/v1/admin/safety/banners/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['details']
+    put: operations['update']
+    post?: never
+    delete: operations['delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/sports': {
     parameters: {
       query?: never
@@ -212,6 +228,54 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/admin/safety/banners': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['list']
+    put?: never
+    post: operations['create_3']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/safety/banners/{id}/unpublish': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['unpublish']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/safety/banners/{id}/publish': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['publish']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/admin/organizations/{id}/reject': {
     parameters: {
       query?: never
@@ -253,7 +317,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    post: operations['unpublish']
+    post: operations['unpublish_1']
     delete?: never
     options?: never
     head?: never
@@ -337,7 +401,7 @@ export interface paths {
     delete?: never
     options?: never
     head?: never
-    patch: operations['update']
+    patch: operations['update_1']
     trace?: never
   }
   '/api/v1/events/{id}': {
@@ -353,7 +417,7 @@ export interface paths {
     delete?: never
     options?: never
     head?: never
-    patch: operations['update_1']
+    patch: operations['update_2']
     trace?: never
   }
   '/api/v1/comments/{cid}': {
@@ -366,10 +430,10 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    delete: operations['delete']
+    delete: operations['delete_1']
     options?: never
     head?: never
-    patch: operations['update_2']
+    patch: operations['update_3']
     trace?: never
   }
   '/api/v1/users/{id}': {
@@ -427,7 +491,55 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get: operations['details']
+    get: operations['details_1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/safety/banners': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['feed']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/safety/banners/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['details_2']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/recommendations/events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['forMe']
     put?: never
     post?: never
     delete?: never
@@ -475,7 +587,23 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get: operations['list']
+    get: operations['list_1']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/events/{id}/similar': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['similar']
     put?: never
     post?: never
     delete?: never
@@ -622,7 +750,7 @@ export interface paths {
     get: operations['event']
     put?: never
     post?: never
-    delete: operations['delete_1']
+    delete: operations['delete_2']
     options?: never
     head?: never
     patch?: never
@@ -680,6 +808,47 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    SafetyBannerRequest: {
+      title: string
+      subtitle?: string
+      /** @enum {string} */
+      category: 'first_aid' | 'safety_rules' | 'equipment' | 'emergency'
+      cover_url?: string
+      accent_color?: string
+      /** Format: int64 */
+      sport_id?: number
+      /** Format: int32 */
+      sort_order?: number
+      published?: boolean
+      slides: components['schemas']['SafetySlideRequest'][]
+    }
+    SafetySlideRequest: {
+      title?: string
+      body: string
+      image_url?: string
+    }
+    SafetyBannerDetails: {
+      /** Format: int64 */
+      id?: number
+      title?: string
+      subtitle?: string
+      /** @enum {string} */
+      category?: 'first_aid' | 'safety_rules' | 'equipment' | 'emergency'
+      cover_url?: string
+      accent_color?: string
+      /** Format: int64 */
+      sport_id?: number
+      published?: boolean
+      slides?: components['schemas']['SafetySlideResponse'][]
+      disclaimer?: string
+    }
+    SafetySlideResponse: {
+      /** Format: int32 */
+      position?: number
+      title?: string
+      body?: string
+      image_url?: string
+    }
     CreateSportRequest: {
       name: string
       /** @enum {string} */
@@ -908,6 +1077,7 @@ export interface components {
       /** Format: email */
       email: string
       password: string
+      consent: boolean
     }
     AuthResponse: {
       token_type?: string
@@ -938,6 +1108,19 @@ export interface components {
       password?: string
       /** Format: int64 */
       demo_account_id?: number
+    }
+    SafetyBannerCard: {
+      /** Format: int64 */
+      id?: number
+      title?: string
+      subtitle?: string
+      /** @enum {string} */
+      category?: 'first_aid' | 'safety_rules' | 'equipment' | 'emergency'
+      cover_url?: string
+      accent_color?: string
+      /** Format: int64 */
+      sport_id?: number
+      published?: boolean
     }
     UpdateProfileRequest: {
       name?: string
@@ -1012,6 +1195,10 @@ export interface components {
       status?: 'published' | 'unpublished' | 'deleted' | 'cancelled'
       is_past?: boolean
       is_edited?: boolean
+      /** Format: double */
+      lat?: number
+      /** Format: double */
+      lng?: number
     }
     PublicUserResponse: {
       /** Format: int64 */
@@ -1046,6 +1233,26 @@ export interface components {
       is_custom?: boolean
       /** Format: int64 */
       active_events_count?: number
+    }
+    RecommendationResponse: {
+      event?: components['schemas']['EventShortResponse']
+      /** Format: double */
+      score?: number
+      reasons?: (
+        | 'interest'
+        | 'played_before'
+        | 'same_city'
+        | 'nearby'
+        | 'level_match'
+        | 'friends_going'
+        | 'familiar_organizer'
+        | 'popular'
+        | 'soon'
+        | 'same_sport'
+        | 'same_category'
+        | 'same_organizer'
+        | 'shared_participants'
+      )[]
     }
     PageResponseOrganizationResponse: {
       items?: components['schemas']['OrganizationResponse'][]
@@ -1206,6 +1413,74 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
+  details: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerDetails']
+        }
+      }
+    }
+  }
+  update: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SafetyBannerRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerDetails']
+        }
+      }
+    }
+  }
+  delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
   search: {
     parameters: {
       query?: {
@@ -1641,6 +1916,94 @@ export interface operations {
       }
     }
   }
+  list: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerCard'][]
+        }
+      }
+    }
+  }
+  create_3: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SafetyBannerRequest']
+      }
+    }
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerDetails']
+        }
+      }
+    }
+  }
+  unpublish: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerCard']
+        }
+      }
+    }
+  }
+  publish: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerCard']
+        }
+      }
+    }
+  }
   rejectOrganization: {
     parameters: {
       query?: never
@@ -1689,7 +2052,7 @@ export interface operations {
       }
     }
   }
-  unpublish: {
+  unpublish_1: {
     parameters: {
       query?: never
       header?: never
@@ -1849,7 +2212,7 @@ export interface operations {
       }
     }
   }
-  update: {
+  update_1: {
     parameters: {
       query?: never
       header?: never
@@ -1897,7 +2260,7 @@ export interface operations {
       }
     }
   }
-  update_1: {
+  update_2: {
     parameters: {
       query?: never
       header?: never
@@ -1923,7 +2286,7 @@ export interface operations {
       }
     }
   }
-  delete: {
+  delete_1: {
     parameters: {
       query?: never
       header?: never
@@ -1943,7 +2306,7 @@ export interface operations {
       }
     }
   }
-  update_2: {
+  update_3: {
     parameters: {
       query?: never
       header?: never
@@ -2033,7 +2396,7 @@ export interface operations {
       }
     }
   }
-  details: {
+  details_1: {
     parameters: {
       query?: never
       header?: never
@@ -2051,6 +2414,75 @@ export interface operations {
         }
         content: {
           '*/*': components['schemas']['SportDetailsResponse']
+        }
+      }
+    }
+  }
+  feed: {
+    parameters: {
+      query?: {
+        category?: 'first_aid' | 'safety_rules' | 'equipment' | 'emergency'
+        sport?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerCard'][]
+        }
+      }
+    }
+  }
+  details_2: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['SafetyBannerDetails']
+        }
+      }
+    }
+  }
+  forMe: {
+    parameters: {
+      query?: {
+        limit?: number
+        lat?: number
+        lng?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['RecommendationResponse'][]
         }
       }
     }
@@ -2097,7 +2529,7 @@ export interface operations {
       }
     }
   }
-  list: {
+  list_1: {
     parameters: {
       query?: never
       header?: never
@@ -2113,6 +2545,30 @@ export interface operations {
         }
         content: {
           '*/*': components['schemas']['NotificationResponse'][]
+        }
+      }
+    }
+  }
+  similar: {
+    parameters: {
+      query?: {
+        limit?: number
+      }
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['RecommendationResponse'][]
         }
       }
     }
@@ -2321,7 +2777,7 @@ export interface operations {
       }
     }
   }
-  delete_1: {
+  delete_2: {
     parameters: {
       query?: never
       header?: never

@@ -8,6 +8,7 @@ import {
   eventsApi,
   organizationsApi,
   participationsApi,
+  recommendationsApi,
   sportsApi,
   usersApi,
 } from '@/api'
@@ -270,7 +271,7 @@ describe('пагинация как у бэка', () => {
 
 describe('152-ФЗ: удаление аккаунта (как у бэка)', () => {
   const register = (email: string) =>
-    authApi.register({ name: 'Вера Новикова', email, password: 'Secret123!' })
+    authApi.register({ name: 'Вера Новикова', email, password: 'Secret123!', consent: true })
 
   it('по паролю обезличивает профиль, отменяет записи и закрывает вход', async () => {
     const { user } = await register('vera@example.ru')
@@ -308,5 +309,27 @@ describe('152-ФЗ: удаление аккаунта (как у бэка)', () 
       status: 409,
       code: 'HAS_ORGANIZATIONS',
     })
+  })
+})
+
+describe('рекомендации (как у бэка)', () => {
+  it('без своих и тех, куда уже записан; с причинами-кодами', async () => {
+    await loginAs(U.anna)
+    const mine = await usersApi.myParticipations()
+    const list = await recommendationsApi.events({ limit: 50 })
+    const ids = list.map((r) => r.event.id)
+    expect(
+      list.every((r) => r.event.organizer.id !== U.anna || r.event.organizer.type !== 'user'),
+    ).toBe(true)
+    for (const p of mine) expect(ids).not.toContain(p.event.id)
+    expect(list.some((r) => r.reasons.includes('interest'))).toBe(true)
+  })
+
+  it('похожие — без самого мероприятия, тот же вид спорта первым', async () => {
+    const { items } = await eventsApi.list({ size: 100 })
+    const base = items.find((e) => items.some((o) => o.id !== e.id && o.sport.id === e.sport.id))!
+    const similar = await recommendationsApi.similar(base.id, 10)
+    expect(similar.map((r) => r.event.id)).not.toContain(base.id)
+    expect(similar[0]!.reasons[0]).toBe('same_sport')
   })
 })
