@@ -1,3 +1,4 @@
+export { default as UiAvatar } from './UiAvatar.vue'
 export { default as UiAvatarStack } from './UiAvatarStack.vue'
 export { default as UiBadge } from './UiBadge.vue'
 export { default as UiButton } from './UiButton.vue'

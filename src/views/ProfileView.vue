@@ -4,11 +4,19 @@ import { RouterLink, useRouter } from 'vue-router'
 import { ApiError, sportsApi, usersApi, type Sport } from '@/api'
 import NavIcon from '@/components/layout/NavIcon.vue'
 import type { NavIconName } from '@/components/layout/nav'
-import { UiButton, UiChip, UiModal, UiSelect, UiTextArea, UiTextField } from '@/components/ui'
+import {
+  UiAvatar,
+  UiButton,
+  UiChip,
+  UiModal,
+  UiSelect,
+  UiTextArea,
+  UiTextField,
+} from '@/components/ui'
 import { LEVEL_LABELS } from '@/features/events/filters'
+import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
 import {
   BIO_MAX,
-  initials,
   profileFormFrom,
   toProfileInput,
   toggleSport,
@@ -32,6 +40,10 @@ const saved = ref(false)
 
 const user = computed(() => session.user)
 const mySports = computed(() => sports.value.filter((s) => user.value?.sport_ids.includes(s.id)))
+const avatarOptions = [
+  { value: '', label: 'Инициалы' },
+  ...AVATAR_PRESETS.map((p) => ({ value: presetAvatarUrl(p.id), label: p.label })),
+]
 const levels = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }))
 
 const links: { label: string; to: { name: string }; icon: NavIconName }[] = [
@@ -129,12 +141,7 @@ async function logout() {
 <template>
   <section v-if="user" class="mx-auto flex max-w-3xl flex-col gap-4">
     <header class="flex flex-col gap-4 rounded-card bg-accent p-6 sm:flex-row sm:items-center">
-      <span
-        class="grid size-20 flex-none place-items-center rounded-full bg-orange text-2xl font-bold"
-        aria-hidden="true"
-      >
-        {{ initials(user.name) }}
-      </span>
+      <UiAvatar :name="user.name" :url="user.avatar_url" size="xl" />
       <div class="flex min-w-0 flex-1 flex-col gap-1">
         <h1 class="text-3xl leading-tight font-bold">{{ user.name }}</h1>
         <p class="text-accent-ink">
@@ -158,6 +165,26 @@ async function logout() {
       @submit.prevent="save"
     >
       <UiTextField v-model="form.name" label="Имя" required :error="errors.name" />
+      <fieldset class="flex flex-col gap-2">
+        <legend class="mb-1.5 ml-1 text-[15px] font-semibold">Аватарка</legend>
+        <div class="flex flex-wrap gap-2">
+          <label
+            v-for="option in avatarOptions"
+            :key="option.value"
+            class="flex cursor-pointer flex-col items-center gap-1 rounded-2xl p-1.5 ring-accent-strong has-checked:ring-3 has-focus-visible:outline-3 has-focus-visible:outline-accent-ink"
+          >
+            <input
+              v-model="form.avatar"
+              type="radio"
+              name="avatar"
+              :value="option.value"
+              class="sr-only"
+            />
+            <UiAvatar :name="form.name || user.name" :url="option.value" size="lg" />
+            <span class="text-xs font-medium">{{ option.label }}</span>
+          </label>
+        </div>
+      </fieldset>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UiTextField v-model="form.city" label="Город" placeholder="Красноярск" />
         <UiSelect v-model="form.level" label="Уровень" :options="levels" placeholder="Не указан" />

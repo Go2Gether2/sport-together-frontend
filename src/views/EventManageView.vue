@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, eventsApi, participationsApi, type EventDetails, type Participant } from '@/api'
 import {
+  UiAvatar,
   UiBadge,
   UiButton,
   UiChip,
@@ -117,14 +118,6 @@ async function confirmReject() {
   await decide(p, 'reject', reason || undefined)
 }
 
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('')
-}
-
 const shortDate = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
   month: 'short',
@@ -225,11 +218,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           class="flex flex-col gap-3 rounded-card bg-card p-4"
         >
           <div class="flex items-center gap-3">
-            <span
-              class="grid size-11 flex-none place-items-center rounded-full bg-orange font-bold"
-            >
-              {{ initials(p.user.name) }}
-            </span>
+            <UiAvatar :name="p.user.name" :url="p.user.avatar_url" size="lg" />
             <div class="min-w-0 flex-1">
               <p class="truncate font-bold">{{ p.user.name }}</p>
               <p class="text-sm text-ink-2">{{ shortDate.format(new Date(p.created_at)) }}</p>
@@ -274,9 +263,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           :key="p.participation_id"
           class="flex items-center gap-3 rounded-full bg-card py-2.5 pr-5 pl-2.5"
         >
-          <span class="grid size-11 flex-none place-items-center rounded-full bg-accent font-bold">
-            {{ initials(p.user.name) }}
-          </span>
+          <UiAvatar :name="p.user.name" :url="p.user.avatar_url" size="lg" />
           <div class="min-w-0 flex-1">
             <p class="truncate font-bold">{{ p.user.name }}</p>
             <p v-if="p.email" class="truncate text-sm text-ink-2">{{ p.email }}</p>
