@@ -11,6 +11,7 @@ describe('HomeView', () => {
       routes: [
         { path: '/', component: HomeView },
         { path: '/events', name: 'events', component: { template: '<div />' } },
+        { path: '/organizations', name: 'organizations', component: { template: '<div />' } },
       ],
     })
     const wrapper = mount(HomeView, { global: { plugins: [router, createPinia()] } })
