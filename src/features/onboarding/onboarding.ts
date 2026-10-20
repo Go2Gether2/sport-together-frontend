@@ -1,4 +1,5 @@
 import type { Id, Level, ProfileInput, User } from '@/api'
+import { t } from '@/i18n'
 
 export const STEPS = 5
 export const MAX_SPORTS = 10
@@ -6,15 +7,28 @@ export const MAX_SPORTS = 10
 export type TimeSlot = 'morning' | 'day' | 'evening' | 'weekend'
 export type AgePreset = 'any' | 'young' | 'mid' | 'senior'
 
-export const TIME_SLOTS: { id: TimeSlot; label: string; hint: string }[] = [
-  { id: 'morning', label: 'Утро', hint: 'до 11:00' },
-  { id: 'day', label: 'День', hint: '11:00–17:00' },
-  { id: 'evening', label: 'Вечер', hint: 'после 17:00' },
-  { id: 'weekend', label: 'Выходные', hint: 'суббота и воскресенье' },
-]
+// Подписи — геттеры: текст берётся на языке интерфейса в момент показа.
+export const TIME_SLOTS: { id: TimeSlot; label: string; hint: string }[] = (
+  ['morning', 'day', 'evening', 'weekend'] as const
+).map((id) => ({
+  id,
+  get label() {
+    return t(`onboarding.place.times.${id}`)
+  },
+  get hint() {
+    return t(`onboarding.place.times.${id}Hint`)
+  },
+}))
 
 export const AGE_PRESETS: { id: AgePreset; label: string; from: string; to: string }[] = [
-  { id: 'any', label: 'Не важно', from: '', to: '' },
+  {
+    id: 'any',
+    get label() {
+      return t('onboarding.age.any')
+    },
+    from: '',
+    to: '',
+  },
   { id: 'young', label: '18–25', from: '18', to: '25' },
   { id: 'mid', label: '25–40', from: '25', to: '40' },
   { id: 'senior', label: '40+', from: '40', to: '99' },
@@ -63,13 +77,14 @@ export function answersFrom(user: User, local: LocalPrefs | null): OnboardingAns
 export function validateAbout(a: OnboardingAnswers, now = new Date()): OnboardingErrors {
   const errors: OnboardingErrors = {}
   const name = a.name.trim()
-  if (!name) errors.name = 'Как к вам обращаться?'
-  else if (name.length > 60) errors.name = 'Не длиннее 60 символов'
+  if (!name) errors.name = t('onboarding.errors.name')
+  else if (name.length > 60) errors.name = t('onboarding.errors.maxLength', { n: 60 })
   const year = text(a.birthYear)
   if (year) {
     const y = Number(year)
     const max = now.getFullYear() - 10
-    if (!Number.isInteger(y) || y < 1920 || y > max) errors.birthYear = `Год от 1920 до ${max}`
+    if (!Number.isInteger(y) || y < 1920 || y > max)
+      errors.birthYear = t('onboarding.errors.birthYear', { max })
   }
   return errors
 }
@@ -79,10 +94,10 @@ export function validateAge(a: OnboardingAnswers): OnboardingErrors {
   const from = text(a.ageFrom) ? Number(a.ageFrom) : null
   const to = text(a.ageTo) ? Number(a.ageTo) : null
   const bad = (n: number | null) => n !== null && (!Number.isInteger(n) || n < 10 || n > 99)
-  if (bad(from)) errors.ageFrom = 'От 10 до 99'
-  if (bad(to)) errors.ageTo = 'От 10 до 99'
+  if (bad(from)) errors.ageFrom = t('onboarding.errors.age')
+  if (bad(to)) errors.ageTo = t('onboarding.errors.age')
   if (!errors.ageFrom && !errors.ageTo && from !== null && to !== null && from > to)
-    errors.ageTo = 'Не меньше, чем «от»'
+    errors.ageTo = t('onboarding.errors.ageOrder')
   return errors
 }
 

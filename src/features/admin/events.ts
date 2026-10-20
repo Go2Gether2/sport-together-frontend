@@ -1,13 +1,16 @@
 import type { Comment, EventStatus, EventSummary } from '@/api'
+import { t } from '@/i18n'
 
 export type EventStatusFilter = EventStatus | 'all'
 
-export const EVENT_STATUS_FILTERS: { value: EventStatusFilter; label: string }[] = [
-  { value: 'published', label: 'Опубликованы' },
-  { value: 'unpublished', label: 'Сняты' },
-  { value: 'deleted', label: 'Удалены' },
-  { value: 'all', label: 'Все' },
-]
+export const EVENT_STATUS_FILTERS: { value: EventStatusFilter; label: string }[] = (
+  ['published', 'unpublished', 'deleted', 'all'] as const
+).map((value) => ({
+  value,
+  get label() {
+    return t(`admin.filters.${value}`)
+  },
+}))
 
 export function parseEventStatusFilter(value: unknown): EventStatusFilter {
   return EVENT_STATUS_FILTERS.some((f) => f.value === value)
@@ -44,9 +47,9 @@ export function replaceComment(list: Comment[], updated: Comment): Comment[] {
 
 /** Причину увидят организатор и участники, поэтому она обязательна и осмысленна. */
 export function moderationReasonError(text: string): string | null {
-  const t = text.trim()
-  if (!t) return 'Напишите причину — её увидят'
-  if (t.length < 5) return 'Слишком коротко — объясните причину'
-  if (t.length > 500) return 'Не длиннее 500 символов'
+  const v = text.trim()
+  if (!v) return t('admin.reason.empty')
+  if (v.length < 5) return t('admin.reason.short')
+  if (v.length > 500) return t('common.maxLength', { n: 500 })
   return null
 }

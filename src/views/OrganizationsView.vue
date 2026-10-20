@@ -5,6 +5,7 @@ import { ApiError, organizationsApi, type Organization } from '@/api'
 import NavIcon from '@/components/layout/NavIcon.vue'
 import { UiButton, UiChip, UiTextField } from '@/components/ui'
 import { ORG_TYPE_LABELS } from '@/features/admin/organizations'
+import { t } from '@/i18n'
 import { filterByType, type TypeFilter } from '@/features/organizations/catalog'
 
 const PAGE = 20
@@ -21,7 +22,10 @@ const loadingMore = ref(false)
 const message = ref('')
 
 const shown = computed(() => filterByType(items.value, type.value))
-const types = [['all', 'Все'], ...Object.entries(ORG_TYPE_LABELS)] as [TypeFilter, string][]
+const types = computed(
+  () =>
+    [['all', t('admin.filters.all')], ...Object.entries(ORG_TYPE_LABELS)] as [TypeFilter, string][],
+)
 
 async function load(more = false) {
   if (more) loadingMore.value = true

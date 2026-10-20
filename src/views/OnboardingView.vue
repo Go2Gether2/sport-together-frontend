@@ -7,7 +7,7 @@ import CityField from '@/components/map/CityField.vue'
 import AppLogo from '@/components/layout/AppLogo.vue'
 import OnboardingArt, { type OnboardingArtName } from '@/components/illustrations/OnboardingArt.vue'
 import SportIcon from '@/components/illustrations/SportIcon.vue'
-import { UiAvatar, UiButton, UiChip, UiTextField, plural } from '@/components/ui'
+import { UiAvatar, UiButton, UiChip, UiTextField } from '@/components/ui'
 import { recommend, type Recommendation } from '@/features/events/recommendations'
 import { LEVEL_LABELS } from '@/features/events/filters'
 import {
@@ -30,6 +30,7 @@ import {
 import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
 import { safeRedirect } from '@/router/redirect'
 import { useSessionStore } from '@/stores/session'
+import { t } from '@/i18n'
 import { localDate } from '@/utils/datetime'
 import type { Level } from '@/api'
 
@@ -56,14 +57,14 @@ const sportQuery = ref('')
 const levels = Object.entries(LEVEL_LABELS) as [Level, string][]
 
 // Рисунок и подложка каждого шага — как в макете онбординга.
-const STEP_ART: { phrase: string; art: OnboardingArtName; bg: string }[] = [
-  { phrase: 'лицо команды — это вы', art: 'photo', bg: 'bg-accent' },
-  { phrase: 'бегать вдвоём — уже компания', art: 'about', bg: 'bg-accent-soft' },
-  { phrase: 'у каждого свой темп — и своя компания', art: 'interests', bg: 'bg-lilac' },
-  { phrase: 'лучшая тренировка — та, до которой близко', art: 'place', bg: 'bg-accent' },
-  { phrase: 'в своей компании и тренироваться веселее', art: 'level', bg: 'bg-orange' },
+const STEP_ART: { art: Exclude<OnboardingArtName, 'register' | 'result'>; bg: string }[] = [
+  { art: 'photo', bg: 'bg-accent' },
+  { art: 'about', bg: 'bg-accent-soft' },
+  { art: 'interests', bg: 'bg-lilac' },
+  { art: 'place', bg: 'bg-accent' },
+  { art: 'level', bg: 'bg-orange' },
 ]
-const RESULT_ART = { phrase: '', art: 'result' as const, bg: 'bg-accent' }
+const RESULT_ART = { art: 'result' as const, bg: 'bg-accent' }
 const art = computed(() => (step.value === 'done' ? RESULT_ART : STEP_ART[step.value - 1]!))
 
 function go(next: number | 'done') {
@@ -103,8 +104,7 @@ async function finish() {
     await session.refresh()
     go('done')
   } catch (e) {
-    saveError.value =
-      e instanceof ApiError ? e.message : 'Не получилось сохранить. Попробуйте ещё раз.'
+    saveError.value = e instanceof ApiError ? e.message : t('onboarding.saveFailed')
   } finally {
     saving.value = false
   }
@@ -168,7 +168,7 @@ watch(
 )
 const pickedTitle = computed(() => {
   const n = picked.value.length
-  return `${n} ${plural(n, ['событие', 'события', 'событий'])}`
+  return t('onboarding.result.count', n)
 })
 const afterwards = computed(() => safeRedirect(route.query.redirect))
 
@@ -194,7 +194,7 @@ onMounted(async () => {
           class="order-last flex w-full min-w-0 items-center gap-3 md:order-none md:w-auto md:max-w-md md:flex-[1_1_220px]"
         >
           <span class="text-sm font-semibold whitespace-nowrap text-ink-2">
-            Шаг {{ step }} из {{ STEPS }}
+            {{ $t('onboarding.step', { step, total: STEPS }) }}
           </span>
           <div
             class="flex flex-1 gap-1.5"
@@ -202,7 +202,7 @@ onMounted(async () => {
             :aria-valuemin="1"
             :aria-valuemax="STEPS"
             :aria-valuenow="step"
-            :aria-label="`Шаг ${step} из ${STEPS}`"
+            :aria-label="$t('onboarding.step', { step, total: STEPS })"
           >
             <span
               v-for="i in STEPS"
@@ -219,11 +219,11 @@ onMounted(async () => {
               class="inline-flex min-h-11 items-center rounded-full px-2.5 text-[15px] font-semibold text-ink-2 hover:text-ink"
               @click="step === STEPS ? finish() : go((step as number) + 1)"
             >
-              Пропустить
+              {{ $t('onboarding.skip') }}
             </button>
             <button
               type="button"
-              aria-label="Закончить настройку сейчас"
+              :aria-label="$t('onboarding.finishNow')"
               class="grid size-11 place-items-center rounded-full bg-field hover:bg-mute"
               @click="finish"
             >
@@ -236,7 +236,7 @@ onMounted(async () => {
             class="inline-flex min-h-11 items-center rounded-full px-4 font-semibold underline underline-offset-4"
             @click="go(1)"
           >
-            Настроить подбор
+            {{ $t('onboarding.setup') }}
           </button>
         </div>
       </header>
@@ -250,7 +250,11 @@ onMounted(async () => {
           <p
             class="max-w-xs -rotate-3 self-start rounded-xl bg-card px-3.5 py-1 font-hand text-2xl leading-tight font-bold text-ink"
           >
-            {{ step === 'done' ? 'готово, ' + answers.name + '!' : art.phrase }}
+            {{
+              step === 'done'
+                ? $t('onboarding.phrases.done', { name: answers.name })
+                : $t(`onboarding.phrases.${art.art}`)
+            }}
           </p>
           <OnboardingArt :key="art.art" :name="art.art" class="hidden lg:block" />
         </section>
@@ -268,21 +272,20 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                Добавьте фото
+                {{ $t('onboarding.photo.title') }}
               </h1>
               <p class="text-lg text-ink-2">
-                Так организатор и компания узнают вас при встрече. Можно пропустить — поставим
-                аватар за вас.
+                {{ $t('onboarding.photo.text') }}
               </p>
             </div>
             <div class="flex items-center gap-4">
               <UiAvatar :name="answers.name" :url="answers.avatar" size="xl" />
               <p class="text-sm text-ink-2">
-                Загрузка своего фото появится позже — пока выберите рисунок.
+                {{ $t('onboarding.photo.upload') }}
               </p>
             </div>
             <fieldset class="flex flex-col gap-2">
-              <legend class="mb-2 font-bold">Выберите аватар</legend>
+              <legend class="mb-2 font-bold">{{ $t('onboarding.photo.pick') }}</legend>
               <div class="flex flex-wrap gap-3">
                 <label
                   v-for="p in AVATAR_PRESETS"
@@ -314,25 +317,30 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                Расскажите о себе
+                {{ $t('onboarding.about.title') }}
               </h1>
-              <p class="text-lg text-ink-2">Пара деталей — и подбор станет точнее.</p>
+              <p class="text-lg text-ink-2">{{ $t('onboarding.about.text') }}</p>
             </div>
             <div class="flex max-w-xl flex-col gap-4">
-              <UiTextField v-model="answers.name" label="Имя" required :error="errors.name" />
+              <UiTextField
+                v-model="answers.name"
+                :label="$t('onboarding.about.name')"
+                required
+                :error="errors.name"
+              />
               <UiTextField
                 v-model="answers.birthYear"
-                label="Год рождения · необязательно"
+                :label="`${$t('onboarding.about.birthYear')} ${$t('onboarding.optional')}`"
                 type="number"
-                placeholder="Например, 1996"
-                hint="Нужен, чтобы подбирать компанию близкого возраста. Другие его не видят."
+                :placeholder="$t('onboarding.about.birthYearPlaceholder')"
+                :hint="$t('onboarding.about.birthYearHint')"
                 :error="errors.birthYear"
               />
               <CityField
                 v-model="answers.city"
-                label="Город или район · необязательно"
-                placeholder="Начните вводить: Красноярск, Сочи…"
-                hint="Точный адрес не нужен — по городу покажем, что рядом."
+                :label="`${$t('onboarding.about.city')} ${$t('onboarding.optional')}`"
+                :placeholder="$t('onboarding.about.cityPlaceholder')"
+                :hint="$t('onboarding.about.cityHint')"
               />
             </div>
           </template>
@@ -346,21 +354,24 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                Чем любите заниматься?
+                {{ $t('onboarding.interests.title') }}
               </h1>
               <p class="text-lg text-ink-2">
-                Выберите до {{ MAX_SPORTS }} видов и для каждого — уровень. Эти занятия покажем в
-                ленте первыми.
+                {{ $t('onboarding.interests.text', { max: MAX_SPORTS }) }}
               </p>
             </div>
             <UiTextField
               v-model="sportQuery"
-              label="Найти вид спорта"
+              :label="$t('onboarding.interests.search')"
               hide-label
               type="search"
-              placeholder="Найти вид спорта"
+              :placeholder="$t('onboarding.interests.search')"
             />
-            <div class="flex flex-wrap gap-2" role="group" aria-label="Виды спорта">
+            <div
+              class="flex flex-wrap gap-2"
+              role="group"
+              :aria-label="$t('onboarding.interests.sports')"
+            >
               <UiChip
                 v-for="s in filteredSports"
                 :key="s.id"
@@ -373,17 +384,17 @@ onMounted(async () => {
             </div>
             <div v-if="chosenSports.length" class="flex flex-col gap-3 rounded-field bg-field p-4">
               <div class="flex items-baseline justify-between gap-2">
-                <h2 class="font-bold">Ваш уровень</h2>
-                <span class="text-sm text-ink-2"
-                  >Выбрано {{ chosenCount }} из {{ MAX_SPORTS }}</span
-                >
+                <h2 class="font-bold">{{ $t('onboarding.interests.yourLevel') }}</h2>
+                <span class="text-sm text-ink-2">{{
+                  $t('onboarding.interests.chosen', { n: chosenCount, max: MAX_SPORTS })
+                }}</span>
               </div>
               <div
                 v-for="s in chosenSports"
                 :key="s.id"
                 class="flex flex-wrap items-center gap-2"
                 role="group"
-                :aria-label="`Уровень: ${s.name}`"
+                :aria-label="$t('onboarding.interests.levelOf', { sport: s.name })"
               >
                 <span class="w-full font-semibold">{{ s.name }}</span>
                 <UiChip
@@ -407,14 +418,16 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                Где и когда удобно?
+                {{ $t('onboarding.place.title') }}
               </h1>
-              <p class="text-lg text-ink-2">Покажем занятия поблизости и в ваше свободное время.</p>
+              <p class="text-lg text-ink-2">{{ $t('onboarding.place.text') }}</p>
             </div>
             <div class="flex flex-col gap-2">
               <label for="onb-radius" class="flex items-baseline justify-between font-bold">
-                Насколько далеко готовы ехать
-                <span class="text-xl">{{ answers.radiusKm }} км</span>
+                {{ $t('onboarding.place.radius') }}
+                <span class="text-xl">{{
+                  $t('onboarding.place.km', { n: answers.radiusKm })
+                }}</span>
               </label>
               <input
                 id="onb-radius"
@@ -425,28 +438,30 @@ onMounted(async () => {
                 class="w-full accent-ink"
               />
               <div class="flex justify-between text-sm text-ink-2">
-                <span>1 км</span><span>Считаем от вашего города</span><span>50 км</span>
+                <span>{{ $t('onboarding.place.km', { n: 1 }) }}</span
+                ><span>{{ $t('onboarding.place.fromCity') }}</span
+                ><span>{{ $t('onboarding.place.km', { n: 50 }) }}</span>
               </div>
             </div>
             <fieldset class="flex flex-col gap-2">
-              <legend class="mb-2 font-bold">Когда удобно</legend>
+              <legend class="mb-2 font-bold">{{ $t('onboarding.place.when') }}</legend>
               <div class="grid gap-2 sm:grid-cols-2">
                 <button
-                  v-for="t in TIME_SLOTS"
-                  :key="t.id"
+                  v-for="slot in TIME_SLOTS"
+                  :key="slot.id"
                   type="button"
                   class="flex min-h-16 flex-col items-start justify-center rounded-field px-4 py-2 text-left"
                   :class="
-                    answers.times.includes(t.id) ? 'bg-ink text-white' : 'bg-field hover:bg-mute'
+                    answers.times.includes(slot.id) ? 'bg-ink text-white' : 'bg-field hover:bg-mute'
                   "
-                  :aria-pressed="answers.times.includes(t.id)"
-                  @click="toggleTime(t.id)"
+                  :aria-pressed="answers.times.includes(slot.id)"
+                  @click="toggleTime(slot.id)"
                 >
-                  <b>{{ t.label }}</b>
-                  <span class="text-sm opacity-80">{{ t.hint }}</span>
+                  <b>{{ slot.label }}</b>
+                  <span class="text-sm opacity-80">{{ slot.hint }}</span>
                 </button>
               </div>
-              <p class="text-sm text-ink-2">Можно выбрать несколько вариантов.</p>
+              <p class="text-sm text-ink-2">{{ $t('onboarding.place.several') }}</p>
             </fieldset>
           </template>
 
@@ -459,15 +474,16 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                С кем комфортно?
+                {{ $t('onboarding.age.title') }}
               </h1>
               <p class="text-lg text-ink-2">
-                Подскажите, с кем по возрасту вам проще найти общий язык. Если не важно — просто
-                нажмите «Готово».
+                {{ $t('onboarding.age.text') }}
               </p>
             </div>
             <fieldset class="flex flex-col gap-3">
-              <legend class="mb-2 font-bold">Возраст компании · необязательно</legend>
+              <legend class="mb-2 font-bold">
+                {{ $t('onboarding.age.legend') }} {{ $t('onboarding.optional') }}
+              </legend>
               <div class="flex flex-wrap gap-2">
                 <UiChip
                   v-for="p in AGE_PRESETS"
@@ -481,19 +497,19 @@ onMounted(async () => {
               <div class="grid max-w-sm grid-cols-2 gap-3">
                 <UiTextField
                   v-model="answers.ageFrom"
-                  label="От, лет"
+                  :label="$t('onboarding.age.from')"
                   type="number"
                   :error="errors.ageFrom"
                 />
                 <UiTextField
                   v-model="answers.ageTo"
-                  label="До, лет"
+                  :label="$t('onboarding.age.to')"
                   type="number"
                   :error="errors.ageTo"
                 />
               </div>
               <p class="text-sm text-ink-2">
-                От 10 до 99 лет. Это пожелание — остальные мероприятия тоже останутся в ленте.
+                {{ $t('onboarding.age.hint') }}
               </p>
             </fieldset>
           </template>
@@ -507,24 +523,29 @@ onMounted(async () => {
                 tabindex="-1"
                 class="text-3xl font-bold outline-none lg:text-4xl"
               >
-                Подобрали
-                <span v-if="pickedState === 'ready'" class="text-accent-strong">{{
-                  pickedTitle
-                }}</span>
-                для вас
+                <i18n-t
+                  v-if="pickedState === 'ready'"
+                  keypath="onboarding.result.title"
+                  scope="global"
+                >
+                  <template #count>
+                    <span class="text-accent-strong">{{ pickedTitle }}</span>
+                  </template>
+                </i18n-t>
+                <template v-else>{{ $t('onboarding.result.titleLoading') }}</template>
               </h1>
               <p class="text-lg text-ink-2">
-                Это ваша лента «Для вас». На каждой карточке — почему мы предложили это мероприятие.
+                {{ $t('onboarding.result.text') }}
               </p>
             </div>
             <div v-if="pickedState === 'loading'" class="flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-card bg-field" />
             </div>
             <p v-else-if="pickedState === 'error'" class="rounded-field bg-field p-4" role="alert">
-              Не получилось подобрать мероприятия — они ждут вас в ленте.
+              {{ $t('onboarding.result.failed') }}
             </p>
             <p v-else-if="!picked.length" class="rounded-field bg-field p-4 text-ink-2">
-              В ближайший месяц подходящих мероприятий нет — загляните в ленту или создайте своё.
+              {{ $t('onboarding.result.empty') }}
             </p>
             <ul v-else class="flex flex-col gap-3">
               <li
@@ -548,7 +569,7 @@ onMounted(async () => {
               :to="afterwards"
               class="mt-auto inline-flex min-h-13 items-center justify-center rounded-full bg-ink px-6 font-bold text-white no-underline"
             >
-              Открыть ленту «Для вас» →
+              {{ $t('onboarding.result.open') }}
             </RouterLink>
           </template>
 
@@ -558,11 +579,11 @@ onMounted(async () => {
 
           <div v-if="step !== 'done'" class="mt-auto flex items-center justify-between gap-3 pt-2">
             <UiButton v-if="step > 1" variant="ghost" class="!w-auto" @click="back">
-              ← Назад
+              {{ $t('onboarding.back') }}
             </UiButton>
             <span v-else />
             <UiButton class="!w-auto !px-8" :loading="saving" @click="next">
-              {{ step === STEPS ? 'Готово' : 'Далее →' }}
+              {{ step === STEPS ? $t('onboarding.done') : $t('onboarding.next') }}
             </UiButton>
           </div>
         </section>

@@ -2,22 +2,22 @@
 import { RouterLink } from 'vue-router'
 
 const items = [
-  { label: 'Обзор', to: { name: 'admin' } },
-  { label: 'Организации', to: { name: 'admin-organizations' } },
-  { label: 'Мероприятия', to: { name: 'admin-events' } },
-]
+  { key: 'overview', to: { name: 'admin' } },
+  { key: 'organizations', to: { name: 'admin-organizations' } },
+  { key: 'events', to: { name: 'admin-events' } },
+] as const
 </script>
 
 <template>
-  <nav aria-label="Разделы админки" class="flex gap-2 overflow-x-auto">
+  <nav :aria-label="$t('admin.nav.label')" class="flex gap-2 overflow-x-auto">
     <RouterLink
       v-for="item in items"
-      :key="item.label"
+      :key="item.key"
       :to="item.to"
       class="flex-none rounded-full bg-field px-4 py-2 font-semibold whitespace-nowrap text-ink no-underline hover:bg-mute"
       exact-active-class="!bg-ink !text-white"
     >
-      {{ item.label }}
+      {{ $t(`admin.nav.${item.key}`) }}
     </RouterLink>
   </nav>
 </template>
