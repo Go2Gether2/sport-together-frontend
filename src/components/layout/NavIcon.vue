@@ -40,6 +40,10 @@ defineProps<{ name: NavIconName }>()
     <template v-else-if="name === 'flag'">
       <path d="M6 21V4M6 4h11l-2 4 2 4H6" />
     </template>
+    <template v-else-if="name === 'pin'">
+      <path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </template>
     <template v-else>
       <path d="M7 3h7l4 4v14H7z" />
       <path d="M14 3v4h4M10 12h5M10 16h5" />
