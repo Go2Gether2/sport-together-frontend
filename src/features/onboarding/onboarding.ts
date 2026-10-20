@@ -41,6 +41,9 @@ export type LocalPrefs = Pick<
 
 export type OnboardingErrors = Partial<Record<'name' | 'birthYear' | 'ageFrom' | 'ageTo', string>>
 
+// Vue отдаёт значение поля type="number" числом, а не строкой — приводим перед проверками.
+const text = (v: unknown) => String(v ?? '').trim()
+
 export function answersFrom(user: User, local: LocalPrefs | null): OnboardingAnswers {
   const sports: Record<Id, Level> = {}
   for (const id of user.sport_ids) sports[id] = local?.sports[id] ?? user.level ?? 'beginner'
@@ -62,7 +65,7 @@ export function validateAbout(a: OnboardingAnswers, now = new Date()): Onboardin
   const name = a.name.trim()
   if (!name) errors.name = 'Как к вам обращаться?'
   else if (name.length > 60) errors.name = 'Не длиннее 60 символов'
-  const year = a.birthYear.trim()
+  const year = text(a.birthYear)
   if (year) {
     const y = Number(year)
     const max = now.getFullYear() - 10
@@ -73,8 +76,8 @@ export function validateAbout(a: OnboardingAnswers, now = new Date()): Onboardin
 
 export function validateAge(a: OnboardingAnswers): OnboardingErrors {
   const errors: OnboardingErrors = {}
-  const from = a.ageFrom.trim() ? Number(a.ageFrom) : null
-  const to = a.ageTo.trim() ? Number(a.ageTo) : null
+  const from = text(a.ageFrom) ? Number(a.ageFrom) : null
+  const to = text(a.ageTo) ? Number(a.ageTo) : null
   const bad = (n: number | null) => n !== null && (!Number.isInteger(n) || n < 10 || n > 99)
   if (bad(from)) errors.ageFrom = 'От 10 до 99'
   if (bad(to)) errors.ageTo = 'От 10 до 99'
@@ -114,17 +117,17 @@ export function toProfileUpdate(a: OnboardingAnswers): ProfileInput {
 
 export function toLocalPrefs(a: OnboardingAnswers): LocalPrefs {
   return {
-    birthYear: a.birthYear.trim(),
+    birthYear: text(a.birthYear),
     sports: a.sports,
     radiusKm: a.radiusKm,
     times: a.times,
-    ageFrom: a.ageFrom.trim(),
-    ageTo: a.ageTo.trim(),
+    ageFrom: text(a.ageFrom),
+    ageTo: text(a.ageTo),
   }
 }
 
 export function agePresetOf(a: Pick<OnboardingAnswers, 'ageFrom' | 'ageTo'>): AgePreset | null {
-  return AGE_PRESETS.find((p) => p.from === a.ageFrom && p.to === a.ageTo)?.id ?? null
+  return AGE_PRESETS.find((p) => p.from === text(a.ageFrom) && p.to === text(a.ageTo))?.id ?? null
 }
 
 /** Попадает ли начало мероприятия в удобное время (по местным часам). */

@@ -3,8 +3,10 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ApiError, eventsApi, sportsApi, usersApi, type Sport } from '@/api'
 import EventListCard from '@/components/events/EventListCard.vue'
+import CityField from '@/components/map/CityField.vue'
 import AppLogo from '@/components/layout/AppLogo.vue'
-import SportIcon, { type SportIconName } from '@/components/illustrations/SportIcon.vue'
+import OnboardingArt, { type OnboardingArtName } from '@/components/illustrations/OnboardingArt.vue'
+import SportIcon from '@/components/illustrations/SportIcon.vue'
 import { UiAvatar, UiButton, UiChip, UiTextField, plural } from '@/components/ui'
 import { recommend, type Recommendation } from '@/features/events/recommendations'
 import { LEVEL_LABELS } from '@/features/events/filters'
@@ -53,14 +55,16 @@ const sports = ref<Sport[]>([])
 const sportQuery = ref('')
 const levels = Object.entries(LEVEL_LABELS) as [Level, string][]
 
-const STEP_ART: { phrase: string; icon: SportIconName; bg: string }[] = [
-  { phrase: 'лицо команды — это вы', icon: 'custom', bg: 'bg-accent-soft' },
-  { phrase: 'бегать вдвоём — уже компания', icon: 'running', bg: 'bg-accent' },
-  { phrase: 'у каждого свой темп — и своя компания', icon: 'tennis', bg: 'bg-lilac' },
-  { phrase: 'лучшая тренировка — та, до которой близко', icon: 'bike', bg: 'bg-orange' },
-  { phrase: 'в своей компании и тренироваться веселее', icon: 'football', bg: 'bg-accent-soft' },
+// Рисунок и подложка каждого шага — как в макете онбординга.
+const STEP_ART: { phrase: string; art: OnboardingArtName; bg: string }[] = [
+  { phrase: 'лицо команды — это вы', art: 'photo', bg: 'bg-accent' },
+  { phrase: 'бегать вдвоём — уже компания', art: 'about', bg: 'bg-accent-soft' },
+  { phrase: 'у каждого свой темп — и своя компания', art: 'interests', bg: 'bg-lilac' },
+  { phrase: 'лучшая тренировка — та, до которой близко', art: 'place', bg: 'bg-accent' },
+  { phrase: 'в своей компании и тренироваться веселее', art: 'level', bg: 'bg-orange' },
 ]
-const art = computed(() => STEP_ART[(step.value === 'done' ? 1 : step.value) - 1]!)
+const RESULT_ART = { phrase: '', art: 'result' as const, bg: 'bg-accent' }
+const art = computed(() => (step.value === 'done' ? RESULT_ART : STEP_ART[step.value - 1]!))
 
 function go(next: number | 'done') {
   saveLocalPrefs(user.id, toLocalPrefs(answers.value))
@@ -248,9 +252,7 @@ onMounted(async () => {
           >
             {{ step === 'done' ? 'готово, ' + answers.name + '!' : art.phrase }}
           </p>
-          <span class="hidden self-end lg:block">
-            <SportIcon :name="art.icon" :size="180" />
-          </span>
+          <OnboardingArt :key="art.art" :name="art.art" class="hidden lg:block" />
         </section>
 
         <section
@@ -326,10 +328,10 @@ onMounted(async () => {
                 hint="Нужен, чтобы подбирать компанию близкого возраста. Другие его не видят."
                 :error="errors.birthYear"
               />
-              <UiTextField
+              <CityField
                 v-model="answers.city"
                 label="Город или район · необязательно"
-                placeholder="Красноярск"
+                placeholder="Начните вводить: Красноярск, Сочи…"
                 hint="Точный адрес не нужен — по городу покажем, что рядом."
               />
             </div>

@@ -45,6 +45,15 @@ describe('проверки', () => {
     expect(validateAbout({ ...a, birthYear: '1996' }, now)).toEqual({})
   })
 
+  it('числовые поля приходят числом — проверка не падает', () => {
+    const a = answersFrom(user, null)
+    const asNumber = { ...a, birthYear: 1996, ageFrom: 25, ageTo: 40 } as unknown as typeof a
+    expect(validateAbout(asNumber, now)).toEqual({})
+    expect(validateAge(asNumber)).toEqual({})
+    expect(toLocalPrefs(asNumber)).toMatchObject({ birthYear: '1996', ageFrom: '25', ageTo: '40' })
+    expect(agePresetOf(asNumber)).toBe('mid')
+  })
+
   it('возраст компании: 10–99 и «до» не меньше «от»', () => {
     const a = answersFrom(user, null)
     expect(validateAge({ ...a, ageFrom: '5' }).ageFrom).toBeDefined()
