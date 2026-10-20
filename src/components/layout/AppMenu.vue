@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import NavIcon from './NavIcon.vue'
+import ThemeSwitch from './ThemeSwitch.vue'
 import { menuItems } from './nav'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -62,6 +63,10 @@ async function logout() {
         </li>
       </ul>
     </nav>
+
+    <div class="mt-4 rounded-[24px] bg-field p-3">
+      <ThemeSwitch />
+    </div>
 
     <div class="mt-4 pt-4">
       <p v-if="session.user" class="flex items-center justify-between gap-3">

@@ -10,6 +10,9 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import { initTheme } from './features/theme/theme'
+
+initTheme()
 
 async function enableMocks() {
   if (import.meta.env.VITE_API_MOCK !== 'true') return

@@ -26,6 +26,7 @@
 
 html {
   font-size: 18px;
+  color-scheme: light;
 }
 
 body {
@@ -48,6 +49,70 @@ body {
     outline: 2px solid var(--color-accent-strong);
     outline-offset: 0;
     background-color: var(--color-card);
+  }
+}
+
+/*
+  Тёмная тема: те же токены дизайна v3, другие значения. Выбор пользователя — data-theme на <html>,
+  без выбора — как в системе. Контраст значений проверяет src/assets/__tests__/contrast.spec.ts.
+*/
+:root[data-theme='dark'] {
+  --color-ink: #f2f3f7;
+  --color-ink-2: #b3b6c2;
+  --color-page: #111216;
+  --color-card: #1c1d23;
+  --color-field: #2a2c34;
+  --color-mute: #3a3d47;
+  --color-accent: #3b4ea8;
+  --color-accent-soft: #2c3566;
+  --color-accent-ink: #c9d4ff;
+  --color-accent-strong: #8b9cff;
+  --color-orange: #8f4207;
+  --color-orange-ink: #ffd0a8;
+  --color-lilac: #4b2f5c;
+  /* Белый текст стоит только на тёмных кнопках bg-ink — в тёмной теме кнопки светлые, текст на них тёмный. */
+  --color-white: #111216;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-ink: #f2f3f7;
+    --color-ink-2: #b3b6c2;
+    --color-page: #111216;
+    --color-card: #1c1d23;
+    --color-field: #2a2c34;
+    --color-mute: #3a3d47;
+    --color-accent: #3b4ea8;
+    --color-accent-soft: #2c3566;
+    --color-accent-ink: #c9d4ff;
+    --color-accent-strong: #8b9cff;
+    --color-orange: #8f4207;
+    --color-orange-ink: #ffd0a8;
+    --color-lilac: #4b2f5c;
+    /* Белый текст стоит только на тёмных кнопках bg-ink — в тёмной теме кнопки светлые, текст на них тёмный. */
+    --color-white: #111216;
+    color-scheme: dark;
+  }
+}
+
+/* Оранжевый фон в тёмной теме приглушён, а метки обязательных полей, рамки ошибок и рисунки должны остаться яркими. */
+:root[data-theme='dark'] :is(.text-orange, .fill-orange, .ring-orange) {
+  --color-orange: #f6a35a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) :is(.text-orange, .fill-orange, .ring-orange) {
+    --color-orange: #f6a35a;
+  }
+}
+
+/* Подложка модальных окон — затемнение, а не светлая пелена от перекрашенного ink. */
+:root[data-theme='dark'] dialog::backdrop {
+  background-color: rgb(0 0 0 / 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) dialog::backdrop {
+    background-color: rgb(0 0 0 / 0.6);
   }
 }
 
