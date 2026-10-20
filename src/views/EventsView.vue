@@ -429,7 +429,7 @@ onMounted(async () => {
             </select>
           </label>
         </div>
-        <ul class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        <ul class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 min-[1800px]:grid-cols-4">
           <li v-for="event in sorted" :key="event.id" class="rounded-card">
             <EventListCard :event="event" />
           </li>

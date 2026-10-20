@@ -81,7 +81,10 @@ onMounted(load)
         {{ $t('forYou.create') }}</RouterLink
       >.
     </p>
-    <ul v-else class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+    <ul
+      v-else
+      class="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 xl:grid-cols-3 min-[1800px]:grid-cols-4"
+    >
       <li v-for="{ event, reasons } in cards" :key="event.id" class="flex min-w-0 flex-col gap-1.5">
         <EventListCard :event="event" :reasons="reasons" />
       </li>
