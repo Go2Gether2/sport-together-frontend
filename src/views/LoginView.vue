@@ -135,7 +135,7 @@ onMounted(loadAccounts)
           </ul>
         </section>
       </div>
-      <p v-if="demoError" class="font-semibold text-orange-ink" role="alert">✕ {{ demoError }}</p>
+      <p v-if="demoError" class="font-semibold text-danger" role="alert">✕ {{ demoError }}</p>
     </section>
 
     <form

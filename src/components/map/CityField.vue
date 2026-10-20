@@ -98,7 +98,7 @@ const optionId = (i: number) => `${id}-opt-${i}`
         :aria-invalid="props.error ? 'true' : undefined"
         :aria-describedby="props.error || props.hint ? `${id}-desc` : undefined"
         class="min-h-13.5 w-full rounded-field bg-field px-4 text-ink outline-none placeholder:text-ink-2 focus:bg-card focus:outline-2 focus:outline-accent-strong"
-        :class="props.error ? 'ring-2 ring-orange ring-inset' : ''"
+        :class="props.error ? 'ring-2 ring-danger ring-inset' : ''"
         @input="onInput"
         @keydown="onKey"
         @focus="open = true"
@@ -130,7 +130,7 @@ const optionId = (i: number) => `${id}-opt-${i}`
     <p
       v-if="props.error"
       :id="`${id}-desc`"
-      class="ml-1 text-sm font-semibold text-orange-ink"
+      class="ml-1 text-sm font-semibold text-danger"
       role="alert"
     >
       ✕ {{ props.error }}

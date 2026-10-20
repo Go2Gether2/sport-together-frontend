@@ -223,7 +223,7 @@ async function logout() {
         :placeholder="$t('profile.bioPlaceholder')"
         :error="errors.bio"
       />
-      <p v-if="formError" class="font-semibold text-orange-ink" role="alert">✕ {{ formError }}</p>
+      <p v-if="formError" class="font-semibold text-danger" role="alert">✕ {{ formError }}</p>
       <div class="flex flex-col-reverse gap-2 sm:flex-row">
         <UiButton variant="ghost" @click="editing = false">{{ $t('common.cancel') }}</UiButton>
         <UiButton type="submit" :loading="busy">{{ $t('common.save') }}</UiButton>
@@ -321,7 +321,7 @@ async function logout() {
       />
       <p
         v-if="deleteError"
-        class="rounded-field bg-orange p-4 font-semibold text-orange-ink"
+        class="rounded-field bg-warning-bg p-4 font-semibold text-warning-fg"
         role="alert"
       >
         {{ deleteError }}

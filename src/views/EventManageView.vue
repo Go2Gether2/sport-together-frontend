@@ -177,7 +177,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
 
       <p
         v-if="closed"
-        class="rounded-card bg-orange p-4 font-semibold text-orange-ink"
+        class="rounded-card bg-warning-bg p-4 font-semibold text-warning-fg"
         role="status"
       >
         Снято с публикации{{ event.unavailable_reason ? `: ${event.unavailable_reason}` : '' }}.
@@ -246,7 +246,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           </div>
           <p
             v-if="rowError?.id === p.participation_id"
-            class="font-semibold text-orange-ink"
+            class="font-semibold text-danger"
             role="alert"
           >
             ✕ {{ rowError.text }}

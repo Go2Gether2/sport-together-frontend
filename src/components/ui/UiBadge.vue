@@ -7,9 +7,10 @@ const props = withDefaults(defineProps<{ tone?: StatusTone | 'outline' | 'accent
 })
 
 const classes: Record<NonNullable<typeof props.tone>, string> = {
-  ok: 'bg-ink text-white',
-  wait: 'bg-orange text-orange-ink',
-  no: 'bg-mute text-ink',
+  ok: 'bg-success-bg text-success-fg',
+  wait: 'bg-warning-bg text-warning-fg',
+  queue: 'bg-queue-bg text-queue-fg',
+  no: 'bg-danger-bg text-danger-fg',
   off: 'bg-field text-ink-2 line-through',
   outline: 'bg-field text-ink',
   accent: 'bg-accent text-ink',

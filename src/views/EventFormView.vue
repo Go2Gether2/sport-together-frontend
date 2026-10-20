@@ -318,7 +318,7 @@ async function submit() {
             v-for="m in joinModes"
             :key="m.value"
             class="flex cursor-pointer items-center gap-3 rounded-field bg-field p-4 has-checked:bg-accent-soft has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent-ink"
-            :class="errors.joinMode ? 'ring-2 ring-orange ring-inset' : ''"
+            :class="errors.joinMode ? 'ring-2 ring-danger ring-inset' : ''"
           >
             <input
               v-model="form.joinMode"
@@ -336,7 +336,7 @@ async function submit() {
           <p
             v-if="errors.joinMode"
             id="join-err"
-            class="ml-1 text-sm font-semibold text-orange-ink"
+            class="ml-1 text-sm font-semibold text-danger"
             role="alert"
           >
             ✕ {{ errors.joinMode }}
@@ -374,7 +374,7 @@ async function submit() {
       <p
         v-if="formError"
         role="alert"
-        class="rounded-card bg-orange p-4 font-semibold text-orange-ink"
+        class="rounded-card bg-warning-bg p-4 font-semibold text-warning-fg"
       >
         ✕ {{ formError }}
       </p>

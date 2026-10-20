@@ -8,27 +8,57 @@
   --font-display: 'Exo 2', 'Inter Tight', system-ui, sans-serif;
   --font-hand: 'Caveat', 'Inter Tight', cursive;
 
-  --color-ink: #0e0e10;
-  --color-ink-2: #4f515b;
-  --color-page: #eef0f5;
+  /*
+    Токены дизайн-системы Go2Gether. Имена прежние (ink, page, card…), соответствие системе:
+    ink — ink, ink-2 — ink-muted, page — bg, card — surface, field — surface-muted, mute — line,
+    accent — brand-periwinkle, accent-soft — brand-sky, lilac — brand-lilac, orange — accent,
+    accent-ink — date, accent-strong — focus, white — on-primary.
+  */
+  --color-ink: #111111;
+  --color-ink-2: #4a4d5c;
+  --color-page: #eeeff4;
   --color-card: #ffffff;
-  --color-field: #e6e8ef;
-  --color-mute: #d9dce5;
-  --color-accent: #a6b8ff;
-  --color-accent-soft: #c9d4ff;
-  --color-accent-ink: #16204f;
-  --color-accent-strong: #6b82ee;
+  --color-field: #eeeff4;
+  --color-mute: #dadce6;
+  --color-accent: #a5b4ff;
+  --color-accent-soft: #c9d3ff;
+  --color-accent-ink: #2b3480;
+  --color-accent-strong: #2f3cf5;
   --color-orange: #f28c28;
-  --color-orange-ink: #2e1600;
-  --color-lilac: #e9b3f7;
+  --color-orange-ink: #111111;
+  --color-lilac: #e9b5f5;
+  --color-white: #ffffff;
+  --color-cream: #fff7ec;
+  --color-reason: #f3e0f9;
+  --color-signal: #e2432b;
+  /* Текст ошибки у поля; статусы — парами *-bg и *-fg, одинаковыми в обеих темах. */
+  --color-danger: #8c1d18;
+  --color-success-bg: #cff3dc;
+  --color-success-fg: #0e5a2e;
+  --color-success-solid: #1f8a4c;
+  --color-warning-bg: #ffe7b3;
+  --color-warning-fg: #6b4500;
+  --color-queue-bg: #e6ddff;
+  --color-queue-fg: #4b2fa8;
+  --color-danger-bg: #ffd6d1;
+  --color-danger-fg: #8c1d18;
 
-  --radius-card: 28px;
-  --radius-field: 18px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 26px;
+  --radius-2xl: 32px;
+  --radius-card: 26px;
+  --radius-field: 16px;
   --radius-screen: 32px;
+
+  --shadow-raised: 0 10px 30px -18px rgb(17 17 17 / 0.35);
+  --shadow-header: 0 6px 18px -12px rgb(17 17 17 / 0.25);
+  --shadow-toggle: 0 2px 6px rgb(17 17 17 / 0.25);
 }
 
 html {
-  font-size: 18px;
+  font-size: 16px;
   color-scheme: light;
 }
 
@@ -37,89 +67,99 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   line-height: 1.5;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
 }
 
 @layer base {
   /* Exo 2 загружен только курсивом 800/900 — заголовки и логотип всегда наклонные и жирные. */
   h1,
+  h2,
   .font-display {
     font-family: var(--font-display);
     font-style: italic;
     font-weight: 900;
   }
 
-  h1 {
+  h1,
+  h2 {
     text-transform: uppercase;
-    line-height: 1;
+    line-height: 1.1;
     text-wrap: balance;
   }
 
+  h1 {
+    line-height: 1;
+  }
+
+  /* Бренд-цвета одинаковы в обеих темах, текст на них всегда #111111 — в тёмной теме тоже. */
+  :is(.bg-accent, .bg-accent-soft, .bg-lilac, .bg-orange, .bg-cream) {
+    --color-ink: #111111;
+    --color-ink-2: #34364a;
+    --color-accent-ink: #1b1f6b;
+    --color-white: #ffffff;
+    --color-card: #ffffff;
+    --color-field: #ffffff;
+    color: var(--color-ink);
+  }
+
   :focus-visible {
-    outline: 3px solid var(--color-accent-ink);
+    outline: 3px solid var(--color-accent-strong);
     outline-offset: 2px;
   }
 
-  /* У полей ввода тёмная рамка выглядит тяжело — фокус показываем сиренью и белым фоном. */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 2px solid var(--color-accent-strong);
+    outline: 3px solid var(--color-accent-strong);
     outline-offset: 0;
     background-color: var(--color-card);
   }
 }
 
 /*
-  Тёмная тема: те же токены дизайна v3, другие значения. Выбор пользователя — data-theme на <html>,
-  без выбора — как в системе. Контраст значений проверяет src/assets/__tests__/contrast.spec.ts.
+  Тёмная тема: меняются только нейтральные токены, бренд-цвета, статусы и иллюстрации прежние.
+  Выбор пользователя — data-theme на <html>, без выбора — как в системе.
+  Контраст значений проверяет src/assets/__tests__/contrast.spec.ts.
 */
 :root[data-theme='dark'] {
   --color-ink: #f2f3f7;
-  --color-ink-2: #b3b6c2;
-  --color-page: #111216;
-  --color-card: #1c1d23;
-  --color-field: #2a2c34;
-  --color-mute: #3a3d47;
-  --color-accent: #3b4ea8;
-  --color-accent-soft: #2c3566;
-  --color-accent-ink: #c9d4ff;
-  --color-accent-strong: #8b9cff;
-  --color-orange: #8f4207;
-  --color-orange-ink: #ffd0a8;
-  --color-lilac: #4b2f5c;
-  /* Белый текст стоит только на тёмных кнопках bg-ink — в тёмной теме кнопки светлые, текст на них тёмный. */
-  --color-white: #111216;
+  --color-ink-2: #a9acbd;
+  --color-page: #0f1016;
+  --color-card: #1b1d27;
+  --color-field: #262938;
+  --color-mute: #3a3d50;
+  --color-accent-ink: #a5b4ff;
+  --color-accent-strong: #a5b4ff;
+  --color-reason: #3b2a47;
+  --color-danger: #ff9b8f;
+  /* Белый текст стоит только на кнопках bg-ink (primary) — в тёмной теме они светлые, текст на них тёмный. */
+  --color-white: #111111;
+  --shadow-raised: 0 10px 30px -14px rgb(0 0 0 / 0.7);
+  --shadow-header: 0 6px 18px -10px rgb(0 0 0 / 0.7);
+  --shadow-toggle: 0 2px 6px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --color-ink: #f2f3f7;
-    --color-ink-2: #b3b6c2;
-    --color-page: #111216;
-    --color-card: #1c1d23;
-    --color-field: #2a2c34;
-    --color-mute: #3a3d47;
-    --color-accent: #3b4ea8;
-    --color-accent-soft: #2c3566;
-    --color-accent-ink: #c9d4ff;
-    --color-accent-strong: #8b9cff;
-    --color-orange: #8f4207;
-    --color-orange-ink: #ffd0a8;
-    --color-lilac: #4b2f5c;
-    /* Белый текст стоит только на тёмных кнопках bg-ink — в тёмной теме кнопки светлые, текст на них тёмный. */
-    --color-white: #111216;
+    --color-ink-2: #a9acbd;
+    --color-page: #0f1016;
+    --color-card: #1b1d27;
+    --color-field: #262938;
+    --color-mute: #3a3d50;
+    --color-accent-ink: #a5b4ff;
+    --color-accent-strong: #a5b4ff;
+    --color-reason: #3b2a47;
+    --color-danger: #ff9b8f;
+    /* Белый текст стоит только на кнопках bg-ink (primary) — в тёмной теме они светлые, текст на них тёмный. */
+    --color-white: #111111;
+    --shadow-raised: 0 10px 30px -14px rgb(0 0 0 / 0.7);
+    --shadow-header: 0 6px 18px -10px rgb(0 0 0 / 0.7);
+    --shadow-toggle: 0 2px 6px rgb(0 0 0 / 0.5);
     color-scheme: dark;
-  }
-}
-
-/* Оранжевый фон в тёмной теме приглушён, а метки обязательных полей, рамки ошибок и рисунки должны остаться яркими. */
-:root[data-theme='dark'] :is(.text-orange, .fill-orange, .ring-orange) {
-  --color-orange: #f6a35a;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) :is(.text-orange, .fill-orange, .ring-orange) {
-    --color-orange: #f6a35a;
   }
 }
 
@@ -131,12 +171,6 @@ body {
   :root:not([data-theme='light']) dialog::backdrop {
     background-color: rgb(0 0 0 / 0.6);
   }
-}
-
-/* Серый вторичный текст на насыщенной сирени и оранжевом не дотягивает до 4,5:1 (ГОСТ Р 52872) — там он тёмно-синий. */
-.bg-accent .text-ink-2,
-.bg-orange .text-ink-2 {
-  color: var(--color-accent-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

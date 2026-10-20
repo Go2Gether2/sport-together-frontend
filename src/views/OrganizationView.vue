@@ -104,7 +104,7 @@ const website = computed(() => safeHref(org.value?.website_url))
 
         <p
           v-if="org.status !== 'approved'"
-          class="rounded-card bg-orange p-4 font-medium text-orange-ink"
+          class="rounded-card bg-warning-bg p-4 font-medium text-warning-fg"
           role="status"
         >
           <template v-if="session.isAdmin">

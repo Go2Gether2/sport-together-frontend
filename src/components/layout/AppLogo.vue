@@ -14,17 +14,34 @@ import { APP_NAME } from '@/router/access'
       aria-hidden="true"
     >
       <svg
-        width="24"
-        height="24"
-        viewBox="0 0 26 26"
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
         fill="none"
-        stroke="#0e0e10"
-        stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <circle cx="15" cy="5" r="3" fill="#f28c28" />
-        <path d="M14 9L11 16L15 20L14 25M11 16L6 21M13 11L18 14L21 12M13 11L8 12" />
+        <g transform="translate(-4 1)">
+          <path
+            d="M14 9L11 16L15 20L14 25M11 16L6 21M13 11L18 14L21 12M13 11L8 12"
+            stroke="#111111"
+            stroke-width="4.2"
+          />
+          <path
+            d="M14 9L11 16L15 20L14 25M11 16L6 21M13 11L18 14L21 12M13 11L8 12"
+            stroke="#ffffff"
+            stroke-width="2"
+          />
+          <circle cx="15" cy="5" r="2.6" fill="#ffffff" stroke="#111111" stroke-width="1.4" />
+        </g>
+        <g transform="translate(3 0)">
+          <path
+            d="M14 9L11 16L15 20L14 25M11 16L6 21M13 11L18 14L21 12M13 11L8 12"
+            stroke="#111111"
+            stroke-width="2.6"
+          />
+          <circle cx="15" cy="5" r="3" fill="#f28c28" stroke="#111111" stroke-width="1.4" />
+        </g>
       </svg>
     </span>
     <span

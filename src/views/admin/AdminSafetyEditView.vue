@@ -173,11 +173,7 @@ async function submit() {
               :options="categoryOptions"
               :placeholder="$t('safety.form.categoryPlaceholder')"
             />
-            <p
-              v-if="errors.category"
-              class="ml-1 text-sm font-semibold text-orange-ink"
-              role="alert"
-            >
+            <p v-if="errors.category" class="ml-1 text-sm font-semibold text-danger" role="alert">
               ✕ {{ errors.category }}
             </p>
           </div>
@@ -201,7 +197,7 @@ async function submit() {
               <code class="text-ink-2">{{ form.accentColor }}</code>
             </span>
           </label>
-          <p v-if="errors.accentColor" class="text-sm font-semibold text-orange-ink" role="alert">
+          <p v-if="errors.accentColor" class="text-sm font-semibold text-danger" role="alert">
             ✕ {{ errors.accentColor }}
           </p>
         </div>
@@ -213,7 +209,7 @@ async function submit() {
           <h2 id="slides-title" class="text-xl font-bold">{{ $t('safety.form.slides') }}</h2>
           <span class="text-sm text-ink-2">{{ form.slides.length }} / {{ SLIDES_MAX }}</span>
         </div>
-        <p v-if="errors.slides" class="font-semibold text-orange-ink" role="alert">
+        <p v-if="errors.slides" class="font-semibold text-danger" role="alert">
           ✕ {{ errors.slides }}
         </p>
         <div
@@ -278,7 +274,7 @@ async function submit() {
         </UiButton>
       </section>
 
-      <p v-if="formError" class="font-semibold text-orange-ink" role="alert">✕ {{ formError }}</p>
+      <p v-if="formError" class="font-semibold text-danger" role="alert">✕ {{ formError }}</p>
 
       <div class="flex flex-wrap gap-2">
         <UiButton type="submit" class="!w-auto !px-8" :loading="saving">
