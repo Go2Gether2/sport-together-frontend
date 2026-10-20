@@ -101,8 +101,10 @@ async function uploadPhoto(e: Event) {
   }
 }
 
+const removePhotoOpen = ref(false)
 async function removePhoto() {
   if (!form.value) return
+  removePhotoOpen.value = false
   photoBusy.value = true
   try {
     await usersApi.deleteAvatar()
@@ -286,7 +288,7 @@ async function logout() {
             type="button"
             class="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4"
             :disabled="photoBusy"
-            @click="removePhoto"
+            @click="removePhotoOpen = true"
           >
             {{ $t('profile.photo.remove') }}
           </button>
@@ -439,6 +441,21 @@ async function logout() {
         {{ $t('profile.deleteAccount') }}
       </button>
     </template>
+
+    <UiModal
+      v-model:open="removePhotoOpen"
+      :title="$t('profile.photo.removeTitle')"
+      :description="$t('profile.photo.removeText')"
+    >
+      <template #actions>
+        <UiButton variant="ghost" @click="removePhotoOpen = false">{{
+          $t('common.cancel')
+        }}</UiButton>
+        <UiButton :loading="photoBusy" @click="removePhoto">{{
+          $t('profile.photo.remove')
+        }}</UiButton>
+      </template>
+    </UiModal>
 
     <UiModal
       v-model:open="deleteOpen"

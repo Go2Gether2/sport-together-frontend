@@ -429,7 +429,8 @@ const en: Dictionary<typeof ru> = {
   join: {
     title: 'Event sign-up',
     error: 'Something went wrong. Please try again.',
-    joined: 'You are signed up.',
+    joined: 'The event is now in “My sign-ups”.',
+    toMine: 'Open “My sign-ups”',
     applied: 'Request sent. The organizer’s decision will appear here.',
     left: 'Sign-up cancelled.',
     eventCancelled: 'Event cancelled. Participants will see the reason.',
@@ -505,6 +506,9 @@ const en: Dictionary<typeof ru> = {
     edited: 'edited',
     text: 'Message text',
     reply: 'Reply',
+    removeTitle: 'Delete message?',
+    removeText: 'It will disappear from the discussion and cannot be restored.',
+    remove: 'Delete',
   },
   privacy: {
     hand: 'documents',
@@ -777,6 +781,8 @@ const en: Dictionary<typeof ru> = {
       size: 'The file is larger than {n} MB — choose a smaller one',
       uploaded: 'Photo uploaded and set in your profile',
       removed: 'Photo removed',
+      removeTitle: 'Delete photo?',
+      removeText: 'Your initials will be shown instead. You can upload a new photo any time.',
       failed: 'Something went wrong. Please try again.',
     },
     sportLevels: 'Level in each sport',

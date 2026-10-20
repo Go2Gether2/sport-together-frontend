@@ -6,9 +6,10 @@ import EventFiltersSheet from '@/components/events/EventFiltersSheet.vue'
 import EventListCard from '@/components/events/EventListCard.vue'
 import NearbyMap from '@/components/map/NearbyMap.vue'
 import GuestPlaceNotice from '@/components/events/GuestPlaceNotice.vue'
-import { UiButton, UiTextField, type UiOption } from '@/components/ui'
+import { UiButton, UiChip, UiTextField, type UiOption } from '@/components/ui'
 import { t } from '@/i18n'
 import {
+  activeQuickDate,
   countFilters,
   filterChips,
   filtersFromQuery,
@@ -30,6 +31,7 @@ import { mapKey } from '@/features/map/mapgl'
 import { formatDistance, visibleNearby, type Bounds } from '@/features/map/nearby'
 import { useEventCoords } from '@/features/map/useEventCoords'
 import { useSessionStore } from '@/stores/session'
+import { quickDateRange, type QuickDate } from '@/utils/datetime'
 
 const route = useRoute()
 const session = useSessionStore()
@@ -96,8 +98,19 @@ watch(
 )
 
 const filterCount = computed(() => countFilters(filters.value))
+// Быстрые даты видны сразу в ленте; выбранная уже нажата, поэтому отдельным чипом её не дублируем.
+const QUICK: QuickDate[] = ['today', 'tomorrow', 'weekend']
+const quickDate = computed(() => activeQuickDate(filters.value))
+function toggleQuick(kind: QuickDate) {
+  if (quickDate.value === kind) return applyFilters(withoutFilter(filters.value, 'date'))
+  const r = quickDateRange(kind)
+  applyFilters({ ...filters.value, date_from: r.from, date_to: r.to })
+}
 const chips = computed(() =>
-  filterChips(filters.value, (id) => sportOptions.value.find((o) => o.value === String(id))?.label),
+  filterChips(
+    filters.value,
+    (id) => sportOptions.value.find((o) => o.value === String(id))?.label,
+  ).filter((c) => !(quickDate.value && c.key === 'date')),
 )
 function removeChip(key: FilterChipKey) {
   applyFilters(withoutFilter(filters.value, key))
@@ -270,6 +283,23 @@ onMounted(async () => {
             {{ v.label }}
           </button>
         </div>
+      </div>
+
+      <div
+        class="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]"
+        role="group"
+        :aria-label="$t('filters.when')"
+      >
+        <UiChip
+          v-for="q in QUICK"
+          :key="q"
+          class="min-h-11"
+          :class="quickDate !== q && '!bg-card hover:!bg-mute'"
+          :pressed="quickDate === q"
+          @click="toggleQuick(q)"
+        >
+          {{ $t(`quickDate.${q}`) }}
+        </UiChip>
       </div>
 
       <ul
