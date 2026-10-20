@@ -84,6 +84,14 @@ describe('toEventInput', () => {
   it('от имени организации', () => {
     expect(toEventInput(filled({ organizationId: 7 })).organization_id).toBe(7)
   })
+
+  it('точка на карте — lat/lng, без точки не отправляем', () => {
+    expect(toEventInput(filled({ point: { lat: 56.01, lng: 92.85 } }))).toMatchObject({
+      lat: 56.01,
+      lng: 92.85,
+    })
+    expect(toEventInput(filled()).lat).toBeUndefined()
+  })
 })
 
 describe('mapServerErrors', () => {
