@@ -1,4 +1,5 @@
 import type { SportIconName } from '@/components/illustrations/SportIcon.vue'
+import { t } from '@/i18n'
 
 // Загрузки файлов в API нет: в avatar_url пишем выбранный рисунок из нашего набора как «preset:<id>».
 const PREFIX = 'preset:'
@@ -9,13 +10,22 @@ export interface AvatarPreset {
   bg: string
 }
 
+// Подпись — геттер из словаря (avatars.<id>), чтобы менялась вместе с языком.
+const preset = (id: SportIconName, bg: string): AvatarPreset => ({
+  id,
+  bg,
+  get label() {
+    return t(`avatars.${id}`)
+  },
+})
+
 export const AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'running', label: 'Бег', bg: 'bg-orange' },
-  { id: 'football', label: 'Футбол', bg: 'bg-accent' },
-  { id: 'tennis', label: 'Теннис', bg: 'bg-lilac' },
-  { id: 'bike', label: 'Велосипед', bg: 'bg-accent-soft' },
-  { id: 'chess', label: 'Шахматы', bg: 'bg-orange' },
-  { id: 'custom', label: 'Свой спорт', bg: 'bg-lilac' },
+  preset('running', 'bg-orange'),
+  preset('football', 'bg-accent'),
+  preset('tennis', 'bg-lilac'),
+  preset('bike', 'bg-accent-soft'),
+  preset('chess', 'bg-orange'),
+  preset('custom', 'bg-lilac'),
 ]
 
 export type AvatarView =

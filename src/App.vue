@@ -15,7 +15,7 @@ const menuOpen = ref(false)
     href="#main"
     class="sr-only z-50 rounded-full bg-ink px-4 py-2 text-white focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
   >
-    Перейти к содержимому
+    {{ $t('nav.skip') }}
   </a>
   <div class="lg:grid lg:grid-cols-[288px_minmax(0,1fr)]">
     <AppSidebar />

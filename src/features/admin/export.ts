@@ -1,5 +1,6 @@
 import type { AdminDashboard, EventSummary, ModerationLog } from '@/api'
 import { statusView } from '@/components/ui'
+import { intlLocale, t } from '@/i18n'
 import { eventStatusSlices, moderationSlices, topBy } from './stats'
 
 type Cell = string | number | null | undefined
@@ -19,17 +20,19 @@ export function toCsv(rows: Cell[][]): string {
   return BOM + rows.map((r) => r.map(cell).join(SEP)).join('\r\n') + '\r\n'
 }
 
-const dateTime = new Intl.DateTimeFormat('ru-RU', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+// Формат даты и подписи — на языке интерфейса, в котором админ нажал «Выгрузить».
+const dateTime = () =>
+  new Intl.DateTimeFormat(intlLocale(), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
 function organizer(e: EventSummary): string {
   // Имя частного организатора — персональные данные (152-ФЗ), в выгрузку не кладём.
-  return e.organizer?.type === 'organization' ? e.organizer.name : 'Частное лицо'
+  return e.organizer?.type === 'organization' ? e.organizer.name : t('export.private')
 }
 
 export function statsCsv(
@@ -38,61 +41,61 @@ export function statsCsv(
   logs: ModerationLog[],
   now: Date,
 ): string {
-  const rows: Cell[][] = [['Платформа «Вместе» — статистика'], ['Выгружено', dateTime.format(now)]]
+  const rows: Cell[][] = [[t('export.title')], [t('export.exported'), dateTime().format(now)]]
 
   if (dashboard) {
     rows.push(
       [],
-      ['Сводка', 'Значение'],
-      ['Пользователей', dashboard.users],
-      ['Организаций ждут допуска', dashboard.pending_organizations],
-      ['Организаций допущено', dashboard.approved_organizations],
+      [t('export.summary'), t('export.value')],
+      [t('export.users'), dashboard.users],
+      [t('export.orgsPending'), dashboard.pending_organizations],
+      [t('export.orgsApproved'), dashboard.approved_organizations],
       ...eventStatusSlices(dashboard).map((s) => [
-        `Мероприятий: ${s.label.toLowerCase()}`,
+        t('export.eventsBy', { status: s.label.toLowerCase() }),
         s.value,
       ]),
-      ['Скрыто сообщений', dashboard.hidden_comments],
+      [t('export.hiddenComments'), dashboard.hidden_comments],
     )
   }
 
   const section = (title: string, slices: { label: string; value: number }[]) => {
-    rows.push([], [title, 'Мероприятий'], ...slices.map((s) => [s.label, s.value]))
+    rows.push([], [title, t('export.events')], ...slices.map((s) => [s.label, s.value]))
   }
   section(
-    'Вид спорта',
+    t('export.columns.sport'),
     topBy(events, (e) => e.sport?.name, Infinity),
   )
   section(
-    'Город',
+    t('export.columns.city'),
     topBy(events, (e) => e.city, Infinity),
   )
-  rows.push([], ['Решение модерации', 'Количество'])
+  rows.push([], [t('export.decision'), t('export.count')])
   rows.push(...moderationSlices(logs).map((s) => [s.label, s.value]))
 
   rows.push(
     [],
     [
-      'ID',
-      'Название',
-      'Вид спорта',
-      'Город',
-      'Начало',
-      'Статус',
-      'Участников',
-      'Мест',
-      'Запись',
-      'Организатор',
-    ],
+      'id',
+      'title',
+      'sport',
+      'city',
+      'start',
+      'status',
+      'participants',
+      'capacity',
+      'join',
+      'organizer',
+    ].map((c) => t(`export.columns.${c}`)),
     ...events.map((e) => [
       e.id,
       e.title,
       e.sport?.name,
       e.city,
-      dateTime.format(new Date(e.starts_at)),
+      dateTime().format(new Date(e.starts_at)),
       statusView({ kind: 'event', status: e.status }).label,
       e.confirmed_count,
-      e.capacity ?? 'без ограничений',
-      e.join_mode === 'approval' ? 'по заявке' : 'свободная',
+      e.capacity ?? t('export.unlimited'),
+      t(`export.join.${e.join_mode}`),
       organizer(e),
     ]),
   )

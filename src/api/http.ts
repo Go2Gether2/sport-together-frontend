@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import type { ApiErrorBody } from './types'
 
 export const API_BASE = '/api/v1'
@@ -26,18 +27,11 @@ export class ApiError extends Error {
   }
 }
 
-const FALLBACK_MESSAGES: Record<number, string> = {
-  0: 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.',
-  401: 'Нужно войти в аккаунт.',
-  403: 'Недостаточно прав для этого действия.',
-  404: 'Не найдено.',
-  409: 'Действие сейчас недоступно.',
-  410: 'Мероприятие недоступно.',
-  422: 'Проверьте заполнение полей.',
-}
+// Свои тексты — только когда бэк не прислал понятного сообщения; его сообщение не переводим.
+const FALLBACK_STATUSES = [0, 401, 403, 404, 409, 410, 422]
 
 function fallbackMessage(status: number) {
-  return FALLBACK_MESSAGES[status] ?? 'Что-то пошло не так. Попробуйте ещё раз.'
+  return FALLBACK_STATUSES.includes(status) ? t(`apiErrors.s${status}`) : t('apiErrors.other')
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>
