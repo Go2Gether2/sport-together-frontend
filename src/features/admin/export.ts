@@ -104,7 +104,7 @@ export function statsCsv(
 
 export function exportFileName(now: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `vmeste-statistika-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.csv`
+  return `go2gether-statistika-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.csv`
 }
 
 export function downloadText(text: string, fileName: string, type = 'text/csv;charset=utf-8') {

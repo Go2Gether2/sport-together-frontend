@@ -90,6 +90,6 @@ describe('statsCsv', () => {
 
 describe('exportFileName', () => {
   it('дата в имени файла', () => {
-    expect(exportFileName(new Date(2026, 0, 5))).toBe('vmeste-statistika-2026-01-05.csv')
+    expect(exportFileName(new Date(2026, 0, 5))).toBe('go2gether-statistika-2026-01-05.csv')
   })
 })

@@ -38,7 +38,7 @@ export function resolveAccess(
   return true
 }
 
-export const APP_NAME = 'Вместе'
+export const APP_NAME = 'Go2Gether'
 
 export function documentTitle(title?: string) {
   return title ? `${title} — ${APP_NAME}` : `${APP_NAME} — ${t('home.tagline')}`

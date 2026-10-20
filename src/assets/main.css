@@ -4,9 +4,9 @@
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
 @theme {
-  --font-sans: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-hand: 'Caveat', 'Onest', cursive;
+  --font-sans: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Exo 2', 'Inter Tight', system-ui, sans-serif;
+  --font-hand: 'Caveat', 'Inter Tight', cursive;
 
   --color-ink: #0e0e10;
   --color-ink-2: #4f515b;
@@ -40,6 +40,20 @@ body {
 }
 
 @layer base {
+  /* Exo 2 загружен только курсивом 800/900 — заголовки и логотип всегда наклонные и жирные. */
+  h1,
+  .font-display {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+  }
+
+  h1 {
+    text-transform: uppercase;
+    line-height: 1;
+    text-wrap: balance;
+  }
+
   :focus-visible {
     outline: 3px solid var(--color-accent-ink);
     outline-offset: 2px;

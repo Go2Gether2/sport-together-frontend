@@ -45,7 +45,7 @@ const [left, right] = tabBarItems()
     >
       <span
         aria-hidden="true"
-        class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-3xl leading-none text-white short:mt-0 short:size-9 short:text-2xl"
+        class="-mt-6 grid size-14 place-items-center rounded-full bg-orange text-3xl leading-none text-orange-ink shadow-[0_6px_16px_-6px_rgb(0_0_0/0.35)] short:mt-0 short:size-9 short:text-2xl"
         >+</span
       >
       {{ CREATE_ITEM.label }}
