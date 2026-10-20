@@ -3,7 +3,8 @@ import { computed, nextTick, ref, useId, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ApiError, commentsApi, type Comment, type EventDetails } from '@/api'
 import { useSessionStore } from '@/stores/session'
-import { UiButton, plural } from '@/components/ui'
+import { UiButton } from '@/components/ui'
+import { t } from '@/i18n'
 import { buildThread } from '@/features/comments/thread'
 import CommentItem from './CommentItem.vue'
 
@@ -22,10 +23,7 @@ const inputId = useId()
 const input = ref<HTMLTextAreaElement | null>(null)
 
 const thread = computed(() => buildThread(comments.value))
-const countText = computed(
-  () =>
-    `${comments.value.length} ${plural(comments.value.length, ['сообщение', 'сообщения', 'сообщений'])}`,
-)
+const countText = computed(() => t('comments.count', comments.value.length))
 const isOrganizer = computed(() => props.event.is_organizer)
 // Владелец допущенной организации отвечает в обсуждении её события от её имени.
 const asOrganizationId = computed(() =>
@@ -34,7 +32,7 @@ const asOrganizationId = computed(() =>
     : undefined,
 )
 const placeholder = computed(() =>
-  isOrganizer.value ? 'Ответьте участникам или добавьте уточнение…' : 'Задать вопрос организатору…',
+  isOrganizer.value ? t('comments.organizerPlaceholder') : t('comments.placeholder'),
 )
 
 async function load() {
@@ -55,7 +53,7 @@ async function act(fn: () => Promise<unknown>) {
     comments.value = (await commentsApi.list(props.event.id)).items
     return true
   } catch (e) {
-    error.value = e instanceof ApiError ? e.message : 'Не получилось отправить. Попробуйте ещё раз.'
+    error.value = e instanceof ApiError ? e.message : t('comments.sendError')
     return false
   } finally {
     busy.value = false
@@ -65,7 +63,7 @@ async function act(fn: () => Promise<unknown>) {
 async function send() {
   const body = text.value.trim()
   if (!body) {
-    error.value = 'Напишите сообщение.'
+    error.value = t('comments.required')
     return
   }
   const ok = await act(() =>
@@ -101,19 +99,21 @@ watch(() => props.event.id, load, { immediate: true })
 <template>
   <section aria-labelledby="comments-title" class="flex flex-col gap-3">
     <h2 id="comments-title" class="flex items-baseline gap-2 text-lg font-bold">
-      Обсуждение
+      {{ $t('comments.title') }}
       <span v-if="state === 'ready'" class="text-base font-normal text-ink-2">{{ countText }}</span>
     </h2>
 
-    <p v-if="state === 'loading'" class="text-ink-2" role="status">Загружаем сообщения…</p>
+    <p v-if="state === 'loading'" class="text-ink-2" role="status">
+      {{ $t('comments.loading') }}
+    </p>
     <div v-else-if="state === 'error'" class="flex flex-col items-start gap-2" role="alert">
-      <p class="text-ink-2">Не получилось загрузить обсуждение.</p>
-      <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
+      <p class="text-ink-2">{{ $t('comments.loadError') }}</p>
+      <UiButton variant="ghost" class="!w-auto" @click="load">{{ $t('common.retry') }}</UiButton>
     </div>
 
     <template v-else>
       <p v-if="comments.length === 0" class="text-ink-2">
-        Вопросов пока нет. Спросите о том, что важно перед записью.
+        {{ $t('comments.empty') }}
       </p>
       <ul class="flex flex-col gap-3">
         <li v-for="item in thread" :key="item.comment.id" class="flex flex-col gap-2">
@@ -143,19 +143,21 @@ watch(() => props.event.id, load, { immediate: true })
       </ul>
 
       <p v-if="event.status !== 'published'" class="text-ink-2">
-        Обсуждение закрыто: мероприятие снято с публикации.
+        {{ $t('comments.closed') }}
       </p>
       <form v-else-if="session.user" class="flex flex-col gap-2" @submit.prevent="send">
         <p v-if="replyTo" class="flex items-center gap-3 text-sm">
           <span class="text-ink-2">
-            Ответ для {{ replyTo.as_organization?.name ?? replyTo.author.name }}
+            {{
+              $t('comments.replyTo', { name: replyTo.as_organization?.name ?? replyTo.author.name })
+            }}
           </span>
           <button
             type="button"
             class="font-bold underline underline-offset-4"
             @click="replyTo = null"
           >
-            Не отвечать
+            {{ $t('comments.noReply') }}
           </button>
         </p>
         <label :for="inputId" class="sr-only">{{ placeholder }}</label>
@@ -173,14 +175,14 @@ watch(() => props.event.id, load, { immediate: true })
           <button
             type="submit"
             :disabled="busy"
-            aria-label="Отправить сообщение"
+            :aria-label="$t('comments.send')"
             class="grid size-12.5 flex-none place-items-center rounded-full bg-ink text-xl font-bold text-white disabled:bg-mute"
           >
             ↑
           </button>
         </div>
         <p v-if="asOrganizationId" class="text-sm text-ink-2">
-          Сообщение будет от имени организации.
+          {{ $t('comments.asOrg') }}
         </p>
       </form>
       <p v-else>
@@ -188,8 +190,8 @@ watch(() => props.event.id, load, { immediate: true })
           :to="{ name: 'login', query: { redirect: route.fullPath } }"
           class="font-bold text-accent-ink underline underline-offset-4"
         >
-          Войдите</RouterLink
-        >, чтобы задать вопрос.
+          {{ $t('comments.loginLink') }}</RouterLink
+        >{{ $t('comments.loginRest') }}
       </p>
       <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
     </template>

@@ -10,7 +10,10 @@ const rest = computed(() => props.users.length - shown.value.length)
 </script>
 
 <template>
-  <div class="flex items-center" :aria-label="`Участники: ${users.map((u) => u.name).join(', ')}`">
+  <div
+    class="flex items-center"
+    :aria-label="$t('event.participantsList', { list: users.map((u) => u.name).join(', ') })"
+  >
     <UiAvatar
       v-for="(u, i) in shown"
       :key="u.id"

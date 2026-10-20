@@ -13,7 +13,7 @@ const props = withDefaults(
     allowCreate?: boolean
   }>(),
   {
-    placeholder: 'Начните вводить',
+    placeholder: undefined,
     hint: undefined,
     error: undefined,
     required: false,
@@ -108,7 +108,7 @@ function onBlur(e: FocusEvent) {
           v-model="query"
           role="combobox"
           autocomplete="off"
-          :placeholder="placeholder"
+          :placeholder="placeholder ?? $t('ui.startTyping')"
           :required="required"
           :aria-expanded="open ? 'true' : 'false'"
           :aria-controls="listId"
@@ -156,9 +156,9 @@ function onBlur(e: FocusEvent) {
           @mousedown.prevent="choose(filtered.length)"
           @mousemove="active = filtered.length"
         >
-          + Добавить «{{ createText }}»
+          {{ $t('ui.addOwn', { text: createText }) }}
         </li>
-        <li v-if="count === 0" class="px-3 py-2 text-ink-2">Ничего не нашлось</li>
+        <li v-if="count === 0" class="px-3 py-2 text-ink-2">{{ $t('ui.nothingFound') }}</li>
       </ul>
     </div>
     <p

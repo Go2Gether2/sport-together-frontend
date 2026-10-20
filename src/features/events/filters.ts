@@ -1,21 +1,23 @@
 import type { LocationQuery, LocationQueryRaw } from 'vue-router'
 import type { EventFilters, JoinMode, Level } from '@/api'
+import { intlLocale, t } from '@/i18n'
 import { quickDateRange, type QuickDate } from '@/utils/datetime'
 
 const LEVELS: Level[] = ['beginner', 'amateur', 'pro']
 const JOIN_MODES: JoinMode[] = ['open', 'approval']
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
-export const LEVEL_LABELS: Record<Level, string> = {
-  beginner: 'Новичок',
-  amateur: 'Любитель',
-  pro: 'Опытный',
+// Подписи — геттеры: читаются при отрисовке и меняются вместе с языком; Object.entries их тоже видит.
+function labels<K extends string>(prefix: string, keys: readonly K[]): Record<K, string> {
+  const out = {} as Record<K, string>
+  for (const key of keys)
+    Object.defineProperty(out, key, { enumerable: true, get: () => t(`${prefix}.${key}`) })
+  return out
 }
 
-export const JOIN_MODE_LABELS: Record<JoinMode, string> = {
-  open: 'Свободная запись',
-  approval: 'По заявке',
-}
+export const LEVEL_LABELS = labels('level', LEVELS)
+
+export const JOIN_MODE_LABELS = labels('joinMode', JOIN_MODES)
 
 function str(value: LocationQuery[string] | undefined): string | undefined {
   const v = Array.isArray(value) ? value[0] : value
@@ -71,14 +73,12 @@ export interface FilterChip {
   label: string
 }
 
-const QUICK_LABELS: Record<QuickDate, string> = {
-  today: 'Сегодня',
-  tomorrow: 'Завтра',
-  weekend: 'На выходных',
-}
+const QUICK_LABELS = labels('quickDate', ['today', 'tomorrow', 'weekend'] as const)
 
-const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
-const day = (iso: string) => dayMonth.format(new Date(`${iso}T00:00:00`))
+const day = (iso: string) =>
+  new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long' }).format(
+    new Date(`${iso}T00:00:00`),
+  )
 
 /** Подпись выбранных дат: «Завтра», «24 октября», «24 октября — 26 октября». */
 export function dateLabel(f: EventFilters, now = new Date()): string | null {
@@ -86,8 +86,8 @@ export function dateLabel(f: EventFilters, now = new Date()): string | null {
   if (quick) return QUICK_LABELS[quick]
   if (f.date_from && f.date_to)
     return f.date_from === f.date_to ? day(f.date_from) : `${day(f.date_from)} — ${day(f.date_to)}`
-  if (f.date_from) return `с ${day(f.date_from)}`
-  if (f.date_to) return `до ${day(f.date_to)}`
+  if (f.date_from) return t('filters.from', { date: day(f.date_from) })
+  if (f.date_to) return t('filters.to', { date: day(f.date_to) })
   return null
 }
 
@@ -101,7 +101,7 @@ export function filterChips(
   const date = dateLabel(f, now)
   if (date) chips.push({ key: 'date', label: date })
   if (f.city) chips.push({ key: 'city', label: f.city })
-  if (f.sport) chips.push({ key: 'sport', label: sportName(f.sport) ?? 'Направление' })
+  if (f.sport) chips.push({ key: 'sport', label: sportName(f.sport) ?? t('filters.sport') })
   if (f.level) chips.push({ key: 'level', label: LEVEL_LABELS[f.level] })
   if (f.join_mode) chips.push({ key: 'join_mode', label: JOIN_MODE_LABELS[f.join_mode] })
   return chips

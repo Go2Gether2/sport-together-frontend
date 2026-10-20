@@ -1,4 +1,5 @@
 import type { EventSummary } from '@/api'
+import { intlLocale } from '@/i18n'
 import { localDate } from '@/utils/datetime'
 
 export interface CalendarDay {
@@ -58,11 +59,16 @@ export function countByDay(events: Pick<EventSummary, 'starts_at'>[]): Record<st
   return counts
 }
 
-const monthTitle = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
-
 export function formatMonth({ year, month }: Month): string {
-  const t = monthTitle.format(new Date(year, month, 1)).replace(/\s*г\.$/, '')
-  return t.charAt(0).toUpperCase() + t.slice(1)
+  const title = new Intl.DateTimeFormat(intlLocale(), { month: 'long', year: 'numeric' })
+    .format(new Date(year, month, 1))
+    .replace(/\s*г\.$/, '')
+  return title.charAt(0).toUpperCase() + title.slice(1)
 }
 
-export const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+/** Короткие дни недели с понедельника на языке интерфейса: «пн»… или «Mon»… */
+export function weekdays(): string[] {
+  const f = new Intl.DateTimeFormat(intlLocale(), { weekday: 'short' })
+  // 5 января 2026 — понедельник.
+  return Array.from({ length: 7 }, (_, i) => f.format(new Date(2026, 0, 5 + i)))
+}

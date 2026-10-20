@@ -11,7 +11,7 @@ const [left, right] = tabBarItems()
 
 <template>
   <nav
-    aria-label="Основные разделы"
+    :aria-label="$t('nav.main')"
     class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-[28px] bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] lg:hidden"
   >
     <RouterLink
@@ -36,7 +36,7 @@ const [left, right] = tabBarItems()
         class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-white"
         ><NavIcon name="shield"
       /></span>
-      Админка
+      {{ $t('nav.admin') }}
     </RouterLink>
     <RouterLink
       v-else

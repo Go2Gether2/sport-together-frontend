@@ -1,5 +1,6 @@
 import type { RouteLocationRaw } from 'vue-router'
 import type { SportIconName } from '@/components/illustrations/SportIcon.vue'
+import { intlLocale, t } from '@/i18n'
 
 // Акций в API нет — набор задаём здесь. Баннер виден только в свои даты (включительно, по местному времени).
 export interface Promo {
@@ -15,55 +16,55 @@ export interface Promo {
   to: RouteLocationRaw
 }
 
+// Тексты — в словарях (promos.<id>), здесь только даты, оформление и ссылки.
+function promo(id: string, rest: Omit<Promo, 'id' | 'tag' | 'title' | 'text' | 'cta'>): Promo {
+  return {
+    id,
+    ...rest,
+    get tag() {
+      return t(`promos.${id}.tag`)
+    },
+    get title() {
+      return t(`promos.${id}.title`)
+    },
+    get text() {
+      return t(`promos.${id}.text`)
+    },
+    get cta() {
+      return t(`promos.${id}.cta`)
+    },
+  }
+}
+
 export const PROMOS: Promo[] = [
-  {
-    id: 'club-battle',
-    tag: 'Битва клубов',
-    title: 'Чей клуб соберёт больше людей?',
-    text: 'Организации соревнуются, кто проведёт больше встреч за осень. Запишитесь — поддержите свой клуб.',
+  promo('clubBattle', {
     starts: '2026-10-01',
     ends: '2026-11-30',
     icon: 'football',
     bg: 'bg-orange',
-    cta: 'Смотреть клубы',
     to: { name: 'organizations' },
-  },
-  {
-    id: 'activity-marathon',
-    tag: 'Марафон активности',
-    title: '10 тренировок за месяц',
-    text: 'Отмечайтесь на любых мероприятиях и держите ритм — вместе проще не бросить.',
+  }),
+  promo('activityMarathon', {
     starts: '2026-10-15',
     ends: '2026-11-15',
     icon: 'running',
     bg: 'bg-lilac',
-    cta: 'Найти тренировку',
     to: { name: 'events' },
-  },
-  {
-    id: 'run-october',
-    tag: 'Беговой сезон',
-    title: 'Пробежки по выходным',
-    text: 'Групповые пробежки для любого темпа: от первых 3 км до подготовки к полумарафону.',
+  }),
+  promo('runSeason', {
     starts: '2026-09-15',
     ends: '2026-11-30',
     icon: 'running',
     bg: 'bg-accent-soft',
-    cta: 'Смотреть пробежки',
     to: { name: 'events', query: { q: 'бег' } },
-  },
-  {
-    id: 'chess-week',
-    tag: 'Неделя шахмат',
-    title: 'Турниры и блиц для всех',
-    text: 'Партии в парках и клубах города. Новичкам покажут, как ходят фигуры.',
+  }),
+  promo('chessWeek', {
     starts: '2026-10-19',
     ends: '2026-11-01',
     icon: 'chess',
     bg: 'bg-card',
-    cta: 'Найти партию',
     to: { name: 'events', query: { q: 'шахмат' } },
-  },
+  }),
 ]
 
 const day = (iso: string) => {
@@ -76,8 +77,7 @@ export function activePromos(now: Date, promos: Promo[] = PROMOS): Promo[] {
   return promos.filter((p) => day(p.starts).getTime() <= today && today <= day(p.ends).getTime())
 }
 
-const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
-
 export function promoPeriod(p: Promo): string {
-  return `до ${dayMonth.format(day(p.ends))}`
+  const date = new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long' })
+  return t('promos.until', { date: date.format(day(p.ends)) })
 }

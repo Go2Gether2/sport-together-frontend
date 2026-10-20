@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import UiAvatar from '@/components/ui/UiAvatar.vue'
 import AppLogo from './AppLogo.vue'
+import LocaleSwitch from './LocaleSwitch.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
 import NavIcon from './NavIcon.vue'
 import { CREATE_ITEM, desktopItems } from './nav'
@@ -32,7 +33,7 @@ async function logout() {
         {{ CREATE_ITEM.label }}
       </RouterLink>
 
-      <nav aria-label="Разделы">
+      <nav :aria-label="$t('nav.sections')">
         <ul class="flex flex-col gap-1">
           <li v-for="item in items" :key="item.label">
             <RouterLink
@@ -49,6 +50,7 @@ async function logout() {
 
       <div class="mt-auto flex flex-col gap-3 rounded-[24px] bg-field p-3">
         <ThemeSwitch />
+        <LocaleSwitch />
         <template v-if="session.user">
           <div class="flex items-center gap-3">
             <UiAvatar :name="session.user.name" :url="session.user.avatar_url" />
@@ -59,14 +61,14 @@ async function logout() {
               :to="{ name: 'login' }"
               class="rounded-full bg-card px-2 py-2 text-center text-sm font-semibold whitespace-nowrap text-ink no-underline hover:bg-mute"
             >
-              Сменить роль
+              {{ $t('common.switchRole') }}
             </RouterLink>
             <button
               type="button"
               class="rounded-full bg-card px-4 py-2 text-sm font-semibold whitespace-nowrap hover:bg-mute"
               @click="logout"
             >
-              Выйти
+              {{ $t('common.logout') }}
             </button>
           </div>
         </template>
@@ -75,7 +77,7 @@ async function logout() {
           :to="{ name: 'login' }"
           class="rounded-full bg-ink px-4 py-2.5 text-center font-bold text-white no-underline"
         >
-          Войти
+          {{ $t('common.login') }}
         </RouterLink>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import NavIcon from './NavIcon.vue'
+import LocaleSwitch from './LocaleSwitch.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
 import { menuItems } from './nav'
 
@@ -39,18 +40,20 @@ async function logout() {
     @close="open = false"
   >
     <div class="mb-3 flex items-center justify-between">
-      <h2 id="app-menu-title" class="font-display text-lg font-bold">Все разделы</h2>
+      <h2 id="app-menu-title" class="font-display text-lg font-bold">
+        {{ $t('nav.allSections') }}
+      </h2>
       <button
         type="button"
         class="grid size-11 place-items-center rounded-full bg-field text-xl"
-        aria-label="Закрыть меню"
+        :aria-label="$t('nav.closeMenu')"
         @click="open = false"
       >
         ✕
       </button>
     </div>
 
-    <nav aria-label="Дополнительные разделы">
+    <nav :aria-label="$t('nav.more')">
       <ul class="flex flex-col gap-2">
         <li v-for="item in items" :key="item.label">
           <RouterLink
@@ -66,6 +69,7 @@ async function logout() {
 
     <div class="mt-4 rounded-[24px] bg-field p-3">
       <ThemeSwitch />
+      <LocaleSwitch class="mt-3" />
     </div>
 
     <div class="mt-4 pt-4">
@@ -76,10 +80,10 @@ async function logout() {
             :to="{ name: 'login' }"
             class="font-bold text-ink underline underline-offset-4"
           >
-            Сменить роль
+            {{ $t('common.switchRole') }}
           </RouterLink>
           <button type="button" class="font-bold underline underline-offset-4" @click="logout">
-            Выйти
+            {{ $t('common.logout') }}
           </button>
         </span>
       </p>
@@ -88,10 +92,10 @@ async function logout() {
         :to="{ name: 'login' }"
         class="font-bold text-ink underline underline-offset-4"
       >
-        Войти
+        {{ $t('common.login') }}
       </RouterLink>
       <p class="mt-3 text-sm text-ink-2">
-        Карта, друзья, клубы и уведомления появятся здесь, когда заработают.
+        {{ $t('nav.soon') }}
       </p>
     </div>
   </dialog>

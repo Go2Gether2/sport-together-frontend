@@ -8,10 +8,10 @@ import { useSessionStore } from '@/stores/session'
 const session = useSessionStore()
 
 const sports = [
-  { icon: 'football', label: 'Футбол', bg: 'bg-orange' },
-  { icon: 'tennis', label: 'Теннис', bg: 'bg-lilac' },
-  { icon: 'running', label: 'Бег', bg: 'bg-accent-soft' },
-  { icon: 'chess', label: 'Шахматы', bg: 'bg-card' },
+  { icon: 'football', bg: 'bg-orange' },
+  { icon: 'tennis', bg: 'bg-lilac' },
+  { icon: 'running', bg: 'bg-accent-soft' },
+  { icon: 'chess', bg: 'bg-card' },
 ]
 </script>
 
@@ -23,7 +23,7 @@ const sports = [
 
     <ForYou v-if="session.user && !session.isAdmin" />
 
-    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Популярные направления">
+    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4" :aria-label="$t('home.popularSports')">
       <li
         v-for="s in sports"
         :key="s.icon"
@@ -33,7 +33,7 @@ const sports = [
         <span class="grid size-12 place-items-center rounded-full bg-ink">
           <SportIcon :name="s.icon" :size="36" class="invert" />
         </span>
-        <b class="text-lg">{{ s.label }}</b>
+        <b class="text-lg">{{ $t(`home.sports.${s.icon}`) }}</b>
       </li>
     </ul>
   </section>

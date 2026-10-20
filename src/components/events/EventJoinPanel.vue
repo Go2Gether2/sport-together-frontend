@@ -7,6 +7,7 @@ import { StatusBadge, UiButton, UiModal, UiTextArea } from '@/components/ui'
 import { CANCEL_REASON_MAX, cancelReasonError } from '@/features/events/cancelEvent'
 import { joinAction } from '@/features/events/participation'
 import { formatEventWhen } from '@/utils/datetime'
+import { t } from '@/i18n'
 
 const props = defineProps<{ event: EventDetails }>()
 const emit = defineEmits<{ changed: [] }>()
@@ -34,7 +35,7 @@ async function run(fn: () => Promise<unknown>, done: string) {
     notice.value = done
     emit('changed')
   } catch (e) {
-    error.value = e instanceof ApiError ? e.message : 'Не получилось. Попробуйте ещё раз.'
+    error.value = e instanceof ApiError ? e.message : t('join.error')
     if (e instanceof ApiError && e.isGone) emit('changed')
   } finally {
     busy.value = false
@@ -42,21 +43,21 @@ async function run(fn: () => Promise<unknown>, done: string) {
 }
 
 function join() {
-  return run(() => eventsApi.join(props.event.id), 'Вы записаны.')
+  return run(() => eventsApi.join(props.event.id), t('join.joined'))
 }
 
 async function apply() {
   applyOpen.value = false
   await run(
     () => eventsApi.join(props.event.id, message.value.trim() || undefined),
-    'Заявка отправлена. Решение организатора появится здесь.',
+    t('join.applied'),
   )
   message.value = ''
 }
 
 async function leave() {
   cancelOpen.value = false
-  await run(() => eventsApi.leave(props.event.id), 'Запись отменена.')
+  await run(() => eventsApi.leave(props.event.id), t('join.left'))
 }
 
 const editable = computed(() => props.event.status === 'published' && !props.event.is_past)
@@ -76,7 +77,7 @@ async function cancelEvent() {
   cancelEventOpen.value = false
   await run(
     () => eventsApi.cancel(props.event.id, cancelReason.value.trim()),
-    'Мероприятие отменено. Участники увидят причину.',
+    t('join.eventCancelled'),
   )
 }
 
@@ -85,68 +86,70 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
 
 <template>
   <section aria-labelledby="join-title" class="flex flex-col gap-3 rounded-card bg-card p-4">
-    <h2 id="join-title" class="sr-only">Запись на мероприятие</h2>
+    <h2 id="join-title" class="sr-only">{{ $t('join.title') }}</h2>
 
     <template v-if="action.kind === 'confirmed'">
       <StatusBadge :of="{ kind: 'participation', status: 'confirmed' }" />
-      <p class="font-medium">Ждём вас: {{ when.toLowerCase() }}.</p>
-      <UiButton variant="ghost" :disabled="busy" @click="cancelOpen = true"
-        >Отменить запись</UiButton
-      >
+      <p class="font-medium">{{ $t('join.waiting', { when: when.toLowerCase() }) }}</p>
+      <UiButton variant="ghost" :disabled="busy" @click="cancelOpen = true">{{
+        $t('join.leave')
+      }}</UiButton>
     </template>
 
     <template v-else-if="action.kind === 'pending'">
       <StatusBadge :of="{ kind: 'participation', status: 'pending' }" />
       <p class="text-ink-2">
-        Организатор рассмотрит заявку. Решение появится здесь и в «Моих записях».
+        {{ $t('join.pendingText') }}
       </p>
-      <UiButton variant="ghost" :disabled="busy" @click="cancelOpen = true"
-        >Отозвать заявку</UiButton
-      >
+      <UiButton variant="ghost" :disabled="busy" @click="cancelOpen = true">{{
+        $t('join.withdraw')
+      }}</UiButton>
     </template>
 
     <template v-else-if="action.kind === 'join'">
-      <p class="text-ink-2">Свободная запись: вы сразу станете участником.</p>
-      <UiButton :loading="busy" @click="join">Записаться</UiButton>
+      <p class="text-ink-2">{{ $t('join.openText') }}</p>
+      <UiButton :loading="busy" @click="join">{{ $t('join.join') }}</UiButton>
     </template>
 
     <template v-else-if="action.kind === 'apply'">
       <div v-if="action.again && mine" class="flex flex-col gap-1.5">
         <StatusBadge :of="{ kind: 'participation', status: 'rejected' }" />
-        <p v-if="mine.decision_reason" class="text-ink-2">Причина: «{{ mine.decision_reason }}»</p>
+        <p v-if="mine.decision_reason" class="text-ink-2">
+          {{ $t('join.reason', { reason: mine.decision_reason }) }}
+        </p>
       </div>
       <p class="text-ink-2">
-        Запись по заявке: организатор примет или отклонит её. До решения вы не участник.
+        {{ $t('join.approvalText') }}
       </p>
       <UiButton :loading="busy" @click="applyOpen = true">
-        {{ action.again ? 'Подать заявку снова' : 'Подать заявку' }}
+        {{ action.again ? $t('join.applyAgain') : $t('join.apply') }}
       </UiButton>
     </template>
 
     <template v-else-if="action.kind === 'login'">
-      <p class="text-ink-2">Чтобы записаться, войдите в аккаунт.</p>
+      <p class="text-ink-2">{{ $t('join.loginText') }}</p>
       <RouterLink
         :to="{ name: 'login', query: { redirect: route.fullPath } }"
         class="inline-flex min-h-13 items-center justify-center rounded-full bg-ink px-5 font-bold text-white no-underline"
       >
-        Войти и записаться
+        {{ $t('join.loginCta') }}
       </RouterLink>
     </template>
 
     <template v-else-if="action.kind === 'organizer'">
-      <p class="font-medium">Вы организатор этого мероприятия.</p>
+      <p class="font-medium">{{ $t('join.organizer') }}</p>
       <RouterLink
         :to="{ name: 'event-manage', params: { id: event.id } }"
         class="inline-flex min-h-13 items-center justify-center rounded-full bg-ink px-5 font-bold text-white no-underline"
       >
-        Заявки и участники
+        {{ $t('join.manage') }}
       </RouterLink>
       <RouterLink
         v-if="editable"
         :to="{ name: 'event-edit', params: { id: event.id } }"
         class="inline-flex min-h-13 items-center justify-center rounded-full bg-field px-5 font-bold text-ink no-underline"
       >
-        Изменить
+        {{ $t('common.edit') }}
       </RouterLink>
       <button
         v-if="editable"
@@ -155,66 +158,68 @@ const when = computed(() => formatEventWhen(props.event.starts_at, props.event.e
         :disabled="busy"
         @click="openCancelEvent"
       >
-        Отменить мероприятие
+        {{ $t('join.cancelEvent') }}
       </button>
     </template>
     <p v-else-if="action.kind === 'admin'" class="text-ink-2">
-      Администратор не записывается на мероприятия.
+      {{ $t('join.admin') }}
     </p>
-    <p v-else-if="action.kind === 'past'" class="text-ink-2">Мероприятие уже прошло.</p>
-    <p v-else-if="action.kind === 'unavailable'" class="font-medium">Запись закрыта.</p>
-    <p v-else-if="action.kind === 'full'" class="font-medium">Мест больше нет.</p>
+    <p v-else-if="action.kind === 'past'" class="text-ink-2">{{ $t('join.past') }}</p>
+    <p v-else-if="action.kind === 'unavailable'" class="font-medium">
+      {{ $t('join.closed') }}
+    </p>
+    <p v-else-if="action.kind === 'full'" class="font-medium">{{ $t('join.full') }}</p>
 
     <p v-if="notice" class="font-medium text-accent-ink" role="status">{{ notice }}</p>
     <p v-if="error" class="font-medium text-accent-ink" role="alert">✕ {{ error }}</p>
 
     <UiModal
       v-model:open="applyOpen"
-      title="Заявка на участие"
-      description="Можно коротко рассказать о себе — организатору будет проще решить."
+      :title="$t('join.applyTitle')"
+      :description="$t('join.applyDescription')"
     >
-      <label :for="messageId" class="font-medium">Сообщение организатору (необязательно)</label>
+      <label :for="messageId" class="font-medium">{{ $t('join.message') }}</label>
       <textarea
         :id="messageId"
         v-model="message"
         rows="3"
         maxlength="500"
         class="rounded-field bg-card p-3 text-ink"
-        placeholder="Например: играю второй сезон"
+        :placeholder="$t('join.messagePlaceholder')"
       />
       <template #actions>
-        <UiButton variant="ghost" @click="applyOpen = false">Отмена</UiButton>
-        <UiButton @click="apply">Отправить заявку</UiButton>
+        <UiButton variant="ghost" @click="applyOpen = false">{{ $t('common.cancel') }}</UiButton>
+        <UiButton @click="apply">{{ $t('join.send') }}</UiButton>
       </template>
     </UiModal>
 
     <UiModal
       v-model:open="cancelOpen"
-      :title="action.kind === 'pending' ? 'Отозвать заявку?' : 'Отменить запись?'"
-      description="Место освободится для других. Записаться снова можно, пока мероприятие не началось."
+      :title="action.kind === 'pending' ? $t('join.withdrawQ') : $t('join.leaveQ')"
+      :description="$t('join.leaveDescription')"
     >
       <template #actions>
-        <UiButton variant="ghost" @click="cancelOpen = false">Не отменять</UiButton>
-        <UiButton @click="leave">Да, отменить</UiButton>
+        <UiButton variant="ghost" @click="cancelOpen = false">{{ $t('join.keep') }}</UiButton>
+        <UiButton @click="leave">{{ $t('join.yesCancel') }}</UiButton>
       </template>
     </UiModal>
 
     <UiModal
       v-model:open="cancelEventOpen"
-      title="Отменить мероприятие?"
-      description="Запись закроется, все записавшиеся увидят причину. Вернуть мероприятие нельзя — чтобы перенести, лучше измените дату."
+      :title="$t('join.cancelEventQ')"
+      :description="$t('join.cancelEventDescription')"
     >
       <UiTextArea
         v-model="cancelReason"
-        label="Причина"
+        :label="$t('join.reasonLabel')"
         :rows="3"
         :maxlength="CANCEL_REASON_MAX"
-        placeholder="Заболел тренер, переносим на следующую неделю"
+        :placeholder="$t('join.reasonPlaceholder')"
         :error="cancelReasonErr ?? undefined"
       />
       <template #actions>
-        <UiButton variant="ghost" @click="cancelEventOpen = false">Не отменять</UiButton>
-        <UiButton @click="cancelEvent">Отменить мероприятие</UiButton>
+        <UiButton variant="ghost" @click="cancelEventOpen = false">{{ $t('join.keep') }}</UiButton>
+        <UiButton @click="cancelEvent">{{ $t('join.cancelEvent') }}</UiButton>
       </template>
     </UiModal>
   </section>

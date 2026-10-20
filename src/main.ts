@@ -11,8 +11,10 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { initTheme } from './features/theme/theme'
+import { i18n, initLocale } from './i18n'
 
 initTheme()
+initLocale()
 
 async function enableMocks() {
   if (import.meta.env.VITE_API_MOCK !== 'true') return
@@ -25,6 +27,7 @@ await enableMocks()
 const app = createApp(App)
 
 app.use(createPinia())
+app.use(i18n)
 app.use(router)
 
 app.mount('#app')

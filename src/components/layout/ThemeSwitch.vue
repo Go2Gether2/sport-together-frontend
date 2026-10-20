@@ -9,7 +9,7 @@ const name = `theme-${useId()}`
 
 <template>
   <fieldset class="flex flex-col gap-1.5">
-    <legend class="mb-1.5 ml-1 text-sm font-semibold text-ink-2">Тема</legend>
+    <legend class="mb-1.5 ml-1 text-sm font-semibold text-ink-2">{{ $t('theme.title') }}</legend>
     <div class="grid grid-cols-3 gap-1 rounded-full bg-card p-1">
       <label
         v-for="o in THEME_OPTIONS"
@@ -17,7 +17,7 @@ const name = `theme-${useId()}`
         class="flex min-h-9 cursor-pointer items-center justify-center rounded-full px-2 text-center text-xs leading-tight font-semibold text-ink-2 hover:text-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-accent-ink"
       >
         <input v-model="theme" type="radio" :name="name" :value="o.value" class="sr-only" />
-        {{ o.label }}
+        {{ $t(`theme.${o.value}`) }}
       </label>
     </div>
   </fieldset>

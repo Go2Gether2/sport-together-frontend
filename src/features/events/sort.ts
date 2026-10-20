@@ -4,11 +4,12 @@ import type { EventSummary } from '@/api'
 // Сортировки в API нет — сортируем загруженное на фронте.
 export type EventSort = 'soon' | 'seats' | 'popular' | 'new'
 
-export const SORT_OPTIONS: { value: EventSort; label: string }[] = [
-  { value: 'soon', label: 'Ближайшие' },
-  { value: 'seats', label: 'Больше свободных мест' },
-  { value: 'popular', label: 'Популярные' },
-  { value: 'new', label: 'Новые' },
+// Подписи — в словаре: sort.<value>.
+export const SORT_OPTIONS: { value: EventSort }[] = [
+  { value: 'soon' },
+  { value: 'seats' },
+  { value: 'popular' },
+  { value: 'new' },
 ]
 
 export function sortFromQuery(query: LocationQuery): EventSort {

@@ -65,7 +65,7 @@ function barWidth(i: number) {
 <template>
   <dialog
     ref="dialog"
-    :aria-label="story ? `Сторис: ${story.label}` : 'Сторис'"
+    :aria-label="story ? $t('stories.viewer', { name: story.label }) : $t('stories.title')"
     class="m-auto h-dvh max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/80 sm:h-[min(760px,92dvh)] sm:w-[420px]"
     @close="position = null"
     @keydown="onKey"
@@ -89,7 +89,7 @@ function barWidth(i: number) {
         <button
           type="button"
           class="grid size-11 place-items-center rounded-full bg-card/70 font-bold hover:bg-card"
-          :aria-label="paused ? 'Продолжить' : 'Пауза'"
+          :aria-label="paused ? $t('stories.resume') : $t('stories.pause')"
           @click="paused = !paused"
         >
           {{ paused ? '▶' : '❚❚' }}
@@ -97,7 +97,7 @@ function barWidth(i: number) {
         <button
           type="button"
           class="grid size-11 place-items-center rounded-full bg-card/70 text-xl hover:bg-card"
-          aria-label="Закрыть"
+          :aria-label="$t('common.close')"
           @click="position = null"
         >
           ✕
@@ -107,13 +107,13 @@ function barWidth(i: number) {
       <button
         type="button"
         class="absolute inset-y-0 left-0 w-1/3 cursor-w-resize"
-        aria-label="Предыдущий слайд"
+        :aria-label="$t('stories.prev')"
         @click="go(-1)"
       />
       <button
         type="button"
         class="absolute inset-y-0 right-0 w-2/3 cursor-e-resize"
-        aria-label="Следующий слайд"
+        :aria-label="$t('stories.next')"
         @click="go(1)"
       />
 
@@ -124,7 +124,7 @@ function barWidth(i: number) {
       <div
         class="pointer-events-none relative z-10 mt-auto flex flex-col gap-3"
         aria-live="polite"
-        :aria-label="`Слайд ${position.slide + 1} из ${story.slides.length}`"
+        :aria-label="$t('stories.slide', { n: position.slide + 1, total: story.slides.length })"
         role="group"
       >
         <h2 class="text-3xl leading-tight font-bold">{{ slide.title }}</h2>

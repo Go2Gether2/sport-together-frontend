@@ -5,7 +5,8 @@ import { sportsApi, type EventFilters } from '@/api'
 import EventFiltersSheet from '@/components/events/EventFiltersSheet.vue'
 import EventListCard from '@/components/events/EventListCard.vue'
 import NearbyMap from '@/components/map/NearbyMap.vue'
-import { UiButton, UiTextField, plural, type UiOption } from '@/components/ui'
+import { UiButton, UiTextField, type UiOption } from '@/components/ui'
+import { t } from '@/i18n'
 import {
   countFilters,
   filterChips,
@@ -107,10 +108,7 @@ function reset() {
   router.replace({ query: viewQuery() })
 }
 
-const foundText = computed(
-  () =>
-    `Найдено ${total.value} ${plural(total.value, ['мероприятие', 'мероприятия', 'мероприятий'])}`,
-)
+const foundText = computed(() => t('events.found', { events: t('events.count', total.value) }))
 
 // Карта: точки мероприятий, «Где я» и список того, что сейчас видно на карте, — ближайшие первыми.
 const hasMap = !!mapKey()
@@ -142,7 +140,7 @@ const visible = computed(() => {
 function locate() {
   locateNotice.value = ''
   if (!navigator.geolocation) {
-    locateNotice.value = 'Браузер не умеет определять место — карта остаётся на городе'
+    locateNotice.value = t('map.noGeo')
     return
   }
   locating.value = true
@@ -154,7 +152,7 @@ function locate() {
     },
     () => {
       locating.value = false
-      locateNotice.value = 'Не получилось узнать, где вы, — карта остаётся на городе'
+      locateNotice.value = t('map.geoFailed')
     },
     { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
   )
@@ -196,7 +194,7 @@ onMounted(async () => {
   <section class="flex flex-col gap-4">
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="font-display text-2xl font-bold">Мероприятия</h1>
+        <h1 class="font-display text-2xl font-bold">{{ $t('nav.events') }}</h1>
         <p v-if="state === 'ready'" class="text-ink-2" role="status">{{ foundText }}</p>
       </div>
       <RouterLink
@@ -204,17 +202,17 @@ onMounted(async () => {
         :to="{ name: 'event-create' }"
         class="hidden rounded-full px-4 py-1.5 font-bold text-ink no-underline hover:bg-accent-soft md:inline-block"
       >
-        + Создать своё
+        {{ $t('events.createOwn') }}
       </RouterLink>
     </header>
 
-    <div class="flex flex-col gap-3" role="search" aria-label="Поиск мероприятий">
+    <div class="flex flex-col gap-3" role="search" :aria-label="$t('events.searchLabel')">
       <UiTextField
         v-model="search"
-        label="Поиск"
+        :label="$t('events.search')"
         hide-label
         type="search"
-        placeholder="Футбол, йога, шахматы…"
+        :placeholder="$t('events.searchPlaceholder')"
       />
       <div class="flex items-center gap-2">
         <button
@@ -239,7 +237,7 @@ onMounted(async () => {
             <circle cx="16" cy="7" r="2" />
             <circle cx="10" cy="17" r="2" />
           </svg>
-          Фильтры
+          {{ $t('filters.title') }}
           <span
             v-if="filterCount"
             class="grid min-w-6 place-items-center rounded-full bg-white px-1.5 text-sm text-ink"
@@ -250,12 +248,12 @@ onMounted(async () => {
         <div
           class="ml-auto flex shrink-0 rounded-full bg-card p-1 max-[359px]:p-0.5"
           role="group"
-          aria-label="Как показать"
+          :aria-label="$t('events.viewLabel')"
         >
           <button
             v-for="v in [
-              { key: 'list', label: 'Список' },
-              { key: 'map', label: 'Карта' },
+              { key: 'list', label: $t('events.list') },
+              { key: 'map', label: $t('events.map') },
             ] as const"
             :key="v.key"
             type="button"
@@ -272,13 +270,13 @@ onMounted(async () => {
       <ul
         v-if="chips.length"
         class="flex gap-2 overflow-x-auto pb-1"
-        aria-label="Выбранные фильтры"
+        :aria-label="$t('filters.chosen')"
       >
         <li v-for="c in chips" :key="c.key" class="shrink-0">
           <button
             type="button"
             class="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-accent-soft px-4 font-semibold text-accent-ink"
-            :aria-label="`Убрать фильтр: ${c.label}`"
+            :aria-label="$t('filters.remove', { name: c.label })"
             @click="removeChip(c.key)"
           >
             {{ c.label }} <span aria-hidden="true">✕</span>
@@ -290,7 +288,7 @@ onMounted(async () => {
             class="inline-flex min-h-10 items-center px-2 font-semibold underline underline-offset-4"
             @click="reset"
           >
-            Сбросить все
+            {{ $t('filters.resetAll') }}
           </button>
         </li>
       </ul>
@@ -308,7 +306,7 @@ onMounted(async () => {
       <ul
         v-if="state === 'loading'"
         class="grid grid-cols-1 gap-4 md:grid-cols-2"
-        aria-label="Загрузка"
+        :aria-label="$t('common.loading')"
       >
         <li v-for="n in 4" :key="n" class="h-44 animate-pulse rounded-card bg-card" />
       </ul>
@@ -318,21 +316,20 @@ onMounted(async () => {
         class="flex flex-col items-center gap-3 rounded-card p-6 text-center"
         role="alert"
       >
-        <p class="text-lg font-bold">Не получилось загрузить мероприятия</p>
+        <p class="text-lg font-bold">{{ $t('events.loadError') }}</p>
         <p class="text-ink-2">{{ error }}</p>
-        <UiButton variant="ghost" class="!w-auto" @click="load">Повторить</UiButton>
+        <UiButton variant="ghost" class="!w-auto" @click="load">{{ $t('common.retry') }}</UiButton>
       </div>
 
       <div
         v-else-if="items.length === 0"
         class="flex flex-col items-center gap-3 rounded-card bg-card p-6 text-center"
       >
-        <p class="font-hand text-2xl text-accent-ink">пока пусто</p>
-        <p class="text-lg font-bold">Пока никто не собирается</p>
+        <p class="font-hand text-2xl text-accent-ink">{{ $t('events.emptyHand') }}</p>
+        <p class="text-lg font-bold">{{ $t('events.emptyTitle') }}</p>
         <p class="max-w-md text-ink-2">
-          По этим условиям мероприятий нет.<template v-if="!session.isAdmin">
-            Создайте своё — к нему смогут присоединиться другие.</template
-          >
+          {{ $t('events.emptyText') }}
+          <template v-if="!session.isAdmin">{{ $t('events.emptyCreate') }}</template>
         </p>
         <div class="flex flex-wrap justify-center gap-3">
           <RouterLink
@@ -340,7 +337,7 @@ onMounted(async () => {
             :to="{ name: 'event-create' }"
             class="rounded-full bg-ink px-5 py-2.5 font-bold text-white no-underline"
           >
-            + Создать мероприятие
+            {{ $t('events.create') }}
           </RouterLink>
           <button
             v-if="hasFilters"
@@ -348,7 +345,7 @@ onMounted(async () => {
             class="rounded-full px-5 py-2.5 font-bold"
             @click="reset"
           >
-            Сбросить фильтры
+            {{ $t('filters.resetFilters') }}
           </button>
         </div>
       </div>
@@ -371,7 +368,7 @@ onMounted(async () => {
             :loading="locating"
             @click="locate"
           >
-            ◎ Где я
+            {{ $t('map.whereAmI') }}
           </UiButton>
         </div>
         <div
@@ -379,11 +376,10 @@ onMounted(async () => {
         >
           <p v-if="locateNotice" class="text-sm text-ink-2" role="status">{{ locateNotice }}</p>
           <h2 class="font-bold">
-            На карте {{ visible.length }}
-            {{ plural(visible.length, ['мероприятие', 'мероприятия', 'мероприятий']) }}
+            {{ $t('map.onMap', { events: $t('events.count', visible.length) }) }}
           </h2>
           <p v-if="hasMap && !visible.length" class="rounded-card bg-card p-4 text-ink-2">
-            В этой части карты мероприятий нет — отдалите карту или смените фильтры.
+            {{ $t('map.emptyArea') }}
           </p>
           <ul class="flex flex-col gap-3">
             <li
@@ -395,28 +391,28 @@ onMounted(async () => {
             >
               <EventListCard :event="event" />
               <p class="px-3 text-sm font-semibold text-ink-2">
-                {{ formatDistance(distance) }} {{ me ? 'от вас' : 'от центра города' }}
+                {{ formatDistance(distance) }} {{ me ? $t('map.fromYou') : $t('map.fromCenter') }}
               </p>
             </li>
           </ul>
           <p v-if="withoutCoords.length" class="text-sm text-ink-2">
-            Без отметки на карте: {{ withoutCoords.map((e) => e.title).join(', ') }}.
+            {{ $t('map.noPoint', { list: withoutCoords.map((e) => e.title).join(', ') }) }}
           </p>
         </div>
       </div>
 
       <template v-else>
         <div class="mb-3 flex items-center justify-between gap-3">
-          <h2 class="sr-only">Найденные мероприятия</h2>
+          <h2 class="sr-only">{{ $t('events.found_title') }}</h2>
           <label class="ml-auto flex items-center gap-2 font-semibold">
-            <span class="text-ink-2">Сначала</span>
+            <span class="text-ink-2">{{ $t('sort.title') }}</span>
             <select
               :value="sort"
               class="min-h-11 cursor-pointer rounded-full bg-card px-4 font-semibold text-ink"
               @change="setSort(($event.target as HTMLSelectElement).value as EventSort)"
             >
               <option v-for="o in SORT_OPTIONS" :key="o.value" :value="o.value">
-                {{ o.label.toLowerCase() }}
+                {{ $t(`sort.${o.value}`) }}
               </option>
             </select>
           </label>
@@ -428,7 +424,7 @@ onMounted(async () => {
         </ul>
         <div v-if="items.length < total" class="mt-5 flex flex-col items-center gap-2">
           <UiButton variant="ghost" class="!w-auto" :loading="loadingMore" @click="loadMore">
-            Показать ещё
+            {{ $t('events.more') }}
           </UiButton>
           <p v-if="error" class="text-accent-ink" role="alert">✕ {{ error }}</p>
         </div>

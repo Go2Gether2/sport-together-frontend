@@ -1,4 +1,5 @@
 import type { EventSummary, Id, Level, MyParticipation } from '@/api'
+import { t } from '@/i18n'
 
 export interface RecommendationProfile {
   userId: Id
@@ -84,14 +85,14 @@ export function recommend(
       if (profile.sportIds.includes(event.sport.id))
         signals.push({
           weight: WEIGHTS.sport,
-          reason: `Вы любите: ${event.sport.name.toLowerCase()}`,
+          reason: t('forYou.reasons.sport', { sport: event.sport.name.toLowerCase() }),
         })
       if (profile.level && event.level === profile.level)
-        signals.push({ weight: WEIGHTS.level, reason: 'Подходит вашему уровню' })
+        signals.push({ weight: WEIGHTS.level, reason: t('forYou.reasons.level') })
       if (visited.has(organizerKey(event.organizer)))
-        signals.push({ weight: WEIGHTS.organizer, reason: 'Вы уже были у этого организатора' })
+        signals.push({ weight: WEIGHTS.organizer, reason: t('forYou.reasons.organizer') })
       if (city && event.city?.trim().toLowerCase() === city)
-        signals.push({ weight: WEIGHTS.city, reason: 'В вашем городе' })
+        signals.push({ weight: WEIGHTS.city, reason: t('forYou.reasons.city') })
       if (event.capacity == null || event.confirmed_count < event.capacity)
         signals.push({ weight: WEIGHTS.seats, reason: null })
       const score = signals.reduce((sum, s) => sum + s.weight, 0)

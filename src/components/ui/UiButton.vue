@@ -26,7 +26,7 @@ const variants = {
     :class="variants[variant]"
   >
     <span v-if="sparks" aria-hidden="true" class="text-sm">✦</span>
-    <span>{{ loading ? 'Подождите…' : '' }}<slot v-if="!loading" /></span>
+    <span>{{ loading ? $t('ui.wait') : '' }}<slot v-if="!loading" /></span>
     <span v-if="sparks" aria-hidden="true" class="text-sm">✦</span>
   </button>
 </template>
