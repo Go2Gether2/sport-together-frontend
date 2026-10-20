@@ -14,6 +14,13 @@ import {
   withoutFilter,
   type FilterChipKey,
 } from '@/features/events/filters'
+import {
+  SORT_OPTIONS,
+  sortEvents,
+  sortFromQuery,
+  sortToQuery,
+  type EventSort,
+} from '@/features/events/sort'
 import { useEventList } from '@/features/events/useEventList'
 import { geocode } from '@/features/map/geocode'
 import { DEFAULT_CENTER, type LngLat, type MapPoint } from '@/features/map/geo'
@@ -27,7 +34,13 @@ const session = useSessionStore()
 const router = useRouter()
 
 const filters = computed(() => filtersFromQuery(route.query))
-const { items, total, state, error, loadingMore, load, loadMore } = useEventList(filters)
+const sort = computed(() => sortFromQuery(route.query))
+// Сортируем на фронте, поэтому при выбранном порядке берём сразу побольше — чтобы он был по всему списку.
+const listFilters = computed(() =>
+  sort.value === 'soon' ? filters.value : { ...filters.value, size: 100 },
+)
+const { items, total, state, error, loadingMore, load, loadMore } = useEventList(listFilters)
+const sorted = computed(() => sortEvents(items.value, sort.value))
 
 const sportOptions = ref<UiOption[]>([])
 const sheetOpen = ref(false)
@@ -35,7 +48,10 @@ const sheetOpen = ref(false)
 // Вид «Карта» живёт в адресе рядом с фильтрами, чтобы ссылкой можно было поделиться.
 type View = 'list' | 'map'
 const view = computed<View>(() => (route.query.view === 'map' ? 'map' : 'list'))
-const viewQuery = () => (view.value === 'map' ? { view: 'map' } : {})
+const viewQuery = () => ({
+  ...(view.value === 'map' ? { view: 'map' } : {}),
+  ...sortToQuery(sort.value),
+})
 
 function applyFilters(next: EventFilters) {
   router.replace({ query: { ...filtersToQuery({ ...next, page: undefined }), ...viewQuery() } })
@@ -43,7 +59,21 @@ function applyFilters(next: EventFilters) {
 
 function setView(v: View) {
   router.replace({
-    query: { ...filtersToQuery(filters.value), ...(v === 'map' ? { view: v } : {}) },
+    query: {
+      ...filtersToQuery(filters.value),
+      ...(v === 'map' ? { view: v } : {}),
+      ...sortToQuery(sort.value),
+    },
+  })
+}
+
+function setSort(next: EventSort) {
+  router.replace({
+    query: {
+      ...filtersToQuery(filters.value),
+      ...(view.value === 'map' ? { view: 'map' } : {}),
+      ...sortToQuery(next),
+    },
   })
 }
 
@@ -376,9 +406,23 @@ onMounted(async () => {
       </div>
 
       <template v-else>
-        <h2 class="sr-only">Найденные мероприятия</h2>
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h2 class="sr-only">Найденные мероприятия</h2>
+          <label class="ml-auto flex items-center gap-2 font-semibold">
+            <span class="text-ink-2">Сначала</span>
+            <select
+              :value="sort"
+              class="min-h-11 cursor-pointer rounded-full bg-card px-4 font-semibold text-ink"
+              @change="setSort(($event.target as HTMLSelectElement).value as EventSort)"
+            >
+              <option v-for="o in SORT_OPTIONS" :key="o.value" :value="o.value">
+                {{ o.label.toLowerCase() }}
+              </option>
+            </select>
+          </label>
+        </div>
         <ul class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <li v-for="event in items" :key="event.id" class="rounded-card">
+          <li v-for="event in sorted" :key="event.id" class="rounded-card">
             <EventListCard :event="event" />
           </li>
         </ul>
