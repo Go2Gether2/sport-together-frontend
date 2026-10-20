@@ -104,15 +104,15 @@ const en: Dictionary<typeof ru> = {
   promos: {
     until: 'until {date}',
     clubBattle: {
-      tag: 'Club battle',
-      title: 'Whose club will gather the most people?',
-      text: 'Organizations compete to host the most meetups this autumn. Sign up and support your club.',
+      tag: 'Autumn club season',
+      title: 'Find your club',
+      text: 'Clubs and communities meet every week. Join the next meetup and play with people nearby.',
       cta: 'See clubs',
     },
     activityMarathon: {
       tag: 'Activity marathon',
       title: '10 workouts a month',
-      text: 'Join any events and keep the pace — it is easier not to give up together.',
+      text: 'Set a goal and join any events — all your workouts are in “My sign-ups”. It is easier not to give up together.',
       cta: 'Find a workout',
     },
     runSeason: {
@@ -173,20 +173,20 @@ const en: Dictionary<typeof ru> = {
       },
       s2: {
         title: 'Agree in the discussion',
-        text: 'Every event has a chat: ask what to bring and where to meet.',
+        text: 'Every event has a discussion: ask what to bring and where to meet.',
         cta: '',
       },
     },
     clubs: {
-      label: 'Club battle: who wins',
+      label: 'Clubs and communities',
       s0: {
-        title: 'Clubs compete',
-        text: 'Who hosts the most meetups and gathers the most people this autumn.',
+        title: 'Clubs nearby',
+        text: 'Sports schools, sections and communities meet regularly — you can come every week.',
         cta: '',
       },
       s1: {
-        title: 'Support your club',
-        text: 'Join club meetups — every sign-up counts towards the total.',
+        title: 'How to join',
+        text: 'Open the club page and sign up for the next meetup.',
         cta: 'See clubs',
       },
     },
