@@ -198,6 +198,7 @@ const en: Dictionary<typeof ru> = {
       level: 'Fits your level',
       organizer: 'You have been to this organizer before',
       city: 'In your city',
+      time: 'At a time that suits you',
     },
   },
   login: {
@@ -486,7 +487,7 @@ const en: Dictionary<typeof ru> = {
     },
     cookie: {
       title: 'Cookies',
-      text: 'We use only essential ones: for signing in and settings. No analytics or advertising counters. Your chosen theme and language are stored in your browser and are not sent to the server.',
+      text: 'We use only essential ones: for signing in and settings. No analytics or advertising counters. Your chosen theme and language are stored in your browser and are not sent to the server. Answers from the matching setup that are not part of your profile — birth year, level per sport, distance, convenient time and preferred age of the group — are also kept only in your browser. You can delete them by clearing the site data in your browser.',
     },
     rights: {
       title: 'Your rights',

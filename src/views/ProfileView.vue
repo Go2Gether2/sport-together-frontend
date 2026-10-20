@@ -266,6 +266,13 @@ async function logout() {
 
       <div class="flex flex-wrap gap-2">
         <RouterLink
+          v-if="!session.isAdmin"
+          :to="{ name: 'onboarding' }"
+          class="rounded-full bg-field px-5 py-3 font-semibold text-ink no-underline hover:bg-mute"
+        >
+          Настроить подбор
+        </RouterLink>
+        <RouterLink
           :to="{ name: 'login' }"
           class="rounded-full bg-field px-5 py-3 font-semibold text-ink no-underline hover:bg-mute"
         >

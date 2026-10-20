@@ -30,6 +30,7 @@ async function open() {
     'my-events',
     'my-organization',
     'login',
+    'onboarding',
     'privacy',
   ]
   const router = createRouter({
