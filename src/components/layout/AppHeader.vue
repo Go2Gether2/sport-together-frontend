@@ -40,7 +40,7 @@ const onAuthPage = computed(() => route.name === 'login' || route.name === 'regi
       </nav>
 
       <div class="ml-auto flex items-center gap-1.5 sm:gap-2">
-        <ThemeSwitch />
+        <ThemeSwitch :class="!session.user && 'max-sm:hidden'" />
         <LocaleSwitch class="hidden lg:block" />
         <RouterLink
           v-if="!session.isAdmin"
