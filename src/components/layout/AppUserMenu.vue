@@ -111,11 +111,4 @@ async function logout() {
       </div>
     </div>
   </div>
-  <RouterLink
-    v-else
-    :to="{ name: 'login' }"
-    class="inline-flex min-h-[42px] flex-none items-center rounded-full bg-ink px-5 font-bold text-white no-underline"
-  >
-    {{ $t('common.login') }}
-  </RouterLink>
 </template>

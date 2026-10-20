@@ -274,12 +274,12 @@ onMounted(async () => {
                 : $t(`onboarding.phrases.${art.art}`)
             }}
           </p>
-          <OnboardingArt
+          <div
             v-if="art.art !== 'interests'"
-            :key="art.art"
-            :name="art.art"
-            class="hidden lg:block"
-          />
+            class="mx-auto w-full max-w-[280px] sm:max-w-[420px] lg:max-w-none"
+          >
+            <OnboardingArt :key="art.art" :name="art.art" />
+          </div>
         </section>
 
         <section
@@ -600,16 +600,7 @@ onMounted(async () => {
                 :key="event.id"
                 class="flex min-w-0 flex-col gap-1.5"
               >
-                <EventListCard :event="event" class="!bg-field" />
-                <p v-if="reasons.length" class="flex flex-wrap gap-1.5 px-2 text-sm">
-                  <span
-                    v-for="r in reasons"
-                    :key="r"
-                    class="rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent-ink"
-                  >
-                    {{ r }}
-                  </span>
-                </p>
+                <EventListCard :event="event" :reasons="reasons" />
               </li>
             </ul>
             <RouterLink

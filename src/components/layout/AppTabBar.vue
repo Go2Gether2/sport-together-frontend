@@ -22,7 +22,7 @@ const [left, right] = tabBarItems()
       exact-active-class="font-bold !text-ink"
     >
       <NavIcon :name="item.icon" />
-      {{ item.label }}
+      <span class="max-[359px]:sr-only">{{ item.label }}</span>
     </RouterLink>
 
     <!-- Администратор не создаёт мероприятия — на его месте в центре админка. -->
@@ -36,7 +36,7 @@ const [left, right] = tabBarItems()
         class="-mt-6 grid size-12 place-items-center rounded-full bg-ink text-white short:mt-0 short:size-9"
         ><NavIcon name="shield"
       /></span>
-      {{ $t('nav.admin') }}
+      <span class="max-[359px]:sr-only">{{ $t('nav.admin') }}</span>
     </RouterLink>
     <RouterLink
       v-else
@@ -48,7 +48,7 @@ const [left, right] = tabBarItems()
         class="-mt-6 grid size-14 place-items-center rounded-full bg-orange text-3xl leading-none text-orange-ink shadow-[0_6px_16px_-6px_rgb(0_0_0/0.35)] short:mt-0 short:size-9 short:text-2xl"
         >+</span
       >
-      {{ CREATE_ITEM.label }}
+      <span class="max-[359px]:sr-only">{{ CREATE_ITEM.label }}</span>
     </RouterLink>
 
     <RouterLink
@@ -59,7 +59,7 @@ const [left, right] = tabBarItems()
       active-class="font-bold !text-ink"
     >
       <NavIcon :name="item.icon" />
-      {{ item.label }}
+      <span class="max-[359px]:sr-only">{{ item.label }}</span>
     </RouterLink>
   </nav>
 </template>
