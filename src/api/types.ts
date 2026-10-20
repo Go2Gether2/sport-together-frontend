@@ -158,6 +158,16 @@ export type ModerationLog = Model<
 
 export type Notification = Model<S['NotificationResponse'], 'event_id' | 'body'>
 
+export type ReportReason = NonNullable<S['ReportResponse']['reason']>
+export type ReportStatus = NonNullable<S['ReportResponse']['status']>
+
+export type Report = Model<
+  Omit<S['ReportResponse'], 'event' | 'reporter'> & { event: EventSummary; reporter: UserShort },
+  'comment' | 'resolution_note' | 'resolved_at'
+>
+
+export type ReportInput = S['CreateReportRequest']
+
 export interface Page<T> {
   items: T[]
   total: number

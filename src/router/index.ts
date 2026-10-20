@@ -113,6 +113,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Админка: мероприятия' },
       },
       {
+        path: 'reports',
+        name: 'admin-reports',
+        component: () => import('@/views/admin/AdminReportsView.vue'),
+        meta: { title: 'Админка: жалобы' },
+      },
+      {
         path: 'safety',
         name: 'admin-safety',
         component: () => import('@/views/admin/AdminSafetyView.vue'),

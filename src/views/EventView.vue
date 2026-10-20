@@ -5,6 +5,7 @@ import { ApiError, eventsApi, type EventDetails } from '@/api'
 import EventComments from '@/components/comments/EventComments.vue'
 import EventJoinPanel from '@/components/events/EventJoinPanel.vue'
 import EventSafety from '@/components/events/EventSafety.vue'
+import EventReport from '@/components/events/EventReport.vue'
 import EventShare from '@/components/events/EventShare.vue'
 import EventSimilar from '@/components/events/EventSimilar.vue'
 import EventsMap from '@/components/map/EventsMap.vue'
@@ -253,6 +254,7 @@ const mapPoints = computed(() => (event.value ? toPoints([event.value]) : []))
       <aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
         <EventJoinPanel :event="event" @changed="load({ quiet: true })" />
         <EventShare :event="event" />
+        <EventReport :event="event" />
         <EventSafety :sport="event.sport" />
       </aside>
 

@@ -10,6 +10,7 @@ import type {
   Organizer,
   Participant,
   Participation,
+  Report,
   Sport,
   User,
   UserShort,
@@ -20,6 +21,7 @@ import {
   type EventRow,
   type OrganizationRow,
   type ParticipationRow,
+  type ReportRow,
   type SportRow,
   type UserRow,
 } from './db'
@@ -296,5 +298,19 @@ export function paginate<T>(items: T[], page = 0, size = 20) {
     page: safePage,
     size: safeSize,
     total_pages: Math.max(1, Math.ceil(items.length / safeSize)),
+  }
+}
+
+export function toReport(r: ReportRow): Report {
+  return {
+    id: r.id,
+    event: toEventSummary(findEvent(r.event_id)!),
+    reporter: toUserShort(findUser(r.reporter_id)!),
+    reason: r.reason,
+    comment: r.comment,
+    status: r.status,
+    resolution_note: r.resolution_note,
+    resolved_at: r.resolved_at,
+    created_at: r.created_at,
   }
 }

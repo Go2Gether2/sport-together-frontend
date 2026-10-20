@@ -148,6 +148,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/events/{id}/reports': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['report']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/events/{id}/join': {
     parameters: {
       query?: never
@@ -286,6 +302,38 @@ export interface paths {
     get?: never
     put?: never
     post: operations['publish']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/reports/{id}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['rejectReport']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/reports/{id}/accept': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['acceptReport']
     delete?: never
     options?: never
     head?: never
@@ -460,6 +508,22 @@ export interface paths {
       cookie?: never
     }
     get: operations['publicProfile']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/users/me/reports': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['myReports']
     put?: never
     post?: never
     delete?: never
@@ -716,6 +780,22 @@ export interface paths {
       cookie?: never
     }
     get: operations['demoAccounts']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/admin/reports': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['reports']
     put?: never
     post?: never
     delete?: never
@@ -1001,6 +1081,7 @@ export interface components {
         | 'event_restored'
         | 'comment_reply'
         | 'new_comment'
+        | 'report_resolved'
       title?: string
       body?: string
       /** Format: int64 */
@@ -1086,6 +1167,57 @@ export interface components {
       id?: number
       name?: string
       avatar_url?: string
+    }
+    CreateReportRequest: {
+      /** @enum {string} */
+      reason: 'spam' | 'fraud' | 'offensive' | 'dangerous' | 'misleading' | 'other'
+      comment?: string
+    }
+    EventShortResponse: {
+      /** Format: int64 */
+      id?: number
+      title?: string
+      sport?: components['schemas']['SportResponse']
+      organizer?: components['schemas']['OrganizerResponse']
+      /** Format: date-time */
+      starts_at?: string
+      /** Format: date-time */
+      ends_at?: string
+      city?: string
+      address?: string
+      /** @enum {string} */
+      level?: 'beginner' | 'amateur' | 'pro'
+      /** @enum {string} */
+      join_mode?: 'open' | 'approval'
+      /** Format: int32 */
+      capacity?: number
+      /** Format: int64 */
+      confirmed_count?: number
+      /** @enum {string} */
+      status?: 'published' | 'unpublished' | 'deleted' | 'cancelled'
+      unavailable_reason?: string
+      is_past?: boolean
+      is_edited?: boolean
+      /** Format: double */
+      lat?: number
+      /** Format: double */
+      lng?: number
+    }
+    ReportResponse: {
+      /** Format: int64 */
+      id?: number
+      event?: components['schemas']['EventShortResponse']
+      reporter?: components['schemas']['UserShortResponse']
+      /** @enum {string} */
+      reason?: 'spam' | 'fraud' | 'offensive' | 'dangerous' | 'misleading' | 'other'
+      comment?: string
+      /** @enum {string} */
+      status?: 'pending' | 'accepted' | 'rejected'
+      resolution_note?: string
+      /** Format: date-time */
+      resolved_at?: string
+      /** Format: date-time */
+      created_at?: string
     }
     JoinRequest: {
       message?: string
@@ -1228,36 +1360,6 @@ export interface components {
     UpdateCommentRequest: {
       text: string
     }
-    EventShortResponse: {
-      /** Format: int64 */
-      id?: number
-      title?: string
-      sport?: components['schemas']['SportResponse']
-      organizer?: components['schemas']['OrganizerResponse']
-      /** Format: date-time */
-      starts_at?: string
-      /** Format: date-time */
-      ends_at?: string
-      city?: string
-      address?: string
-      /** @enum {string} */
-      level?: 'beginner' | 'amateur' | 'pro'
-      /** @enum {string} */
-      join_mode?: 'open' | 'approval'
-      /** Format: int32 */
-      capacity?: number
-      /** Format: int64 */
-      confirmed_count?: number
-      /** @enum {string} */
-      status?: 'published' | 'unpublished' | 'deleted' | 'cancelled'
-      unavailable_reason?: string
-      is_past?: boolean
-      is_edited?: boolean
-      /** Format: double */
-      lat?: number
-      /** Format: double */
-      lng?: number
-    }
     PublicUserResponse: {
       /** Format: int64 */
       id?: number
@@ -1378,6 +1480,17 @@ export interface components {
       role?: 'user' | 'admin'
       description?: string
     }
+    PageResponseReportResponse: {
+      items?: components['schemas']['ReportResponse'][]
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      total?: number
+      /** Format: int32 */
+      total_pages?: number
+    }
     AdminOrganizationDetailsResponse: {
       organization?: components['schemas']['OrganizationResponse']
       owner?: components['schemas']['UserResponse']
@@ -1406,6 +1519,8 @@ export interface components {
       cancelled_events?: number
       /** Format: int64 */
       hidden_comments?: number
+      /** Format: int64 */
+      pending_reports?: number
       /** Format: int64 */
       users?: number
     }
@@ -1441,6 +1556,7 @@ export interface components {
         | 'event_deleted'
         | 'event_restored'
         | 'comment_hidden'
+        | 'report_rejected'
       /** @enum {string} */
       target_type?: 'organization' | 'event' | 'comment'
       /** Format: int64 */
@@ -1831,6 +1947,32 @@ export interface operations {
       }
     }
   }
+  report: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateReportRequest']
+      }
+    }
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ReportResponse']
+        }
+      }
+    }
+  }
   join: {
     parameters: {
       query?: never
@@ -2106,6 +2248,58 @@ export interface operations {
         }
         content: {
           '*/*': components['schemas']['SafetyBannerCard']
+        }
+      }
+    }
+  }
+  rejectReport: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['OptionalReasonRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ReportResponse']
+        }
+      }
+    }
+  }
+  acceptReport: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReasonRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ReportResponse']
         }
       }
     }
@@ -2460,6 +2654,26 @@ export interface operations {
       }
     }
   }
+  myReports: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['ReportResponse'][]
+        }
+      }
+    }
+  }
   myParticipations: {
     parameters: {
       query?: {
@@ -2805,6 +3019,31 @@ export interface operations {
         }
         content: {
           '*/*': components['schemas']['DemoAccountResponse'][]
+        }
+      }
+    }
+  }
+  reports: {
+    parameters: {
+      query?: {
+        status?: 'pending' | 'accepted' | 'rejected'
+        event_id?: number
+        page?: number
+        size?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          '*/*': components['schemas']['PageResponseReportResponse']
         }
       }
     }
