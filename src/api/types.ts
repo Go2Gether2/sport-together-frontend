@@ -23,9 +23,24 @@ export type ParticipationStatus = NonNullable<S['ParticipationResponse']['status
 
 export type UserShort = Model<S['UserShortResponse'], 'avatar_url'>
 
+export type TimeSlot = NonNullable<S['UserResponse']['preferred_times']>[number]
+
+// В схеме уровни по видам спорта заглавными, а бэк принимает и отдаёт их строчными, как level.
+type SportLevels = Record<string, Level>
+
 export type User = Model<
-  Omit<S['UserResponse'], 'sport_ids'> & { sport_ids: Id[] },
-  'avatar_url' | 'city' | 'bio' | 'level'
+  Omit<S['UserResponse'], 'sport_ids' | 'sport_levels'> & {
+    sport_ids: Id[]
+    sport_levels: SportLevels
+  },
+  | 'avatar_url'
+  | 'city'
+  | 'bio'
+  | 'level'
+  | 'birth_year'
+  | 'radius_km'
+  | 'preferred_age_from'
+  | 'preferred_age_to'
 >
 
 export type Sport = Model<S['SportResponse'], 'icon'>
@@ -36,7 +51,7 @@ type EventShared = 'ends_at' | 'city' | 'level' | 'capacity'
 
 export type EventSummary = Model<
   Omit<S['EventShortResponse'], 'sport' | 'organizer'> & { sport: Sport; organizer: Organizer },
-  EventShared | 'lat' | 'lng'
+  EventShared | 'lat' | 'lng' | 'unavailable_reason'
 >
 
 export type PublicUser = Model<
@@ -156,7 +171,10 @@ export type EventUpdate = S['UpdateEventRequest']
 export type CommentInput = S['CreateCommentRequest']
 export type OrganizationInput = S['CreateOrganizationRequest']
 export type OrganizationUpdate = S['UpdateOrganizationRequest']
-export type ProfileInput = S['UpdateProfileRequest']
+// null в PATCH у бэка — «не менять»: стереть год рождения или радиус после сохранения нельзя.
+export type ProfileInput = Omit<S['UpdateProfileRequest'], 'sport_levels'> & {
+  sport_levels?: SportLevels
+}
 
 export interface EventFilters {
   q?: string

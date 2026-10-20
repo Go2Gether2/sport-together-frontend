@@ -4,6 +4,7 @@ import {
   MAX_SPORTS,
   agePresetOf,
   answersFrom,
+  clearLocalPrefs,
   inTimes,
   loadLocalPrefs,
   overallLevel,
@@ -22,12 +23,38 @@ const user = {
   level: 'amateur',
   sport_ids: [3],
   avatar_url: null,
+  sport_levels: {},
+  birth_year: null,
+  radius_km: null,
+  preferred_times: [],
+  preferred_age_from: null,
+  preferred_age_to: null,
 } as unknown as User
 
 const now = new Date('2026-10-20T12:00:00')
 
 describe('answersFrom', () => {
-  it('берёт профиль и локальные ответы', () => {
+  it('берёт сохранённые в профиле предпочтения', () => {
+    const saved = {
+      ...user,
+      sport_levels: { 3: 'pro' },
+      birth_year: 1996,
+      radius_km: 25,
+      preferred_times: ['evening'],
+      preferred_age_from: 25,
+      preferred_age_to: 40,
+    } as unknown as User
+    expect(answersFrom(saved, null)).toMatchObject({
+      sports: { 3: 'pro' },
+      birthYear: '1996',
+      radiusKm: 25,
+      times: ['evening'],
+      ageFrom: '25',
+      ageTo: '40',
+    })
+  })
+
+  it('черновик важнее профиля', () => {
     const a = answersFrom(user, null)
     expect(a).toMatchObject({ name: 'Анна', city: 'Красноярск', sports: { 3: 'amateur' } })
     expect(answersFrom(user, { ...toLocalPrefs(a), sports: { 3: 'pro' } }).sports).toEqual({
@@ -78,7 +105,7 @@ describe('виды спорта', () => {
 })
 
 describe('toProfileUpdate', () => {
-  it('в API — только его поля', () => {
+  it('всё уходит в профиль, пустые поля не шлём', () => {
     const a = {
       ...answersFrom(user, null),
       avatar: 'preset:running',
@@ -91,6 +118,12 @@ describe('toProfileUpdate', () => {
       avatar_url: 'preset:running',
       sport_ids: [3, 5],
       level: 'amateur',
+      sport_levels: { 3: 'amateur', 5: 'amateur' },
+      birth_year: 1996,
+      radius_km: 10,
+      preferred_times: [],
+      preferred_age_from: undefined,
+      preferred_age_to: undefined,
     })
   })
 })
@@ -112,13 +145,15 @@ describe('agePresetOf', () => {
   })
 })
 
-describe('локальные ответы', () => {
+describe('черновик', () => {
   beforeEach(() => localStorage.clear())
 
-  it('сохраняются по пользователю', () => {
+  it('сохраняется по пользователю и стирается после сохранения', () => {
     const prefs = toLocalPrefs(answersFrom(user, null))
     saveLocalPrefs(7, prefs)
     expect(loadLocalPrefs(7)).toEqual(prefs)
     expect(loadLocalPrefs(8)).toBeNull()
+    clearLocalPrefs(7)
+    expect(loadLocalPrefs(7)).toBeNull()
   })
 })

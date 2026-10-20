@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useId, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   ApiError,
@@ -25,6 +25,7 @@ import {
   TIME_SLOTS,
   agePresetOf,
   answersFrom,
+  clearLocalPrefs,
   loadLocalPrefs,
   saveLocalPrefs,
   toLocalPrefs,
@@ -36,6 +37,7 @@ import {
   type TimeSlot,
 } from '@/features/onboarding/onboarding'
 import { AVATAR_PRESETS, presetAvatarUrl } from '@/features/profile/avatar'
+import { PHOTO_TYPES, photoError } from '@/features/profile/profileForm'
 import { safeRedirect } from '@/router/redirect'
 import { useSessionStore } from '@/stores/session'
 import { t } from '@/i18n'
@@ -53,6 +55,30 @@ const step = computed<number | 'done'>(() => {
 })
 
 const user = session.user!
+
+// Своё фото уходит на бэк сразу при выборе файла; в ответах остаётся его адрес.
+const photoInputId = useId()
+const photoBusy = ref(false)
+const photoNotice = ref('')
+
+async function uploadPhoto(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  photoNotice.value = photoError(file) ?? ''
+  if (photoNotice.value) return
+  photoBusy.value = true
+  try {
+    const updated = await usersApi.uploadAvatar(file)
+    answers.value.avatar = updated.avatar_url ?? ''
+    photoNotice.value = t('profile.photo.uploaded')
+  } catch (err) {
+    photoNotice.value = err instanceof ApiError ? err.message : t('profile.photo.failed')
+  } finally {
+    photoBusy.value = false
+  }
+}
 const answers = ref(answersFrom(user, loadLocalPrefs(user.id)))
 const errors = ref<OnboardingErrors>({})
 const saving = ref(false)
@@ -99,7 +125,7 @@ function back() {
   if (typeof step.value === 'number' && step.value > 1) go(step.value - 1)
 }
 
-/** Сохранить ответы: в профиль — то, что есть в API, остальное — в этом браузере. */
+/** Сохранить ответы в профиль; черновик в браузере больше не нужен. */
 async function finish() {
   errors.value = { ...validateAbout(answers.value), ...validateAge(answers.value) }
   if (errors.value.name || errors.value.birthYear) return go(2)
@@ -109,7 +135,8 @@ async function finish() {
   try {
     await usersApi.updateMe(toProfileUpdate(answers.value))
     await session.refresh()
-    go('done')
+    clearLocalPrefs(user.id)
+    router.replace({ query: { ...route.query, step: 'done' } })
   } catch (e) {
     saveError.value = e instanceof ApiError ? e.message : t('onboarding.saveFailed')
   } finally {
@@ -276,9 +303,26 @@ onMounted(async () => {
             </div>
             <div class="flex items-center gap-4">
               <UiAvatar :name="answers.name" :url="answers.avatar" size="xl" />
-              <p class="text-sm text-ink-2">
-                {{ $t('onboarding.photo.upload') }}
-              </p>
+              <div class="flex flex-col items-start gap-1.5">
+                <label
+                  :for="photoInputId"
+                  class="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-field px-5 font-semibold hover:bg-mute has-focus-visible:outline-3 has-focus-visible:outline-accent-ink"
+                  :class="{ 'pointer-events-none opacity-60': photoBusy }"
+                >
+                  {{ photoBusy ? $t('ui.wait') : $t('profile.photo.upload') }}
+                  <input
+                    :id="photoInputId"
+                    type="file"
+                    :accept="PHOTO_TYPES.join(',')"
+                    class="sr-only"
+                    :disabled="photoBusy"
+                    @change="uploadPhoto"
+                  />
+                </label>
+                <p class="text-sm text-ink-2" role="status">
+                  {{ photoNotice || $t('onboarding.photo.upload') }}
+                </p>
+              </div>
             </div>
             <fieldset class="flex flex-col gap-2">
               <legend class="mb-2 font-bold">{{ $t('onboarding.photo.pick') }}</legend>

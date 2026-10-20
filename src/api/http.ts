@@ -73,7 +73,9 @@ export async function request<T>(
   { query, body, signal }: RequestOptions = {},
 ): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  // Файлы уходят как multipart: заголовок с границей частей браузер ставит сам.
+  const isForm = body instanceof FormData
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
 
   let response: Response
   try {
@@ -81,7 +83,7 @@ export async function request<T>(
       credentials: 'same-origin',
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
       signal,
     })
   } catch (cause) {

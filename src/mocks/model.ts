@@ -134,6 +134,12 @@ export function toUser(u: UserRow): User {
     bio: u.bio,
     level: u.level,
     sport_ids: u.sport_ids,
+    sport_levels: u.sport_levels,
+    birth_year: u.birth_year,
+    radius_km: u.radius_km,
+    preferred_age_from: u.preferred_age_from,
+    preferred_age_to: u.preferred_age_to,
+    preferred_times: u.preferred_times,
     is_demo: u.is_demo,
     created_at: u.created_at,
   }
@@ -230,6 +236,7 @@ export function toEventSummary(e: EventRow): EventSummary {
     is_edited: e.updated_at !== e.created_at,
     lat: e.lat,
     lng: e.lng,
+    unavailable_reason: e.status === 'published' ? null : e.moderation_reason,
   }
 }
 

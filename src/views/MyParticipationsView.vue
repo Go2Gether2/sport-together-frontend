@@ -12,7 +12,6 @@ import {
   withParticipation,
   type MyTab,
 } from '@/features/events/myParticipations'
-import { cancelledEventIds } from '@/features/events/cancelEvent'
 import { formatEventWhen } from '@/utils/datetime'
 
 const items = ref<MyParticipation[]>([])
@@ -30,16 +29,6 @@ const cancelOpen = computed({
 const busy = ref(false)
 const actionError = ref('')
 
-const cancelReasons = ref<Record<number, string>>({})
-
-async function loadCancelReasons() {
-  const ids = cancelledEventIds(items.value).filter((id) => !(id in cancelReasons.value))
-  const details = await Promise.allSettled(ids.map((id) => eventsApi.get(id)))
-  for (const d of details)
-    if (d.status === 'fulfilled' && d.value.unavailable_reason)
-      cancelReasons.value = { ...cancelReasons.value, [d.value.id]: d.value.unavailable_reason }
-}
-
 const groups = computed(() => groupMyParticipations(items.value))
 const current = computed(() => groups.value[tab.value])
 
@@ -50,7 +39,6 @@ async function load() {
     const g = groupMyParticipations(items.value)
     if (!g.upcoming.length) tab.value = MY_TABS.find((t) => g[t.value].length)?.value ?? 'upcoming'
     state.value = 'ready'
-    loadCancelReasons()
   } catch (e) {
     message.value = e instanceof ApiError ? e.message : 'Не получилось загрузить записи.'
     state.value = 'error'
@@ -168,8 +156,8 @@ const EMPTY: Record<MyTab, string> = {
                 :of="{ kind: 'participation', status: item.participation.status }"
               />
             </div>
-            <p v-if="cancelReasons[item.event.id]" class="text-ink-2">
-              {{ cancelReasons[item.event.id] }}
+            <p v-if="item.event.unavailable_reason" class="text-ink-2">
+              {{ item.event.unavailable_reason }}
             </p>
             <p
               v-else-if="

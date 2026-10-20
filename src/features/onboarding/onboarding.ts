@@ -47,7 +47,7 @@ export interface OnboardingAnswers {
   ageTo: string
 }
 
-/** То, чего нет в API профиля: живёт только в этом браузере. */
+/** Черновик ответов между шагами: переживает перезагрузку, стирается после сохранения в профиль. */
 export type LocalPrefs = Pick<
   OnboardingAnswers,
   'birthYear' | 'sports' | 'radiusKm' | 'times' | 'ageFrom' | 'ageTo'
@@ -58,19 +58,23 @@ export type OnboardingErrors = Partial<Record<'name' | 'birthYear' | 'ageFrom' |
 // Vue отдаёт значение поля type="number" числом, а не строкой — приводим перед проверками.
 const text = (v: unknown) => String(v ?? '').trim()
 
+const str = (n: number | null) => (n == null ? '' : String(n))
+
+/** Ответы из профиля; незаконченный черновик (если есть) важнее сохранённого. */
 export function answersFrom(user: User, local: LocalPrefs | null): OnboardingAnswers {
   const sports: Record<Id, Level> = {}
-  for (const id of user.sport_ids) sports[id] = local?.sports[id] ?? user.level ?? 'beginner'
+  for (const id of user.sport_ids)
+    sports[id] = local?.sports[id] ?? user.sport_levels[id] ?? user.level ?? 'beginner'
   return {
     avatar: user.avatar_url ?? '',
     name: user.name,
-    birthYear: local?.birthYear ?? '',
+    birthYear: local?.birthYear ?? str(user.birth_year),
     city: user.city ?? '',
     sports,
-    radiusKm: local?.radiusKm ?? 10,
-    times: local?.times ?? [],
-    ageFrom: local?.ageFrom ?? '',
-    ageTo: local?.ageTo ?? '',
+    radiusKm: local?.radiusKm ?? user.radius_km ?? 10,
+    times: local?.times ?? user.preferred_times,
+    ageFrom: local?.ageFrom ?? str(user.preferred_age_from),
+    ageTo: local?.ageTo ?? str(user.preferred_age_to),
   }
 }
 
@@ -109,7 +113,7 @@ export function toggleSport(sports: Record<Id, Level>, id: Id): Record<Id, Level
   return next
 }
 
-// В API уровень один на человека — берём самый частый из выбранных, при равенстве — что выше.
+// Общий уровень профиля (по нему фильтрует лента) — самый частый из выбранных, при равенстве — что выше.
 const LEVEL_ORDER: Level[] = ['beginner', 'amateur', 'pro']
 export function overallLevel(sports: Record<Id, Level>): Level | undefined {
   const counts = new Map<Level, number>()
@@ -119,7 +123,9 @@ export function overallLevel(sports: Record<Id, Level>): Level | undefined {
   return best
 }
 
-/** Тело PATCH /users/me — только поля, которые есть в API. */
+const num = (v: unknown) => (text(v) ? Number(v) : undefined)
+
+/** Тело PATCH /users/me. Пустое поле не шлём: null у бэка значит «не менять». */
 export function toProfileUpdate(a: OnboardingAnswers): ProfileInput {
   return {
     name: a.name.trim(),
@@ -127,6 +133,12 @@ export function toProfileUpdate(a: OnboardingAnswers): ProfileInput {
     avatar_url: a.avatar || undefined,
     sport_ids: Object.keys(a.sports).map(Number),
     level: overallLevel(a.sports),
+    sport_levels: { ...a.sports },
+    birth_year: num(a.birthYear),
+    radius_km: a.radiusKm,
+    preferred_times: a.times,
+    preferred_age_from: num(a.ageFrom),
+    preferred_age_to: num(a.ageTo),
   }
 }
 
@@ -172,5 +184,13 @@ export function saveLocalPrefs(userId: Id, prefs: LocalPrefs) {
     localStorage.setItem(KEY(userId), JSON.stringify(prefs))
   } catch {
     // нет хранилища — ответы останутся только на время сессии
+  }
+}
+
+export function clearLocalPrefs(userId: Id) {
+  try {
+    localStorage.removeItem(KEY(userId))
+  } catch {
+    // нет хранилища — и стирать нечего
   }
 }
