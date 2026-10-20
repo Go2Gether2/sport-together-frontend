@@ -24,25 +24,19 @@ function onSeen(id: string) {
 
 <template>
   <section aria-label="Сторис">
-    <ul
-      class="-mx-4 flex gap-3 overflow-x-auto px-4 pt-1 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-1"
-    >
+    <ul class="-mx-4 flex gap-3 overflow-x-auto px-4 py-2 [scrollbar-width:none] lg:mx-0 lg:px-2">
       <li v-for="(s, i) in stories" :key="s.id" class="flex-none">
         <button
           type="button"
-          class="flex w-19 flex-col items-center gap-1.5 rounded-2xl p-0.5"
+          class="relative flex size-32 flex-col justify-end overflow-hidden rounded-[22px] p-3 text-left ring-offset-2 ring-offset-page sm:size-36"
+          :class="[s.bg, seen.has(s.id) ? '' : 'ring-3 ring-accent-strong']"
           :aria-label="`${s.label}${seen.has(s.id) ? '' : ', новое'}`"
           @click="position = { story: i, slide: 0 }"
         >
-          <span
-            class="grid size-16 place-items-center rounded-full ring-offset-2 ring-offset-page"
-            :class="[s.bg, seen.has(s.id) ? 'ring-2 ring-mute' : 'ring-3 ring-accent-strong']"
-          >
-            <SportIcon :name="s.icon" :size="40" />
+          <span aria-hidden="true" class="pointer-events-none absolute -top-2 -right-2 opacity-70">
+            <SportIcon :name="s.icon" :size="72" />
           </span>
-          <span class="line-clamp-2 text-center text-xs leading-tight font-semibold">
-            {{ s.label }}
-          </span>
+          <span class="relative text-base leading-tight font-bold">{{ s.label }}</span>
         </button>
       </li>
     </ul>

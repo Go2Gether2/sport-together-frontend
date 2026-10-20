@@ -22,7 +22,7 @@ export const SLIDE_MS = 6000
 export const STORIES: Story[] = [
   {
     id: 'start',
-    label: 'Как начать',
+    label: 'Как начать за 3 шага',
     icon: 'custom',
     bg: 'bg-accent',
     slides: [
@@ -43,7 +43,7 @@ export const STORIES: Story[] = [
   },
   {
     id: 'clubs',
-    label: 'Битва клубов',
+    label: 'Битва клубов: кто кого',
     icon: 'football',
     bg: 'bg-orange',
     slides: [
@@ -60,7 +60,7 @@ export const STORIES: Story[] = [
   },
   {
     id: 'running',
-    label: 'Бег',
+    label: 'Пробежки по выходным',
     icon: 'running',
     bg: 'bg-accent-soft',
     slides: [
@@ -73,7 +73,7 @@ export const STORIES: Story[] = [
   },
   {
     id: 'chess',
-    label: 'Шахматы',
+    label: 'Неделя шахмат',
     icon: 'chess',
     bg: 'bg-lilac',
     slides: [
@@ -86,7 +86,7 @@ export const STORIES: Story[] = [
   },
   {
     id: 'organize',
-    label: 'Своя встреча',
+    label: 'Своя встреча за минуту',
     icon: 'tennis',
     bg: 'bg-card',
     slides: [
