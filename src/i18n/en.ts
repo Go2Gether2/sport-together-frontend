@@ -964,6 +964,17 @@ const en: Dictionary<typeof ru> = {
       body: 'Write the slide text',
     },
   },
+  place: {
+    login: 'Sign in to see',
+    hidden: 'City not set',
+    afterLogin: 'Exact address after signing in',
+    guest:
+      'Where the event takes place is visible after signing in — this keeps meeting places away from strangers.',
+    guestCity:
+      'The event is in {city}. The exact place and map pin are visible after signing in — this keeps meeting places away from strangers.',
+    mapGuest:
+      'The events map is available after signing in: exact meeting places are visible only to members.',
+  },
 }
 
 export default en

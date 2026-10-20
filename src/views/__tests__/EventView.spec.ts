@@ -117,6 +117,18 @@ describe('EventView', () => {
     organizer.unmount()
   })
 
+  it('гость видит только город, адрес и карта — после входа', async () => {
+    const guest = await open(E.football)
+    expect(guest.text()).toContain('Точный адрес — после входа')
+    expect(guest.text()).not.toContain('ул. Ленина')
+    expect(guest.find('a[href^="/login"]').exists()).toBe(true)
+    guest.unmount()
+    const user = await open(E.football, U.petr)
+    expect(user.text()).toContain('ул. Ленина')
+    expect(user.text()).not.toContain('Точный адрес — после входа')
+    user.unmount()
+  })
+
   it('несуществующее мероприятие', async () => {
     const wrapper = await open(999999)
     expect(wrapper.get('h1').text()).toBe('Мероприятие не найдено')

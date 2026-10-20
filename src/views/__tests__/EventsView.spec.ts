@@ -6,6 +6,8 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { handlers } from '@/mocks/handlers'
 import { resetDb } from '@/mocks/db'
+import { authApi } from '@/api'
+import { useSessionStore } from '@/stores/session'
 import EventsView from '../EventsView.vue'
 
 const server = setupServer(...handlers)
@@ -17,9 +19,10 @@ beforeEach(() => {
   resetDb()
   setActivePinia(createPinia())
 })
-afterEach(() => {
+afterEach(async () => {
   server.resetHandlers()
   vi.unstubAllEnvs()
+  await authApi.logout().catch(() => {})
 })
 afterAll(() => server.close())
 
@@ -31,6 +34,7 @@ async function setup(path = '/events') {
       { path: '/events', name: 'events', component: EventsView },
       { path: '/events/new', name: 'event-create', component: Stub },
       { path: '/events/:id', name: 'event', component: Stub },
+      { path: '/login', name: 'login', component: Stub },
     ],
   })
   await router.push(path)
@@ -90,6 +94,7 @@ describe('EventsView', () => {
   })
 
   it('переключается на карту, сохраняя фильтры в адресе', async () => {
+    await useSessionStore().loginDemo(2)
     const { wrapper, router } = await setup('/events?join_mode=open')
     await button(wrapper, 'Карта').trigger('click')
     await flushPromises()
@@ -97,6 +102,14 @@ describe('EventsView', () => {
     // В тестах ключа 2ГИС нет — карта честно говорит, что не подключена, список остаётся.
     expect(wrapper.text()).toContain('Карта не подключена')
     expect(wrapper.findAll('article h3').length).toBeGreaterThan(0)
+  })
+
+  it('гостю вместо карты — предложение войти, адресов в карточках нет', async () => {
+    const { wrapper } = await setup('/events?view=map')
+    expect(wrapper.text()).toContain('Карта мероприятий доступна после входа')
+    expect(wrapper.findAll('article h3')).toHaveLength(0)
+    const list = await setup('/events')
+    expect(list.wrapper.text()).not.toMatch(/ул\.|набережная/i)
   })
 
   it('при ошибке сервера даёт повторить', async () => {
