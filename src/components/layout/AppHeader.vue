@@ -29,7 +29,7 @@ const onAuthPage = computed(() => route.name === 'login' || route.name === 'regi
           <li v-for="h in items" :key="h.item.label" :class="h.wide && 'hidden xl:block'">
             <RouterLink
               :to="h.item.to"
-              class="inline-flex min-h-[42px] items-center rounded-full px-4 text-[15px] font-semibold whitespace-nowrap text-ink-2 no-underline hover:bg-field hover:text-ink"
+              class="inline-flex min-h-[42px] items-center rounded-full px-2.5 text-sm font-semibold xl:px-4 xl:text-[15px] whitespace-nowrap text-ink-2 no-underline hover:bg-field hover:text-ink"
               :exact-active-class="h.item.icon === 'home' ? '!bg-ink !text-white font-bold' : ''"
               :active-class="h.item.icon === 'home' ? '' : '!bg-ink !text-white font-bold'"
             >

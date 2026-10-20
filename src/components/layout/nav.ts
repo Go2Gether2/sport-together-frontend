@@ -49,10 +49,13 @@ export function menuItems(isAdmin: boolean): NavItem[] {
   return isAdmin ? [ORGS, ADMIN, PRIVACY] : [MY_EVENTS, MY_ORG, ORGS, PRIVACY]
 }
 
-/** Шапка на компьютере: главные разделы. На узком экране — только первые два (`wide: false`). */
+/**
+ * Шапка на компьютере: главные разделы. На узком компьютере (`lg`) «Главной» нет —
+ * туда ведёт логотип, а остальные разделы помещаются все.
+ */
 export function headerItems(isAdmin: boolean): { item: NavItem; wide: boolean }[] {
   const list = isAdmin ? [HOME, EVENTS, ORGS, ADMIN] : [HOME, EVENTS, MINE, ORGS]
-  return list.map((item, n) => ({ item, wide: n > 1 }))
+  return list.map((item) => ({ item, wide: item === HOME }))
 }
 
 /** Меню аватара в шапке: личные разделы, которых нет в навигации. */

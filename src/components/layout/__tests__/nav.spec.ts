@@ -22,9 +22,11 @@ describe('навигация', () => {
     }
   })
 
-  it('на узкой шапке остаются Главная и Мероприятия', () => {
-    const narrow = headerItems(false).filter((h) => !h.wide)
-    expect(labels(narrow.map((h) => h.item))).toEqual(['Главная', 'Мероприятия'])
+  it('на узкой шапке скрыта только Главная — туда ведёт логотип', () => {
+    for (const isAdmin of [false, true]) {
+      const hidden = headerItems(isAdmin).filter((h) => h.wide)
+      expect(labels(hidden.map((h) => h.item))).toEqual(['Главная'])
+    }
   })
 
   it('нижняя панель — по два раздела слева и справа от «Создать»', () => {
