@@ -86,7 +86,7 @@ function barWidth(i: number) {
   >
     <section
       v-if="story && slide && position"
-      class="flex h-full flex-col gap-3.5 overflow-hidden px-[18px] pt-3.5 pb-[18px] sm:rounded-[32px]"
+      class="flex h-full flex-col gap-3.5 overflow-hidden px-[18px] pt-3.5 pb-[18px] sm:rounded-2xl"
       :class="story.palette ? '' : story.bg"
       :style="{ backgroundColor: colors.bg, color: colors.fg }"
     >
@@ -181,7 +181,7 @@ function barWidth(i: number) {
 
         <p
           v-if="story.subtitle"
-          class="-rotate-2 self-start rounded-[10px] bg-[#fff7ec] px-3 pt-0.5 pb-1 font-hand text-[21px] text-[#111111]"
+          class="-rotate-2 self-start rounded-sm bg-[#fff7ec] px-3 pt-0.5 pb-1 font-hand text-[21px] text-[#111111]"
         >
           {{ story.subtitle }}
         </p>

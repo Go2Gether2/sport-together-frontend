@@ -36,7 +36,7 @@ function onBackdrop(e: MouseEvent) {
     ref="dialog"
     :aria-labelledby="`${id}-title`"
     :aria-describedby="description ? `${id}-desc` : undefined"
-    class="m-auto w-[min(440px,calc(100vw-32px))] rounded-[32px] bg-card p-0 text-ink backdrop:bg-ink/40"
+    class="m-auto w-[min(440px,calc(100vw-32px))] rounded-2xl bg-card p-0 text-ink backdrop:bg-ink/40"
     @close="onClose"
     @click="onBackdrop"
   >

@@ -147,7 +147,7 @@ async function logout() {
     <header class="flex flex-col gap-4 rounded-card bg-accent p-6 sm:flex-row sm:items-center">
       <UiAvatar :name="user.name" :url="user.avatar_url" size="xl" />
       <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <h1 class="text-3xl leading-tight font-bold">{{ user.name }}</h1>
+        <h1 class="text-[30px] lg:text-[42px]">{{ user.name }}</h1>
         <p class="text-accent-ink">
           {{ user.city || $t('profile.noCity') }}
           <template v-if="user.level"> · {{ LEVEL_LABELS[user.level] }}</template>
@@ -270,7 +270,7 @@ async function logout() {
           v-for="l in links"
           :key="l.key"
           :to="l.to"
-          class="flex items-center gap-3 rounded-card bg-card p-4 font-semibold text-ink no-underline hover:bg-accent-soft"
+          class="flex items-center gap-3 rounded-card bg-card p-4 font-semibold text-ink no-underline hover:shadow-raised"
         >
           <NavIcon :name="l.icon" />
           {{ $t(`profile.links.${l.key}`) }}

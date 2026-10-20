@@ -63,7 +63,7 @@ watch([query, sport, city], () => {
 <template>
   <section class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-3xl font-bold">Организации</h1>
+      <h1 class="text-[30px] lg:text-[42px]">Организации</h1>
       <RouterLink
         :to="{ name: 'my-organization' }"
         class="font-semibold text-accent-ink underline underline-offset-4"
@@ -132,13 +132,13 @@ watch([query, sport, city], () => {
           <li
             v-for="org in shown"
             :key="org.id"
-            class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:bg-accent-soft"
+            class="relative flex items-center gap-4 rounded-card bg-card p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-ink hover:shadow-raised"
           >
             <span class="grid size-14 shrink-0 place-items-center rounded-full bg-accent">
               <NavIcon name="building" />
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-              <h2 class="line-clamp-2 text-lg leading-snug font-bold">
+              <h2 class="line-clamp-2 text-xl leading-tight font-extrabold normal-case">
                 <RouterLink
                   :to="{ name: 'organization', params: { id: org.id } }"
                   class="text-ink no-underline outline-none after:absolute after:inset-0 after:content-['']"

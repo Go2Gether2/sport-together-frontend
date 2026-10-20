@@ -180,7 +180,9 @@ async function submit() {
 
 <template>
   <section class="mx-auto flex w-full max-w-2xl flex-col gap-6">
-    <h1 class="text-3xl font-bold">{{ editId ? 'Изменить мероприятие' : 'Новое мероприятие' }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">
+      {{ editId ? 'Изменить мероприятие' : 'Новое мероприятие' }}
+    </h1>
 
     <div v-if="loadState === 'loading'" class="h-96 animate-pulse rounded-card bg-card" />
     <section
@@ -210,7 +212,7 @@ async function submit() {
       </p>
       <fieldset v-if="!editId && authors.length > 1">
         <legend class="mb-2 ml-1 text-[15px] font-semibold">От чьего имени</legend>
-        <div class="flex flex-wrap gap-1.5 rounded-[28px] bg-card p-1.5">
+        <div class="flex flex-wrap gap-1.5 rounded-xl bg-card p-1.5">
           <label
             v-for="a in authors"
             :key="a.value ?? 'me'"

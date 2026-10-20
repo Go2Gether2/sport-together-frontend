@@ -5,7 +5,7 @@ import { RouterLink } from 'vue-router'
 <template>
   <section class="mx-auto flex max-w-md flex-col items-center gap-3 py-10 text-center">
     <p class="font-hand text-2xl text-accent-ink">{{ $t('notFound.hand') }}</p>
-    <h1 class="font-display text-2xl font-bold">{{ $t('notFound.title') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">{{ $t('notFound.title') }}</h1>
     <p class="text-ink-2">{{ $t('notFound.text') }}</p>
     <RouterLink
       :to="{ name: 'events' }"

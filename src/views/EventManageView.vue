@@ -169,7 +169,7 @@ const shortDate = new Intl.DateTimeFormat('ru-RU', {
           >
             ← К мероприятию
           </RouterLink>
-          <h1 class="text-2xl leading-tight font-bold">{{ event.title }}</h1>
+          <h1 class="text-[30px] lg:text-[42px]">{{ event.title }}</h1>
           <p class="font-semibold text-accent-ink">{{ when }}</p>
         </div>
         <UiSeatsRing :taken="confirmedCount" :capacity="event.capacity" :size="64" />

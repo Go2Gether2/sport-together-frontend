@@ -8,7 +8,7 @@ const SECTIONS = ['who', 'data', 'basis', 'storage', 'cookie', 'rights'] as cons
   <article class="mx-auto flex max-w-2xl flex-col gap-5">
     <header>
       <p class="font-hand text-xl text-accent-ink">{{ $t('privacy.hand') }}</p>
-      <h1 class="font-display text-2xl font-bold">{{ $t('privacy.title') }}</h1>
+      <h1 class="text-[30px] lg:text-[42px]">{{ $t('privacy.title') }}</h1>
       <p v-if="$t('privacy.note')" class="mt-2 text-sm text-ink-2">{{ $t('privacy.note') }}</p>
     </header>
 

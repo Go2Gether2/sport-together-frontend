@@ -12,7 +12,7 @@ const [left, right] = tabBarItems()
 <template>
   <nav
     :aria-label="$t('nav.main')"
-    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-[28px] bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] short:items-center short:py-1 lg:hidden"
+    class="fixed inset-x-2 bottom-2 z-20 grid grid-cols-5 items-end rounded-xl bg-card px-1 py-2 shadow-[0_8px_30px_rgba(14,14,16,0.12)] short:items-center short:py-1 lg:hidden"
   >
     <RouterLink
       v-for="item in left"

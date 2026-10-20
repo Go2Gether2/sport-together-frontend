@@ -27,7 +27,7 @@ const sports = [
       <li
         v-for="s in sports"
         :key="s.icon"
-        class="flex min-h-[120px] flex-col justify-between gap-[22px] rounded-[26px] p-4"
+        class="flex min-h-[120px] flex-col justify-between gap-[22px] rounded-xl p-4"
         :class="s.bg"
       >
         <span class="grid size-[46px] place-items-center rounded-full bg-ink">

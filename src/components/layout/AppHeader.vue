@@ -18,7 +18,7 @@ const items = computed(() => headerItems(session.isAdmin))
 <template>
   <header class="sticky top-0 z-20 px-2 pt-2 short:static lg:px-4 lg:pt-3">
     <div
-      class="mx-auto flex max-w-6xl items-center gap-2 rounded-[24px] sm:gap-3 2xl:max-w-7xl bg-card py-2 pr-2 pl-2.5 shadow sm:py-2.5 sm:pr-3 sm:pl-3.5-[0_6px_18px_-12px_rgb(0_0_0/0.25)] short:py-1.5"
+      class="mx-auto flex max-w-6xl items-center gap-2 rounded-xl sm:gap-3 2xl:max-w-7xl bg-card py-2 pr-2 pl-2.5 shadow sm:py-2.5 sm:pr-3 sm:pl-3.5-[0_6px_18px_-12px_rgb(0_0_0/0.25)] short:py-1.5"
     >
       <AppLogo />
 

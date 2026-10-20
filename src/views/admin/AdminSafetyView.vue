@@ -74,7 +74,7 @@ async function confirmDelete() {
 <template>
   <section class="flex flex-col gap-5">
     <div class="flex flex-wrap items-end justify-between gap-3">
-      <h1 class="text-3xl font-bold">{{ $t('admin.nav.safety') }}</h1>
+      <h1 class="text-[30px] lg:text-[42px]">{{ $t('admin.nav.safety') }}</h1>
       <RouterLink
         :to="{ name: 'admin-safety-new' }"
         class="inline-flex min-h-12 items-center rounded-full bg-ink px-5 font-bold text-white no-underline"

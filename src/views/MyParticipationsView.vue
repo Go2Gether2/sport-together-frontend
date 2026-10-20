@@ -87,7 +87,7 @@ const EMPTY: Record<MyTab, string> = {
 <template>
   <section class="flex flex-col gap-4" aria-live="polite">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-3xl font-bold">Мои записи</h1>
+      <h1 class="text-[30px] lg:text-[42px]">Мои записи</h1>
       <RouterLink
         :to="{ name: 'my-events' }"
         class="font-semibold text-accent-ink underline underline-offset-4"
@@ -150,7 +150,7 @@ const EMPTY: Record<MyTab, string> = {
           </span>
           <div class="flex min-w-0 flex-1 flex-col gap-1">
             <p class="font-semibold text-accent-ink">{{ formatEventWhen(item.event.starts_at) }}</p>
-            <h2 class="line-clamp-2 text-lg leading-snug font-bold">
+            <h2 class="line-clamp-2 text-xl leading-tight font-extrabold normal-case">
               <RouterLink
                 :to="{ name: 'event', params: { id: item.event.id } }"
                 class="text-ink no-underline hover:underline"

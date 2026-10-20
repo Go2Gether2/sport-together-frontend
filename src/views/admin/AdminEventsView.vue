@@ -206,7 +206,7 @@ const shortDate = computed(
 
 <template>
   <section class="flex flex-col gap-5">
-    <h1 class="text-3xl font-bold">{{ $t('admin.nav.events') }}</h1>
+    <h1 class="text-[30px] lg:text-[42px]">{{ $t('admin.nav.events') }}</h1>
     <AdminNav />
 
     <div
@@ -307,7 +307,9 @@ const shortDate = computed(
                 <p class="font-semibold text-accent-ink">
                   {{ formatEventWhen(details.event.starts_at, details.event.ends_at) }}
                 </p>
-                <h2 class="text-xl leading-tight font-bold">{{ details.event.title }}</h2>
+                <h2 class="text-xl leading-tight font-extrabold normal-case">
+                  {{ details.event.title }}
+                </h2>
               </div>
               <StatusBadge
                 :of="{ kind: 'event', status: details.event.status }"
@@ -316,7 +318,7 @@ const shortDate = computed(
             </div>
 
             <dl
-              class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-[22px] bg-card p-4 text-[15px]"
+              class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-lg bg-card p-4 text-[15px]"
             >
               <dt class="text-ink-2">{{ $t('admin.events.organizer') }}</dt>
               <dd>
@@ -337,7 +339,7 @@ const shortDate = computed(
 
             <p
               v-if="details.event.status !== 'published' && details.event.unavailable_reason"
-              class="rounded-[22px] bg-card p-4"
+              class="rounded-lg bg-card p-4"
             >
               <b>{{ $t('admin.events.reason') }}</b> {{ details.event.unavailable_reason }}
               <span v-if="details.moderated_by" class="block text-sm text-ink-2">
@@ -400,7 +402,7 @@ const shortDate = computed(
               <li
                 v-for="c in details.comments"
                 :key="c.id"
-                class="flex flex-col gap-1 rounded-[20px] px-4 py-3"
+                class="flex flex-col gap-1 rounded-lg px-4 py-3"
                 :class="
                   c.is_hidden
                     ? 'bg-page text-ink-2'

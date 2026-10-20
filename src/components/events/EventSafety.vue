@@ -61,7 +61,7 @@ async function open(index: number) {
           <span
             v-if="artFor(b.title)"
             aria-hidden="true"
-            class="size-12 flex-none overflow-hidden rounded-[14px] border-2 border-[#111111]"
+            class="size-12 flex-none overflow-hidden rounded-md border-2 border-[#111111]"
           >
             <StoryCover :kind="artFor(b.title)!.cover" />
           </span>
