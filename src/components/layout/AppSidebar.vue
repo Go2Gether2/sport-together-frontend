@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 import UiAvatar from '@/components/ui/UiAvatar.vue'
 import AppLogo from './AppLogo.vue'
+import ThemeSwitch from './ThemeSwitch.vue'
 import NavIcon from './NavIcon.vue'
 import { CREATE_ITEM, desktopItems } from './nav'
 
@@ -47,6 +48,7 @@ async function logout() {
       </nav>
 
       <div class="mt-auto flex flex-col gap-3 rounded-[24px] bg-field p-3">
+        <ThemeSwitch />
         <template v-if="session.user">
           <div class="flex items-center gap-3">
             <UiAvatar :name="session.user.name" :url="session.user.avatar_url" />
