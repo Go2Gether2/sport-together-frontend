@@ -14,6 +14,7 @@ import StatDonut from '@/components/admin/charts/StatDonut.vue'
 import WeekColumns from '@/components/admin/charts/WeekColumns.vue'
 import { UiButton, UiCard } from '@/components/ui'
 import { eventStatusSlices, eventsByWeek, moderationSlices, topBy } from '@/features/admin/stats'
+import { downloadText, exportFileName, statsCsv } from '@/features/admin/export'
 
 // Разрезы считаем по последним мероприятиям и действиям: для прототипа этого хватает.
 const SAMPLE = 200
@@ -56,6 +57,11 @@ onMounted(() => {
   load()
   loadCharts()
 })
+
+function exportStats() {
+  const now = new Date()
+  downloadText(statsCsv(data.value, events.value, logs.value, now), exportFileName(now))
+}
 
 const statuses = computed(() => (data.value ? eventStatusSlices(data.value) : []))
 const sports = computed(() => topBy(events.value, (e) => e.sport?.name))
@@ -133,7 +139,20 @@ const tiles = computed<Tile[]>(() => {
       </li>
     </ul>
 
-    <h2 class="mt-2 text-2xl font-bold">Статистика</h2>
+    <div class="mt-2 flex flex-wrap items-end justify-between gap-3">
+      <h2 class="text-2xl font-bold">Статистика</h2>
+      <div class="flex flex-col items-start gap-1 sm:items-end">
+        <UiButton
+          variant="ghost"
+          class="!w-auto"
+          :disabled="chartsState !== 'ready'"
+          @click="exportStats"
+        >
+          Выгрузить для 1С-Битрикс
+        </UiButton>
+        <p class="text-sm text-ink-2">Файл CSV, без персональных данных</p>
+      </div>
+    </div>
     <div v-if="chartsState === 'loading'" class="grid gap-3 lg:grid-cols-2">
       <div v-for="i in 4" :key="i" class="h-56 animate-pulse rounded-card bg-card" />
     </div>
